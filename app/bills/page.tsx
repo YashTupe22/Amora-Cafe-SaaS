@@ -237,8 +237,26 @@ export default function BillsPage() {
     }));
 
     const handleCreate = (d: Parameters<typeof addInvoice>[0]) => {
-        addInvoice(d);
+        const result = addInvoice(d);
         setShowForm(false);
+        // Send bill email if customer email is provided
+        if (d.clientEmail && result) {
+            fetch('/api/send-bill-email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    to: d.clientEmail,
+                    customerName: d.client,
+                    invoiceNo: result.invoiceNo,
+                    date: d.date,
+                    items: d.items,
+                    paymentMode: d.paymentMode ?? 'Cash',
+                    orderType: d.orderType ?? 'Dine-In',
+                    tableNo: d.tableNo ?? '',
+                    billId: result.id,
+                }),
+            }).catch(err => console.error('[Email] Failed to send bill email:', err));
+        }
     };
 
     const handleEdit = (d: Parameters<typeof addInvoice>[0]) => {

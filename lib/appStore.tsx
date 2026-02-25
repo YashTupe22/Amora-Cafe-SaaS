@@ -103,7 +103,7 @@ interface AppStoreContextValue {
   logout: () => void;
   completeOnboarding: (info: { businessName: string; phone: string; gst: string; address: string }) => Promise<void>;
   addTransaction: (input: AddTransactionInput) => void;
-  addInvoice: (input: AddInvoiceInput) => Invoice;
+  addInvoice: (input: AddInvoiceInput) => void;
   updateInvoice: (id: string, input: Partial<AddInvoiceInput & { status: Invoice['status'] }>) => void;
   toggleInvoiceStatus: (id: string) => void;
   updateEmployees: (updater: (prev: Employee[]) => Employee[]) => void;
@@ -577,9 +577,9 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
 
   // ── addInvoice ────────────────────────────────────────────────────────────
 
-  const addInvoice = useCallback((input: AddInvoiceInput): Invoice => {
+  const addInvoice = useCallback((input: AddInvoiceInput) => {
     const uid = uidRef.current;
-    if (!uid) return {} as Invoice;
+    if (!uid) return;
     const id = crypto.randomUUID();
     const invoiceNo = `BILL-${String(invoiceCountRef.current + 1).padStart(3, '0')}`;
     invoiceCountRef.current += 1;
@@ -614,7 +614,6 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       }).then(() => localDb.invoices.update(id, { _syncStatus: 'synced' }).catch(console.error))
         .catch(() => console.warn('[Offline] Invoice queued for sync'));
     }
-    return invoice;
   }, []);
 
   // ── updateInvoice ─────────────────────────────────────────────────────────────

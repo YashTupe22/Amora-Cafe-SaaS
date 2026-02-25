@@ -71,12 +71,12 @@ export default function TransactionsPage() {
                     </div>
                     <p style={{ fontSize: 24, fontWeight: 800, color: '#ef4444' }}>₹{totalOut.toLocaleString('en-IN')}</p>
                 </div>
-                <div className="glass-card" style={{ padding: '18px 22px', borderColor: net >= 0 ? 'rgba(59,130,246,0.2)' : 'rgba(245,158,11,0.2)' }}>
+                <div className="glass-card" style={{ padding: '18px 22px', borderColor: net >= 0 ? 'rgba(249,115,22,0.2)' : 'rgba(245,158,11,0.2)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                        <Minus size={16} color={net >= 0 ? '#60a5fa' : '#f59e0b'} />
+                        <Minus size={16} color={net >= 0 ? '#fb923c' : '#f59e0b'} />
                         <span style={{ fontSize: 12, color: '#64748b', fontWeight: 600 }}>Net Balance</span>
                     </div>
-                    <p style={{ fontSize: 24, fontWeight: 800, color: net >= 0 ? '#60a5fa' : '#f59e0b' }}>
+                    <p style={{ fontSize: 24, fontWeight: 800, color: net >= 0 ? '#fb923c' : '#f59e0b' }}>
                         {net >= 0 ? '+' : '-'}₹{Math.abs(net).toLocaleString('en-IN')}
                     </p>
                 </div>

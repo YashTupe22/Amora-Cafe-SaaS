@@ -80,8 +80,8 @@ function DashboardContent() {
                         gap: 10,
                         borderRadius: 999,
                         background:
-                            'linear-gradient(135deg, rgba(56,189,248,0.2), rgba(59,130,246,0.2))',
-                        border: '1px solid rgba(59,130,246,0.6)',
+                            'linear-gradient(135deg, rgba(56,189,248,0.2), rgba(249,115,22,0.2))',
+                        border: '1px solid rgba(249,115,22,0.6)',
                         boxShadow: '0 18px 40px rgba(15,23,42,0.7)',
                         backdropFilter: 'blur(20px)',
                         animation: 'fade-down 0.35s ease-out',
@@ -168,8 +168,8 @@ function DashboardContent() {
                     sub="Unpaid bills"
                     trend="neutral"
                     trendValue=""
-                    iconBg="linear-gradient(135deg, rgba(6,182,212,0.3), rgba(6,182,212,0.1))"
-                    icon={<Clock size={20} color="#06b6d4" />}
+                    iconBg="linear-gradient(135deg, rgba(234,88,12,0.3), rgba(234,88,12,0.1))"
+                    icon={<Clock size={20} color="#ea580c" />}
                 />
             </div>
 
@@ -191,10 +191,10 @@ function DashboardContent() {
                                 type="monotone"
                                 dataKey="revenue"
                                 name="Sales"
-                                stroke="#3b82f6"
+                                stroke="#f97316"
                                 strokeWidth={2.5}
-                                dot={{ r: 4, fill: '#3b82f6', strokeWidth: 0 }}
-                                activeDot={{ r: 6, fill: '#60a5fa' }}
+                                dot={{ r: 4, fill: '#f97316', strokeWidth: 0 }}
+                                activeDot={{ r: 6, fill: '#fb923c' }}
                             />
                             <Line
                                 type="monotone"
@@ -360,13 +360,13 @@ function DashboardContent() {
                                                         width: 20,
                                                         height: 20,
                                                         borderRadius: 6,
-                                                        background: idx === 0 ? 'rgba(245,158,11,0.2)' : 'rgba(59,130,246,0.1)',
+                                                        background: idx === 0 ? 'rgba(245,158,11,0.2)' : 'rgba(249,115,22,0.1)',
                                                         display: 'inline-flex',
                                                         alignItems: 'center',
                                                         justifyContent: 'center',
                                                         fontSize: 11,
                                                         fontWeight: 700,
-                                                        color: idx === 0 ? '#f59e0b' : '#60a5fa',
+                                                        color: idx === 0 ? '#f59e0b' : '#fb923c',
                                                     }}
                                                 >
                                                     {idx + 1}
@@ -385,7 +385,7 @@ function DashboardContent() {
                                                     borderRadius: 3,
                                                     background: idx === 0
                                                         ? 'linear-gradient(90deg, #f59e0b, #fbbf24)'
-                                                        : 'linear-gradient(90deg, #3b82f6, #06b6d4)',
+                                                        : 'linear-gradient(90deg, #f97316, #ea580c)',
                                                     transition: 'width 0.4s ease',
                                                 }}
                                             />

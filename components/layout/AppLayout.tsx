@@ -65,7 +65,7 @@ export default function AppLayout({ children, title, subtitle }: AppLayoutProps)
                         flex: 1,
                         padding: '24px 20px',
                         overflowY: 'auto',
-                        background: 'radial-gradient(ellipse at 20% 10%, rgba(59,130,246,0.07) 0%, transparent 60%), radial-gradient(ellipse at 80% 80%, rgba(6,182,212,0.05) 0%, transparent 60%), var(--navy)',
+                        background: 'radial-gradient(ellipse at 20% 10%, rgba(249,115,22,0.07) 0%, transparent 60%), radial-gradient(ellipse at 80% 80%, rgba(234,88,12,0.05) 0%, transparent 60%), var(--navy)',
                     }}
                     className="main-content"
                 >

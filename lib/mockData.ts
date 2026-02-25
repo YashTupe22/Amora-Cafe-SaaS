@@ -212,8 +212,8 @@ export const REVENUE_CHART_DATA = [
 ];
 
 export const EXPENSE_PIE_DATA = [
-  { name: 'Staff Salaries',  value: 52000, color: '#3b82f6' },
-  { name: 'Raw Materials',   value: 9700,  color: '#06b6d4' },
+  { name: 'Staff Salaries',  value: 52000, color: '#f97316' },
+  { name: 'Raw Materials',   value: 9700,  color: '#ea580c' },
   { name: 'Utilities',       value: 3800,  color: '#8b5cf6' },
   { name: 'Packaging',       value: 1200,  color: '#f59e0b' },
   { name: 'Maintenance',     value: 2500,  color: '#22c55e' },

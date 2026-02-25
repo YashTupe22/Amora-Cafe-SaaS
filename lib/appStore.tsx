@@ -265,7 +265,7 @@ function computeDashboard(invoices: Invoice[], transactions: Transaction[]) {
   transactions.filter(t => t.type === 'Expense').forEach(t => {
     catMap.set(t.category, (catMap.get(t.category) ?? 0) + t.amount);
   });
-  const COLORS = ['#3b82f6', '#06b6d4', '#8b5cf6', '#f59e0b', '#22c55e', '#ef4444', '#14b8a6'];
+  const COLORS = ['#f97316', '#ea580c', '#8b5cf6', '#f59e0b', '#22c55e', '#ef4444', '#14b8a6'];
   const expensePie = Array.from(catMap.entries()).map(([name, value], idx) => ({
     name, value, color: COLORS[idx % COLORS.length],
   }));

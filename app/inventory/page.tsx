@@ -126,8 +126,8 @@ export default function InventoryPage() {
           sub="Unique inventory items"
           trend="neutral"
           trendValue=""
-          iconBg="linear-gradient(135deg, rgba(59,130,246,0.3), rgba(59,130,246,0.1))"
-          icon={<Package2 size={20} color="#3b82f6" />}
+          iconBg="linear-gradient(135deg, rgba(249,115,22,0.3), rgba(249,115,22,0.1))"
+          icon={<Package2 size={20} color="#f97316" />}
         />
         <StatCard
           label="Total Stock Qty"
@@ -224,7 +224,7 @@ export default function InventoryPage() {
                 style={{ padding: '10px 12px', fontSize: 14 }}
               />
               {mergeTarget && (
-                <p style={{ fontSize: 11, color: '#06b6d4', marginTop: 5, fontWeight: 600 }}>
+                <p style={{ fontSize: 11, color: '#ea580c', marginTop: 5, fontWeight: 600 }}>
                   ✓ Existing item found — SKU / prices auto-filled. Enter qty to add to current stock ({mergeTarget.currentQty} {mergeTarget.unit}).
                 </p>
               )}

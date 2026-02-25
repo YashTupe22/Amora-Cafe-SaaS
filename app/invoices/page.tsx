@@ -108,7 +108,7 @@ function InvoiceForm({ title, initial, inventory, pastInvoices, onSave, onCancel
                         style={inp}
                     />
                     {clientAutoFilled && (
-                        <p style={{ fontSize: 11, color: '#06b6d4', marginTop: 4, fontWeight: 600 }}>
+                        <p style={{ fontSize: 11, color: '#ea580c', marginTop: 4, fontWeight: 600 }}>
                             ✓ Returning client — contact details auto-filled.
                         </p>
                     )}
@@ -193,7 +193,7 @@ function InvoiceForm({ title, initial, inventory, pastInvoices, onSave, onCancel
                         </div>
                     );
                 })}
-                <button onClick={addItem} style={{ padding: '8px 14px', borderRadius: 8, background: 'rgba(59,130,246,0.1)', border: '1px dashed rgba(59,130,246,0.3)', color: '#60a5fa', fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <button onClick={addItem} style={{ padding: '8px 14px', borderRadius: 8, background: 'rgba(249,115,22,0.1)', border: '1px dashed rgba(249,115,22,0.3)', color: '#fb923c', fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
                     <Plus size={13} /> Add Item
                 </button>
             </div>
@@ -201,7 +201,7 @@ function InvoiceForm({ title, initial, inventory, pastInvoices, onSave, onCancel
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: 16 }}>
                 <div>
                     <p style={{ fontSize: 12, color: '#64748b' }}>Total Amount</p>
-                    <p style={{ fontSize: 22, fontWeight: 800, color: '#60a5fa' }}>₹{getTotal(items).toLocaleString('en-IN')}</p>
+                    <p style={{ fontSize: 22, fontWeight: 800, color: '#fb923c' }}>₹{getTotal(items).toLocaleString('en-IN')}</p>
                 </div>
                 <button className="glow-btn" onClick={handleSave} style={{ padding: '11px 28px', fontSize: 14 }}>
                     <span>Save Invoice</span>
@@ -269,7 +269,7 @@ export default function InvoicesPage() {
             {/* Summary bar */}
             <div className="rg-3" style={{ marginBottom: 24 }}>
                 {[
-                    { label: 'Total Invoices', value: invoices.length, color: '#60a5fa' },
+                    { label: 'Total Invoices', value: invoices.length, color: '#fb923c' },
                     { label: 'Paid', value: `₹${totalRevenue.toLocaleString('en-IN')}`, color: '#22c55e' },
                     { label: 'Pending', value: `₹${totalPending.toLocaleString('en-IN')}`, color: '#f59e0b' },
                 ].map(s => (
@@ -334,7 +334,7 @@ export default function InvoicesPage() {
                         <tbody>
                             {invoices.map(inv => (
                                 <tr key={inv.id}>
-                                    <td style={{ fontWeight: 600, color: '#60a5fa' }}>{inv.invoiceNo}</td>
+                                    <td style={{ fontWeight: 600, color: '#fb923c' }}>{inv.invoiceNo}</td>
                                     <td style={{ color: '#f1f5f9', fontWeight: 500 }}>{inv.client}</td>
                                     <td style={{ color: '#94a3b8' }}>{new Date(inv.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: '2-digit' })}</td>
                                     <td style={{ color: '#94a3b8' }}>{new Date(inv.dueDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: '2-digit' })}</td>
@@ -342,7 +342,7 @@ export default function InvoicesPage() {
                                     <td><Badge variant={inv.status === 'Paid' ? 'success' : 'warning'}>{inv.status}</Badge></td>
                                     <td>
                                         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                                            <button onClick={() => setPreview(inv)} style={{ padding: '6px 10px', borderRadius: 8, background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)', color: '#60a5fa', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontSize: 12 }}>
+                                            <button onClick={() => setPreview(inv)} style={{ padding: '6px 10px', borderRadius: 8, background: 'rgba(249,115,22,0.1)', border: '1px solid rgba(249,115,22,0.2)', color: '#fb923c', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontSize: 12 }}>
                                                 <Eye size={12} /> View
                                             </button>
                                             <button
@@ -384,7 +384,7 @@ export default function InvoicesPage() {
                     <div className="glass-card animate-fade-in modal-inner" style={{ width: '100%', maxWidth: 560, padding: 32, position: 'relative' }} onClick={e => e.stopPropagation()}>
                         <button onClick={() => setPreview(null)} style={{ position: 'absolute', top: 16, right: 16, background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}><X size={20} /></button>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
-                            <div style={{ width: 42, height: 42, borderRadius: 10, background: 'linear-gradient(135deg, #3b82f6, #06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <div style={{ width: 42, height: 42, borderRadius: 10, background: 'linear-gradient(135deg, #f97316, #ea580c)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 <FileText size={20} color="white" />
                             </div>
                             <div>
@@ -426,7 +426,7 @@ export default function InvoicesPage() {
                         <div style={{ display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 16 }}>
                             <div style={{ textAlign: 'right' }}>
                                 <p style={{ fontSize: 13, color: '#64748b' }}>Total Amount</p>
-                                <p style={{ fontSize: 28, fontWeight: 800, color: '#60a5fa', marginTop: 4 }}>₹{getTotal(preview.items).toLocaleString('en-IN')}</p>
+                                <p style={{ fontSize: 28, fontWeight: 800, color: '#fb923c', marginTop: 4 }}>₹{getTotal(preview.items).toLocaleString('en-IN')}</p>
                             </div>
                         </div>
                     </div>

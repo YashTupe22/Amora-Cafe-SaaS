@@ -44,17 +44,17 @@ function EmployeeProfileModal({ emp, onClose, onEdit }: { emp: Employee; onClose
                 onClick={e => e.stopPropagation()}
             >
                 <div style={{ position: 'absolute', top: 16, right: 16, display: 'flex', gap: 8 }}>
-                    <button onClick={e => { e.stopPropagation(); onEdit(); }} style={{ padding: '5px 12px', borderRadius: 8, background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.3)', color: '#60a5fa', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>Edit</button>
+                    <button onClick={e => { e.stopPropagation(); onEdit(); }} style={{ padding: '5px 12px', borderRadius: 8, background: 'rgba(249,115,22,0.15)', border: '1px solid rgba(249,115,22,0.3)', color: '#fb923c', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>Edit</button>
                     <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}><X size={20} /></button>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
                     <div
                         style={{
                             width: 56, height: 56, borderRadius: 14,
-                            background: 'linear-gradient(135deg, #3b82f6, #06b6d4)',
+                            background: 'linear-gradient(135deg, #f97316, #ea580c)',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             fontSize: 18, fontWeight: 800, color: 'white',
-                            boxShadow: '0 0 20px rgba(59,130,246,0.4)',
+                            boxShadow: '0 0 20px rgba(249,115,22,0.4)',
                         }}
                     >
                         {emp.avatar}
@@ -79,7 +79,7 @@ function EmployeeProfileModal({ emp, onClose, onEdit }: { emp: Employee; onClose
                         </div>
                     ))}
                 </div>
-                <div style={{ marginTop: 20, padding: '14px 16px', borderRadius: 10, background: 'rgba(59,130,246,0.07)', border: '1px solid rgba(59,130,246,0.2)' }}>
+                <div style={{ marginTop: 20, padding: '14px 16px', borderRadius: 10, background: 'rgba(249,115,22,0.07)', border: '1px solid rgba(249,115,22,0.2)' }}>
                     <p style={{ fontSize: 12, color: '#64748b', marginBottom: 10, fontWeight: 600 }}>THIS MONTH</p>
                     {(() => {
                         const n = new Date();
@@ -91,7 +91,7 @@ function EmployeeProfileModal({ emp, onClose, onEdit }: { emp: Employee; onClose
                             <div style={{ display: 'flex', gap: 20 }}>
                                 <div><span style={{ fontSize: 20, fontWeight: 800, color: '#22c55e' }}>{present}</span><p style={{ fontSize: 11, color: '#64748b' }}>Present</p></div>
                                 <div><span style={{ fontSize: 20, fontWeight: 800, color: '#ef4444' }}>{absent}</span><p style={{ fontSize: 11, color: '#64748b' }}>Absent</p></div>
-                                <div><span style={{ fontSize: 20, fontWeight: 800, color: '#60a5fa' }}>{pct}%</span><p style={{ fontSize: 11, color: '#64748b' }}>Rate</p></div>
+                                <div><span style={{ fontSize: 20, fontWeight: 800, color: '#fb923c' }}>{pct}%</span><p style={{ fontSize: 11, color: '#64748b' }}>Rate</p></div>
                             </div>
                         );
                     })()}
@@ -429,7 +429,7 @@ export default function AttendancePage() {
                             return (
                                 <div key={emp.id} className="glass-card" style={{ padding: '16px 18px', borderColor: status === 'present' ? 'rgba(34,197,94,0.3)' : status === 'absent' ? 'rgba(239,68,68,0.3)' : 'rgba(255,255,255,0.1)', transition: 'border-color 0.2s' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14, cursor: 'pointer' }} onClick={() => setProfileEmp(emp)}>
-                                        <div style={{ width: 38, height: 38, borderRadius: 10, background: 'linear-gradient(135deg, #3b82f6, #06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: 'white' }}>
+                                        <div style={{ width: 38, height: 38, borderRadius: 10, background: 'linear-gradient(135deg, #f97316, #ea580c)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: 'white' }}>
                                             {emp.avatar}
                                         </div>
                                         <div style={{ flex: 1 }}>
@@ -497,10 +497,10 @@ export default function AttendancePage() {
                                     <tr key={emp.id}>
                                         <td>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }} onClick={() => setProfileEmp(emp)}>
-                                                <div style={{ width: 30, height: 30, borderRadius: 8, background: 'linear-gradient(135deg, #3b82f6, #06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: 'white' }}>
+                                                <div style={{ width: 30, height: 30, borderRadius: 8, background: 'linear-gradient(135deg, #f97316, #ea580c)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: 'white' }}>
                                                     {emp.avatar}
                                                 </div>
-                                                <span style={{ fontWeight: 600, color: '#60a5fa', textDecoration: 'underline', textUnderlineOffset: 3 }}>{emp.name}</span>
+                                                <span style={{ fontWeight: 600, color: '#fb923c', textDecoration: 'underline', textUnderlineOffset: 3 }}>{emp.name}</span>
                                             </div>
                                         </td>
                                         <td style={{ color: '#64748b' }}>{emp.role}</td>

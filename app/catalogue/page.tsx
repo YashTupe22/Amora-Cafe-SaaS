@@ -11,7 +11,7 @@ import { MENU_CATEGORIES } from '@/lib/mockData';
 // ── Category pill colours ────────────────────────────────────────────────────
 const CAT_COLORS: Record<MenuCategory, { bg: string; color: string; dot: string }> = {
     Chinese:     { bg: 'rgba(239,68,68,0.12)',   color: '#f87171', dot: '#ef4444' },
-    Continental: { bg: 'rgba(59,130,246,0.12)',  color: '#60a5fa', dot: '#3b82f6' },
+    Continental: { bg: 'rgba(249,115,22,0.12)',  color: '#fb923c', dot: '#f97316' },
     Mocktail:    { bg: 'rgba(168,85,247,0.12)',  color: '#c084fc', dot: '#a855f7' },
     Biryani:     { bg: 'rgba(245,158,11,0.12)',  color: '#fbbf24', dot: '#f59e0b' },
     Dessert:     { bg: 'rgba(236,72,153,0.12)',  color: '#f472b6', dot: '#ec4899' },
@@ -155,7 +155,7 @@ export default function CataloguePage() {
             {/* Summary bar */}
             <div className="rg-3" style={{ marginBottom: 24 }}>
                 {[
-                    { label: 'Total Items',    value: totalItems,          color: '#60a5fa' },
+                    { label: 'Total Items',    value: totalItems,          color: '#fb923c' },
                     { label: 'Available Now',  value: availableItems,      color: '#22c55e' },
                     { label: 'Avg Item Price', value: `₹${avgPrice}`,      color: '#f59e0b' },
                     { label: 'Categories',     value: MENU_CATEGORIES.length, color: '#a78bfa' },
@@ -182,9 +182,9 @@ export default function CataloguePage() {
                             onClick={() => setFilterCat(cat as MenuCategory | 'All')}
                             style={{
                                 padding: '6px 14px', borderRadius: 999, fontSize: 12, fontWeight: 600, cursor: 'pointer',
-                                background: filterCat === cat ? (cat === 'All' ? 'rgba(59,130,246,0.2)' : CAT_COLORS[cat as MenuCategory].bg) : 'rgba(255,255,255,0.04)',
-                                border: `1px solid ${filterCat === cat ? (cat === 'All' ? 'rgba(59,130,246,0.4)' : CAT_COLORS[cat as MenuCategory].dot) : 'rgba(255,255,255,0.08)'}`,
-                                color: filterCat === cat ? (cat === 'All' ? '#60a5fa' : CAT_COLORS[cat as MenuCategory].color) : '#64748b',
+                                background: filterCat === cat ? (cat === 'All' ? 'rgba(249,115,22,0.2)' : CAT_COLORS[cat as MenuCategory].bg) : 'rgba(255,255,255,0.04)',
+                                border: `1px solid ${filterCat === cat ? (cat === 'All' ? 'rgba(249,115,22,0.4)' : CAT_COLORS[cat as MenuCategory].dot) : 'rgba(255,255,255,0.08)'}`,
+                                color: filterCat === cat ? (cat === 'All' ? '#fb923c' : CAT_COLORS[cat as MenuCategory].color) : '#64748b',
                                 transition: 'all 0.15s',
                             }}
                         >
@@ -224,7 +224,7 @@ export default function CataloguePage() {
 
                         {items.length === 0 ? (
                             <div style={{ padding: '24px 20px', textAlign: 'center', color: '#475569', fontSize: 13 }}>
-                                No items in this category yet. <button onClick={() => { setShowForm(true); }} style={{ background: 'none', border: 'none', color: '#60a5fa', cursor: 'pointer', fontSize: 13 }}>Add one</button>
+                                No items in this category yet. <button onClick={() => { setShowForm(true); }} style={{ background: 'none', border: 'none', color: '#fb923c', cursor: 'pointer', fontSize: 13 }}>Add one</button>
                             </div>
                         ) : (
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 1 }}>
@@ -237,7 +237,7 @@ export default function CataloguePage() {
                                         <div style={{ flex: 1, minWidth: 0 }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
                                                 <p style={{ fontSize: 13, fontWeight: 700, color: '#f1f5f9', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1 }}>{item.name}</p>
-                                                <span style={{ fontSize: 13, fontWeight: 800, color: '#60a5fa', whiteSpace: 'nowrap' }}>₹{item.price}</span>
+                                                <span style={{ fontSize: 13, fontWeight: 800, color: '#fb923c', whiteSpace: 'nowrap' }}>₹{item.price}</span>
                                             </div>
                                             {item.description && (
                                                 <p style={{ fontSize: 11, color: '#64748b', lineHeight: 1.4, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{item.description}</p>

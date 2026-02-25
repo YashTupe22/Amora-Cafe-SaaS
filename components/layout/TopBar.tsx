@@ -113,7 +113,7 @@ export default function TopBar({ title, subtitle, onMenuToggle }: TopBarProps) {
 
                 {/* ── Search ── */}
                 <div ref={searchRef} className="topbar-search" style={{ position: 'relative' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.05)', border: `1px solid ${showSearch ? 'rgba(59,130,246,0.4)' : 'rgba(255,255,255,0.08)'}`, borderRadius: 10, padding: '7px 12px', transition: 'border-color 0.2s' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.05)', border: `1px solid ${showSearch ? 'rgba(249,115,22,0.4)' : 'rgba(255,255,255,0.08)'}`, borderRadius: 10, padding: '7px 12px', transition: 'border-color 0.2s' }}>
                         <Search size={14} color="#64748b" />
                         <input
                             id="global-search"
@@ -145,10 +145,10 @@ export default function TopBar({ title, subtitle, onMenuToggle }: TopBarProps) {
                                             key={i}
                                             onClick={() => { router.push(r.href); setQuery(''); setShowSearch(false); }}
                                             style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', padding: '10px 14px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', transition: 'background 0.15s' }}
-                                            onMouseEnter={e => (e.currentTarget.style.background = 'rgba(59,130,246,0.08)')}
+                                            onMouseEnter={e => (e.currentTarget.style.background = 'rgba(249,115,22,0.08)')}
                                             onMouseLeave={e => (e.currentTarget.style.background = 'none')}
                                         >
-                                            <div style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(59,130,246,0.12)', border: '1px solid rgba(59,130,246,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#60a5fa', flexShrink: 0 }}>
+                                            <div style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(249,115,22,0.12)', border: '1px solid rgba(249,115,22,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fb923c', flexShrink: 0 }}>
                                                 {r.icon}
                                             </div>
                                             <div style={{ minWidth: 0 }}>
@@ -166,7 +166,7 @@ export default function TopBar({ title, subtitle, onMenuToggle }: TopBarProps) {
                 {/* ── Notification bell ── */}
                 <button style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative', color: '#94a3b8', flexShrink: 0 }}>
                     <Bell size={16} />
-                    <span style={{ position: 'absolute', top: 7, right: 7, width: 7, height: 7, borderRadius: '50%', background: '#3b82f6', boxShadow: '0 0 6px rgba(59,130,246,0.8)' }} />
+                    <span style={{ position: 'absolute', top: 7, right: 7, width: 7, height: 7, borderRadius: '50%', background: '#f97316', boxShadow: '0 0 6px rgba(249,115,22,0.8)' }} />
                 </button>
 
                 {/* ── Profile avatar + dropdown ── */}
@@ -174,7 +174,7 @@ export default function TopBar({ title, subtitle, onMenuToggle }: TopBarProps) {
                     <button
                         id="profile-avatar-btn"
                         onClick={() => setShowProfile(p => !p)}
-                        style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg, #3b82f6, #06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 13, color: 'white', cursor: 'pointer', border: showProfile ? '2px solid rgba(59,130,246,0.6)' : '2px solid transparent', boxShadow: '0 0 12px rgba(59,130,246,0.3)', transition: 'border-color 0.2s', flexShrink: 0 }}
+                        style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg, #f97316, #ea580c)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 13, color: 'white', cursor: 'pointer', border: showProfile ? '2px solid rgba(249,115,22,0.6)' : '2px solid transparent', boxShadow: '0 0 12px rgba(249,115,22,0.3)', transition: 'border-color 0.2s', flexShrink: 0 }}
                         aria-label="Profile menu"
                     >
                         {initials}
@@ -185,14 +185,14 @@ export default function TopBar({ title, subtitle, onMenuToggle }: TopBarProps) {
                             {/* User info */}
                             <div style={{ padding: '16px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                    <div style={{ width: 40, height: 40, borderRadius: 10, background: 'linear-gradient(135deg,#3b82f6,#06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 14, color: 'white', flexShrink: 0 }}>{initials}</div>
+                                    <div style={{ width: 40, height: 40, borderRadius: 10, background: 'linear-gradient(135deg,#f97316,#ea580c)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 14, color: 'white', flexShrink: 0 }}>{initials}</div>
                                     <div style={{ minWidth: 0 }}>
                                         <p style={{ fontSize: 13, fontWeight: 700, color: '#f1f5f9', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{profile?.name || currentUser?.name || 'User'}</p>
                                         <p style={{ fontSize: 11, color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{profile?.email || currentUser?.email || ''}</p>
                                     </div>
                                 </div>
                                 {profile?.businessName && (
-                                    <div style={{ marginTop: 8, padding: '5px 8px', background: 'rgba(59,130,246,0.08)', borderRadius: 6, fontSize: 11, color: '#60a5fa', fontWeight: 600 }}>
+                                    <div style={{ marginTop: 8, padding: '5px 8px', background: 'rgba(249,115,22,0.08)', borderRadius: 6, fontSize: 11, color: '#fb923c', fontWeight: 600 }}>
                                         {profile.businessName}
                                     </div>
                                 )}

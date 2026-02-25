@@ -194,7 +194,7 @@ function BillForm({ title, initial, menuItems, pastBills, onSave, onCancel }: Bi
                         <button onClick={() => removeItem(i)} style={{ width: 32, background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={14} /></button>
                     </div>
                 ))}
-                <button onClick={addItem} style={{ padding: '8px 14px', borderRadius: 8, background: 'rgba(59,130,246,0.1)', border: '1px dashed rgba(59,130,246,0.3)', color: '#60a5fa', fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <button onClick={addItem} style={{ padding: '8px 14px', borderRadius: 8, background: 'rgba(249,115,22,0.1)', border: '1px dashed rgba(249,115,22,0.3)', color: '#fb923c', fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
                     <Plus size={13} /> Add Item
                 </button>
             </div>
@@ -202,7 +202,7 @@ function BillForm({ title, initial, menuItems, pastBills, onSave, onCancel }: Bi
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: 16 }}>
                 <div>
                     <p style={{ fontSize: 12, color: '#64748b' }}>Total Amount</p>
-                    <p style={{ fontSize: 22, fontWeight: 800, color: '#60a5fa' }}>₹{getTotal(items).toLocaleString('en-IN')}</p>
+                    <p style={{ fontSize: 22, fontWeight: 800, color: '#fb923c' }}>₹{getTotal(items).toLocaleString('en-IN')}</p>
                 </div>
                 <button className="glow-btn" onClick={handleSave} style={{ padding: '11px 28px', fontSize: 14 }}>
                     <span>Save Bill</span>
@@ -255,7 +255,7 @@ export default function BillsPage() {
 
     const PAYMENT_COLORS: Record<string, string> = {
         'Cash': '#22c55e',
-        'Card': '#60a5fa',
+        'Card': '#fb923c',
         'UPI':  '#a78bfa',
     };
 
@@ -264,7 +264,7 @@ export default function BillsPage() {
             {/* Summary bar */}
             <div className="rg-3" style={{ marginBottom: 24 }}>
                 {[
-                    { label: "Today's Bills",  value: todayBills,                              color: '#60a5fa' },
+                    { label: "Today's Bills",  value: todayBills,                              color: '#fb923c' },
                     { label: 'Collected',       value: `₹${totalRevenue.toLocaleString('en-IN')}`, color: '#22c55e' },
                     { label: 'Pending',         value: `₹${totalPending.toLocaleString('en-IN')}`, color: '#f59e0b' },
                     { label: 'Total Bills',     value: bills.length,                            color: '#a78bfa' },
@@ -355,7 +355,7 @@ export default function BillsPage() {
                                     <td><Badge variant={bill.status === 'Paid' ? 'success' : 'warning'}>{bill.status}</Badge></td>
                                     <td>
                                         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                                            <button onClick={() => setPreview(bill)} style={{ padding: '6px 10px', borderRadius: 8, background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)', color: '#60a5fa', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontSize: 12 }}>
+                                            <button onClick={() => setPreview(bill)} style={{ padding: '6px 10px', borderRadius: 8, background: 'rgba(249,115,22,0.1)', border: '1px solid rgba(249,115,22,0.2)', color: '#fb923c', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontSize: 12 }}>
                                                 <Eye size={12} /> View
                                             </button>
                                             <button onClick={() => { setShowForm(false); setEditBill(bill); window.scrollTo({ top: 0, behavior: 'smooth' }); }} style={{ padding: '6px 10px', borderRadius: 8, background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.2)', color: '#a78bfa', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontSize: 12 }}>
@@ -437,7 +437,7 @@ export default function BillsPage() {
                             </Link>
                             <div style={{ textAlign: 'right' }}>
                                 <p style={{ fontSize: 13, color: '#64748b' }}>Total Amount</p>
-                                <p style={{ fontSize: 28, fontWeight: 800, color: '#60a5fa', marginTop: 4 }}>₹{getTotal(preview.items).toLocaleString('en-IN')}</p>
+                                <p style={{ fontSize: 28, fontWeight: 800, color: '#fb923c', marginTop: 4 }}>₹{getTotal(preview.items).toLocaleString('en-IN')}</p>
                             </div>
                         </div>
                     </div>

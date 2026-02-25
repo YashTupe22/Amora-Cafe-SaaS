@@ -45,8 +45,8 @@ export default function OnboardingPage() {
     return (
         <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #0a0f1e 0%, #0f172a 60%, #0d1b33 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', position: 'relative', overflow: 'hidden' }}>
             {/* Background effects */}
-            <div style={{ position: 'absolute', top: '-20%', right: '-10%', width: 700, height: 700, borderRadius: '50%', background: 'radial-gradient(circle, rgba(59,130,246,0.09) 0%, transparent 65%)', pointerEvents: 'none' }} />
-            <div style={{ position: 'absolute', bottom: '-20%', left: '-10%', width: 700, height: 700, borderRadius: '50%', background: 'radial-gradient(circle, rgba(6,182,212,0.08) 0%, transparent 65%)', pointerEvents: 'none' }} />
+            <div style={{ position: 'absolute', top: '-20%', right: '-10%', width: 700, height: 700, borderRadius: '50%', background: 'radial-gradient(circle, rgba(249,115,22,0.09) 0%, transparent 65%)', pointerEvents: 'none' }} />
+            <div style={{ position: 'absolute', bottom: '-20%', left: '-10%', width: 700, height: 700, borderRadius: '50%', background: 'radial-gradient(circle, rgba(234,88,12,0.08) 0%, transparent 65%)', pointerEvents: 'none' }} />
 
             <div style={{ width: '100%', maxWidth: 540, position: 'relative' }}>
 
@@ -147,8 +147,8 @@ export default function OnboardingPage() {
                             </div>
 
                             {/* Summary preview */}
-                            <div style={{ background: 'rgba(59,130,246,0.06)', border: '1px solid rgba(59,130,246,0.15)', borderRadius: 12, padding: '16px 18px' }}>
-                                <p style={{ fontSize: 11, color: '#3b82f6', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10 }}>Your workspace summary</p>
+                            <div style={{ background: 'rgba(249,115,22,0.06)', border: '1px solid rgba(249,115,22,0.15)', borderRadius: 12, padding: '16px 18px' }}>
+                                <p style={{ fontSize: 11, color: '#f97316', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10 }}>Your workspace summary</p>
                                 {[
                                     ['Business', businessName || '—'],
                                     ['Phone', phone || '—'],

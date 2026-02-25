@@ -5,10 +5,10 @@
   --navy: #0f172a;
   --navy-light: #1e293b;
   --navy-card: #162032;
-  --electric-blue: #3b82f6;
-  --electric-blue-glow: rgba(59, 130, 246, 0.4);
-  --neon-cyan: #06b6d4;
-  --neon-cyan-glow: rgba(6, 182, 212, 0.3);
+  --electric-blue: #f97316;
+  --electric-blue-glow: rgba(249, 115, 22, 0.4);
+  --neon-cyan: #ea580c;
+  --neon-cyan-glow: rgba(234, 88, 12, 0.3);
   --glass-bg: rgba(255, 255, 255, 0.05);
   --glass-border: rgba(255, 255, 255, 0.1);
   --text-primary: #f1f5f9;
@@ -44,7 +44,7 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(59, 130, 246, 0.4);
+  background: rgba(249, 115, 22, 0.4);
   border-radius: 3px;
 }
 
@@ -84,7 +84,7 @@ body {
 }
 
 .glow-btn:hover {
-  box-shadow: 0 0 24px var(--electric-blue-glow), 0 0 48px rgba(59, 130, 246, 0.2);
+  box-shadow: 0 0 24px var(--electric-blue-glow), 0 0 48px rgba(249,115,22, 0.2);
   transform: translateY(-1px);
 }
 
@@ -118,8 +118,8 @@ body {
 
 .dark-input:focus {
   border-color: var(--electric-blue);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
-  background: rgba(59, 130, 246, 0.05);
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
+  background: rgba(249, 115, 22, 0.05);
 }
 
 /* Select dropdown — force option elements to always have a
@@ -150,14 +150,14 @@ html[data-theme="light"] select.dark-input option {
 }
 
 .nav-link:hover {
-  background: rgba(59, 130, 246, 0.1);
+  background: rgba(249, 115, 22, 0.1);
   color: var(--text-primary);
 }
 
 .nav-link.active {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(6, 182, 212, 0.1));
-  color: #60a5fa;
-  border: 1px solid rgba(59, 130, 246, 0.2);
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.2), rgba(234, 88, 12, 0.1));
+  color: #fb923c;
+  border: 1px solid rgba(249, 115, 22, 0.2);
 }
 
 /* Stat card hover */
@@ -206,7 +206,7 @@ html[data-theme="light"] select.dark-input option {
 }
 
 .data-table tr:hover td {
-  background: rgba(59, 130, 246, 0.05);
+  background: rgba(249, 115, 22, 0.05);
 }
 
 /* Badge */
@@ -352,8 +352,8 @@ html[data-theme="light"] select.dark-input option {
   }
 
   .menu-toggle-btn:hover {
-    background: rgba(59, 130, 246, 0.12);
-    color: #60a5fa;
+    background: rgba(249, 115, 22, 0.12);
+    color: #fb923c;
   }
 
   /* Overlay — shown behind opened sidebar */
@@ -550,7 +550,7 @@ html[data-theme="light"] .dark-input::placeholder {
 }
 
 html[data-theme="light"] .dark-input:focus {
-  background: rgba(59, 130, 246, 0.06);
+  background: rgba(249, 115, 22, 0.06);
   border-color: var(--electric-blue);
 }
 
@@ -570,14 +570,14 @@ html[data-theme="light"] .nav-link {
 }
 
 html[data-theme="light"] .nav-link:hover {
-  background: rgba(59, 130, 246, 0.08);
+  background: rgba(249, 115, 22, 0.08);
   color: #0f172a;
 }
 
 html[data-theme="light"] .nav-link.active {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(6, 182, 212, 0.08));
-  color: #2563eb;
-  border-color: rgba(59, 130, 246, 0.2);
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.15), rgba(234, 88, 12, 0.08));
+  color: #ea580c;
+  border-color: rgba(249, 115, 22, 0.2);
 }
 
 html[data-theme="light"] .data-table th {
@@ -591,7 +591,7 @@ html[data-theme="light"] .data-table td {
 }
 
 html[data-theme="light"] .data-table tr:hover td {
-  background: rgba(59, 130, 246, 0.04);
+  background: rgba(249, 115, 22, 0.04);
 }
 
 html[data-theme="light"] .modal-overlay {

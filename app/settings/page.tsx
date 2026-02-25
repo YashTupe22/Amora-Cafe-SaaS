@@ -28,7 +28,7 @@ export default function SettingsPage() {
         return [
             {
                 title: 'Business Profile',
-                icon: <Building2 size={16} color="#3b82f6" />,
+                icon: <Building2 size={16} color="#f97316" />,
                 fields: [
                     { key: 'businessName', label: 'Business Name', value: profileDraft.businessName, type: 'text' as const },
                     { key: 'email', label: 'Email Address', value: profileDraft.email, type: 'email' as const },
@@ -39,7 +39,7 @@ export default function SettingsPage() {
             },
             {
                 title: 'Account',
-                icon: <User size={16} color="#06b6d4" />,
+                icon: <User size={16} color="#ea580c" />,
                 fields: [
                     { key: 'adminName', label: 'Admin Name', value: currentUser?.name ?? '—', type: 'text' as const, readOnly: true },
                     { key: 'loginEmail', label: 'Login Email', value: currentUser?.email ?? '—', type: 'email' as const, readOnly: true },
@@ -85,7 +85,7 @@ export default function SettingsPage() {
                 {sections.map(sec => (
                     <div key={sec.title} className="glass-card" style={{ padding: 24 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
-                            <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(59,130,246,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(249,115,22,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 {sec.icon}
                             </div>
                             <h2 style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{sec.title}</h2>
@@ -198,11 +198,11 @@ export default function SettingsPage() {
                                         width: 44,
                                         height: 24,
                                         borderRadius: 12,
-                                        background: s.enabled ? 'linear-gradient(135deg, #3b82f6, #06b6d4)' : 'rgba(255,255,255,0.1)',
+                                        background: s.enabled ? 'linear-gradient(135deg, #f97316, #ea580c)' : 'rgba(255,255,255,0.1)',
                                         position: 'relative',
                                         cursor: s.canToggle ? 'pointer' : 'not-allowed',
                                         transition: 'background 0.2s',
-                                        boxShadow: s.enabled ? '0 0 10px rgba(59,130,246,0.4)' : 'none',
+                                        boxShadow: s.enabled ? '0 0 10px rgba(249,115,22,0.4)' : 'none',
                                     }}
                                     onClick={() => {
                                         if (!s.canToggle) return;

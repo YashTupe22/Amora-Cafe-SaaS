@@ -53,7 +53,7 @@ export default function OnboardingPage() {
                 {/* Brand header */}
                 <div style={{ textAlign: 'center', marginBottom: 36 }}>
                     <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-                        <div style={{ width: 38, height: 38, borderRadius: 10, background: 'linear-gradient(135deg, #3b82f6, #06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 18px rgba(59,130,246,0.45)' }}>
+                        <div style={{ width: 38, height: 38, borderRadius: 10, background: 'linear-gradient(135deg, #f97316, #ea580c)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 18px rgba(249,115,22,0.45)' }}>
                             <Zap size={18} color="white" />
                         </div>
                         <span style={{ fontSize: 16, fontWeight: 700, color: '#f1f5f9' }}>Synplix</span>
@@ -72,18 +72,18 @@ export default function OnboardingPage() {
                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
                                     <div style={{
                                         width: 40, height: 40, borderRadius: '50%',
-                                        background: done ? 'linear-gradient(135deg,#22c55e,#16a34a)' : active ? 'linear-gradient(135deg,#3b82f6,#06b6d4)' : 'rgba(255,255,255,0.06)',
-                                        border: `2px solid ${done ? '#22c55e' : active ? '#3b82f6' : 'rgba(255,255,255,0.12)'}`,
+                                        background: done ? 'linear-gradient(135deg,#22c55e,#16a34a)' : active ? 'linear-gradient(135deg,#f97316,#ea580c)' : 'rgba(255,255,255,0.06)',
+                                        border: `2px solid ${done ? '#22c55e' : active ? '#f97316' : 'rgba(255,255,255,0.12)'}`,
                                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                                         transition: 'all 0.3s ease',
-                                        boxShadow: active ? '0 0 20px rgba(59,130,246,0.4)' : done ? '0 0 14px rgba(34,197,94,0.3)' : 'none',
+                                        boxShadow: active ? '0 0 20px rgba(249,115,22,0.4)' : done ? '0 0 14px rgba(34,197,94,0.3)' : 'none',
                                     }}>
                                         {done ? <Check size={16} color="white" /> : <s.icon size={16} color={active ? 'white' : '#475569'} />}
                                     </div>
-                                    <span style={{ fontSize: 11, color: active ? '#60a5fa' : done ? '#22c55e' : '#475569', fontWeight: 600, whiteSpace: 'nowrap' }}>{s.label}</span>
+                                    <span style={{ fontSize: 11, color: active ? '#fb923c' : done ? '#22c55e' : '#475569', fontWeight: 600, whiteSpace: 'nowrap' }}>{s.label}</span>
                                 </div>
                                 {idx < STEPS.length - 1 && (
-                                    <div style={{ width: 60, height: 2, background: idx < step ? 'linear-gradient(90deg,#22c55e,#3b82f6)' : 'rgba(255,255,255,0.08)', marginBottom: 20, transition: 'background 0.4s ease' }} />
+                                    <div style={{ width: 60, height: 2, background: idx < step ? 'linear-gradient(90deg,#22c55e,#f97316)' : 'rgba(255,255,255,0.08)', marginBottom: 20, transition: 'background 0.4s ease' }} />
                                 )}
                             </div>
                         );

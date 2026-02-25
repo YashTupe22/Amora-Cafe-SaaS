@@ -64,7 +64,7 @@ function DashboardContent() {
     return (
         <AppLayout
             title="Dashboard"
-            subtitle="Welcome back — here's what's happening today."
+            subtitle="Welcome to Synplix — here's today's snapshot."
         >
             {showWelcome && currentUser && (
                 <div
@@ -136,18 +136,18 @@ function DashboardContent() {
                 }}
             >
                 <StatCard
-                    label="Total Revenue"
+                    label="Total Sales"
                     value={formatCurrency(dashboard.totalRevenue)}
-                    sub="All paid invoices"
+                    sub="All paid bills"
                     trend={dashboard.netProfit >= 0 ? 'up' : 'down'}
                     trendValue=""
-                    iconBg="linear-gradient(135deg, rgba(59,130,246,0.3), rgba(59,130,246,0.1))"
-                    icon={<DollarSign size={20} color="#3b82f6" />}
+                    iconBg="linear-gradient(135deg, rgba(249,115,22,0.3), rgba(249,115,22,0.1))"
+                    icon={<DollarSign size={20} color="#f97316" />}
                 />
                 <StatCard
                     label="Total Expenses"
                     value={formatCurrency(dashboard.totalExpenses)}
-                    sub="All expense transactions"
+                    sub="Kitchen & operations"
                     trend="neutral"
                     trendValue=""
                     iconBg="linear-gradient(135deg, rgba(239,68,68,0.3), rgba(239,68,68,0.1))"
@@ -156,16 +156,16 @@ function DashboardContent() {
                 <StatCard
                     label="Net Profit"
                     value={formatCurrency(dashboard.netProfit)}
-                    sub="Revenue - Expenses"
+                    sub="Sales minus expenses"
                     trend={dashboard.netProfit >= 0 ? 'up' : 'down'}
                     trendValue=""
-                    iconBg="linear-gradient(135deg, rgba(245,158,11,0.3), rgba(245,158,11,0.1))"
-                    icon={<TrendingUp size={20} color="#f59e0b" />}
+                    iconBg="linear-gradient(135deg, rgba(34,197,94,0.3), rgba(34,197,94,0.1))"
+                    icon={<TrendingUp size={20} color="#22c55e" />}
                 />
                 <StatCard
-                    label="Pending Payments"
+                    label="Pending Bills"
                     value={formatCurrency(dashboard.pendingPayments)}
-                    sub="Unpaid invoices"
+                    sub="Unpaid bills"
                     trend="neutral"
                     trendValue=""
                     iconBg="linear-gradient(135deg, rgba(6,182,212,0.3), rgba(6,182,212,0.1))"
@@ -178,7 +178,7 @@ function DashboardContent() {
                 {/* Revenue Line Chart */}
                 <div className="glass-card" style={{ padding: 24 }}>
                     <div style={{ marginBottom: 20 }}>
-                        <h2 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>Revenue vs Expenses</h2>
+                        <h2 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>Sales vs Expenses</h2>
                         <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>Last 6 months (based on transactions)</p>
                     </div>
                     <ResponsiveContainer width="100%" height={260}>
@@ -190,7 +190,7 @@ function DashboardContent() {
                             <Line
                                 type="monotone"
                                 dataKey="revenue"
-                                name="Revenue"
+                                name="Sales"
                                 stroke="#3b82f6"
                                 strokeWidth={2.5}
                                 dot={{ r: 4, fill: '#3b82f6', strokeWidth: 0 }}
@@ -335,8 +335,8 @@ function DashboardContent() {
                 {/* Top Clients */}
                 <div className="glass-card" style={{ padding: 24 }}>
                     <div style={{ marginBottom: 16 }}>
-                        <h2 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>Top Clients</h2>
-                        <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>Ranked by total revenue</p>
+                        <h2 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>Top Customers (by Bill Value)</h2>
+                        <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>Ranked by total amount paid</p>
                     </div>
                     {(() => {
                         const clientMap = new Map<string, number>();
@@ -346,7 +346,7 @@ function DashboardContent() {
                         });
                         const sorted = Array.from(clientMap.entries()).sort((a, b) => b[1] - a[1]).slice(0, 5);
                         if (sorted.length === 0) return (
-                            <p style={{ fontSize: 13, color: 'var(--text-secondary)', paddingTop: 8 }}>No paid invoices yet.</p>
+                            <p style={{ fontSize: 13, color: 'var(--text-secondary)', paddingTop: 8 }}>No paid bills yet.</p>
                         );
                         const max = sorted[0][1];
                         return (

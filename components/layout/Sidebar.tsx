@@ -5,13 +5,14 @@ import { usePathname, useRouter } from 'next/navigation';
 import {
     LayoutDashboard,
     Users,
-    FileText,
+    ReceiptText,
     ArrowLeftRight,
     Wallet,
     Boxes,
     Settings,
     LogOut,
-    Zap,
+    UtensilsCrossed,
+    BookOpen,
     X,
 } from 'lucide-react';
 import clsx from 'clsx';
@@ -19,13 +20,14 @@ import { useAppStore } from '@/lib/appStore';
 import { useTranslation } from '@/lib/i18n';
 
 const NAV_ITEMS = [
-    { href: '/dashboard', key: 'nav.dashboard' as const, icon: LayoutDashboard },
+    { href: '/dashboard',  key: 'nav.dashboard'  as const, icon: LayoutDashboard },
     { href: '/attendance', key: 'nav.attendance' as const, icon: Users },
-    { href: '/invoices', key: 'nav.invoices' as const, icon: FileText },
+    { href: '/bills',      key: 'nav.bills'      as const, icon: ReceiptText },
+    { href: '/catalogue',  key: 'nav.catalogue'  as const, icon: BookOpen },
     { href: '/transactions', key: 'nav.transactions' as const, icon: ArrowLeftRight },
-    { href: '/inventory', key: 'nav.inventory' as const, icon: Boxes },
-    { href: '/expenses', key: 'nav.expenses' as const, icon: Wallet },
-    { href: '/settings', key: 'nav.settings' as const, icon: Settings },
+    { href: '/inventory',  key: 'nav.inventory'  as const, icon: Boxes },
+    { href: '/expenses',   key: 'nav.expenses'   as const, icon: Wallet },
+    { href: '/settings',   key: 'nav.settings'   as const, icon: Settings },
 ];
 
 interface SidebarProps {
@@ -52,12 +54,12 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
             {/* Logo */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 36, paddingLeft: 6 }}>
-                <div style={{ width: 34, height: 34, borderRadius: 10, background: 'linear-gradient(135deg, #3b82f6, #06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 18px rgba(59,130,246,0.5)', flexShrink: 0 }}>
-                    <Zap size={18} color="white" />
+                <div style={{ width: 34, height: 34, borderRadius: 10, background: 'linear-gradient(135deg, #f97316, #ef4444)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 18px rgba(249,115,22,0.5)', flexShrink: 0 }}>
+                    <UtensilsCrossed size={18} color="white" />
                 </div>
                 <div>
                     <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.2 }}>Synplix</div>
-                    <div style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.2 }}>Business Suite v1.1</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.2 }}>Cafe Suite v1.0</div>
                 </div>
             </div>
 

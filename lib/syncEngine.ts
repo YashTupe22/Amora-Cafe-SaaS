@@ -136,6 +136,9 @@ export async function fetchAndCacheFromFirebase(uid: string): Promise<void> {
       clientEmail: i.clientEmail ?? local?.clientEmail ?? '',
       clientPhone: i.clientPhone ?? local?.clientPhone ?? '',
       clientAddress: i.clientAddress ?? local?.clientAddress ?? '',
+      tableNo: i.tableNo ?? local?.tableNo ?? '',
+      orderType: i.orderType ?? local?.orderType ?? 'Dine-In',
+      paymentMode: i.paymentMode ?? local?.paymentMode ?? 'Cash',
       _uid: uid, _syncStatus: 'synced' as const,
       _createdAt: i.createdAt ?? local?._createdAt ?? now,
     };
@@ -226,6 +229,9 @@ export async function syncPendingToFirebase(uid: string): Promise<number> {
       clientEmail: inv.clientEmail ?? '',
       clientPhone: inv.clientPhone ?? '',
       clientAddress: inv.clientAddress ?? '',
+      tableNo: inv.tableNo ?? '',
+      orderType: inv.orderType ?? 'Dine-In',
+      paymentMode: inv.paymentMode ?? 'Cash',
       createdAt: inv._createdAt,
     });
     await localDb.invoices.update(inv.id, { _syncStatus: 'synced' });

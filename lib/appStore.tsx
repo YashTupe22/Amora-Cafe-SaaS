@@ -10,8 +10,15 @@ import {
   signOut as firebaseSignOut,
   onAuthStateChanged,
   updateProfile,
-  type User as FirebaseUser,
 } from 'firebase/auth';
+
+// Minimal session interface — satisfied by both FirebaseUser and local auth objects
+interface AppSession {
+  uid: string;
+  email: string | null;
+  displayName: string | null;
+  metadata: { creationTime?: string };
+}
 import {
   doc, getDoc, setDoc, updateDoc,
   collection, getDocs, deleteDoc,
@@ -26,7 +33,8 @@ import {
   syncPendingToFirebase,
   clearLocalData,
 } from './syncEngine';
-import type { Employee, InventoryItem, Invoice, InvoiceItem, Transaction } from './mockData';
+import type { CatalogueItem, Employee, InventoryItem, Invoice, InvoiceItem, Transaction } from './mockData';
+import { INITIAL_CATALOGUE } from './mockData';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -61,6 +69,10 @@ interface AddInvoiceInput {
   clientEmail?: string;
   clientPhone?: string;
   clientAddress?: string;
+  // Cafe-specific fields
+  tableNo?: string;
+  orderType?: string;
+  paymentMode?: string;
 }
 
 export interface UserAccount {
@@ -73,7 +85,7 @@ export interface UserAccount {
 
 interface AppStoreContextValue {
   ready: boolean;
-  session: FirebaseUser | null;
+  session: AppSession | null;
   profile: Profile | null;
   currentUser: UserAccount | null;
   data: {
@@ -81,6 +93,7 @@ interface AppStoreContextValue {
     invoices: Invoice[];
     transactions: Transaction[];
     inventory: InventoryItem[];
+    catalogue: CatalogueItem[];
     businessProfile: { businessName: string; email: string; phone: string; gst: string; address: string };
     preferences: { emailNotifications: boolean; darkMode: boolean; currency: string; twoFactorAuth: boolean };
   };
@@ -95,6 +108,7 @@ interface AppStoreContextValue {
   toggleInvoiceStatus: (id: string) => void;
   updateEmployees: (updater: (prev: Employee[]) => Employee[]) => void;
   updateInventory: (updater: (prev: InventoryItem[]) => InventoryItem[]) => void;
+  updateCatalogue: (updater: (prev: CatalogueItem[]) => CatalogueItem[]) => void;
   updateBusinessProfile: (p: { businessName: string; email: string; phone: string; gst: string; address: string }) => void;
   updatePreferences: (p: { emailNotifications: boolean; darkMode: boolean; currency: string; twoFactorAuth: boolean }) => void;
   deleteEmployee: (id: string) => void;
@@ -118,8 +132,10 @@ const AppStoreContext = createContext<AppStoreContextValue | null>(null);
 
 // ─── Firestore helpers ────────────────────────────────────────────────────────
 
-const userCol = (uid: string, col: string) => collection(db, 'users', uid, col);
-const userDoc = (uid: string)               => doc(db, 'users', uid);
+const userCol = (uid: string, col: string) => collection(db!, 'users', uid, col);
+const userDoc = (uid: string)               => doc(db!, 'users', uid);
+// canSync: only attempt Firestore writes when db is initialised AND online
+const canSync  = () => Boolean(db) && typeof navigator !== 'undefined' && navigator.onLine;
 
 // ─── Load all data for a user ─────────────────────────────────────────────────
 
@@ -163,6 +179,9 @@ async function loadUserData(userId: string) {
       clientEmail: inv.clientEmail ?? '',
       clientPhone: inv.clientPhone ?? '',
       clientAddress: inv.clientAddress ?? '',
+      tableNo: inv.tableNo ?? '',
+      orderType: inv.orderType ?? 'Dine-In',
+      paymentMode: inv.paymentMode ?? 'Cash',
     };
   });
 
@@ -257,12 +276,21 @@ function computeDashboard(invoices: Invoice[], transactions: Transaction[]) {
 // ─── Provider ─────────────────────────────────────────────────────────────────
 
 export function AppStoreProvider({ children }: { children: React.ReactNode }) {
-  const [session, setSession] = useState<FirebaseUser | null>(null);
+  const [session, setSession] = useState<AppSession | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
+  const [catalogue, setCatalogue] = useState<CatalogueItem[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('amora-catalogue');
+        if (stored) return JSON.parse(stored) as CatalogueItem[];
+      } catch { /* ignore */ }
+    }
+    return INITIAL_CATALOGUE;
+  });
   const [ready, setReady] = useState(false);
   const [isOnline, setIsOnline] = useState(
     typeof navigator !== 'undefined' ? navigator.onLine : true
@@ -306,6 +334,14 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const updateCatalogue = useCallback((updater: (prev: CatalogueItem[]) => CatalogueItem[]) => {
+    setCatalogue(prev => {
+      const next = updater(prev);
+      try { localStorage.setItem('amora-catalogue', JSON.stringify(next)); } catch { /* ignore */ }
+      return next;
+    });
+  }, []);
+
   const clearData = useCallback(() => {
     uidRef.current = undefined;
     setProfile(null);
@@ -320,20 +356,49 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     let readySet = false;
     const markReady = () => { if (!readySet) { readySet = true; setReady(true); } };
 
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setSession(user);
-      if (user) {
-        uidRef.current = user.uid;
-        markReady();
-        await refresh(user.uid);
-      } else {
-        clearData();
-        markReady();
-      }
-    });
-
     // Safety net: never leave the user on a blank loading screen
     const timeout = setTimeout(markReady, 5000);
+
+    // If Firebase failed to initialise, fall back to a locally-stored session.
+    if (!auth) {
+      const localUid = sessionStorage.getItem('amora-local-uid');
+      if (localUid) {
+        localDb.users.get(localUid).then(user => {
+          if (user) {
+            setSession({ uid: user.id, email: user.email, displayName: user.name, metadata: { creationTime: user.createdAt } });
+            uidRef.current = user.id;
+            refresh(user.id).finally(markReady);
+          } else {
+            sessionStorage.removeItem('amora-local-uid');
+            markReady();
+          }
+        }).catch(() => markReady());
+      } else {
+        markReady();
+      }
+      return () => { clearTimeout(timeout); };
+    }
+
+    const unsubscribe = onAuthStateChanged(
+      auth,
+      async (user) => {
+        setSession(user);
+        if (user) {
+          uidRef.current = user.uid;
+          markReady();
+          await refresh(user.uid);
+        } else {
+          clearData();
+          markReady();
+        }
+      },
+      // Error handler: prevents unhandled Firebase errors (e.g. auth/invalid-api-key)
+      // from propagating as uncaught React runtime errors.
+      (error) => {
+        console.warn('[Firebase] Auth listener error:', error.message);
+        markReady();
+      },
+    );
 
     return () => { unsubscribe(); clearTimeout(timeout); };
   }, [refresh, clearData]);
@@ -392,47 +457,84 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
   // ── Auth ──────────────────────────────────────────────────────────────────
 
   const login = useCallback(async (email: string, password: string) => {
+    // ── Firebase path ───────────────────────────────────────────────────────
+    if (auth) {
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        return { ok: true };
+      } catch (e: any) {
+        const msg: string = e?.message ?? 'Login failed.';
+        return { ok: false, error: msg.replace('Firebase: ', '').replace(/ \(auth\/.*\)\.?/, '') };
+      }
+    }
+    // ── Local auth fallback (Firebase unavailable) ──────────────────────────
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const user = await localDb.users.where('email').equals(email.trim().toLowerCase()).first();
+      if (!user || user.password !== password) {
+        return { ok: false, error: 'Invalid email or password.' };
+      }
+      const appSession: AppSession = { uid: user.id, email: user.email, displayName: user.name, metadata: { creationTime: user.createdAt } };
+      setSession(appSession);
+      uidRef.current = user.id;
+      sessionStorage.setItem('amora-local-uid', user.id);
+      refresh(user.id).catch(console.error);
       return { ok: true };
     } catch (e: any) {
-      const msg: string = e?.message ?? 'Login failed.';
-      return { ok: false, error: msg.replace('Firebase: ', '').replace(/ \(auth\/.*\)\.?/, '') };
+      return { ok: false, error: 'Login failed. Please try again.' };
     }
-  }, []);
+  }, [refresh]);
 
   const signup = useCallback(async (name: string, email: string, password: string) => {
+    // ── Firebase path ───────────────────────────────────────────────────────
+    if (auth) {
+      try {
+        const cred = await createUserWithEmailAndPassword(auth, email, password);
+        await updateProfile(cred.user, { displayName: name });
+        await setDoc(userDoc(cred.user.uid), {
+          name, email, businessName: '', phone: '', gst: '', address: '',
+          currency: 'INR', emailNotifications: true, darkMode: true,
+          twoFactorAuth: false, onboardingComplete: false,
+        });
+        return { ok: true };
+      } catch (e: any) {
+        const msg: string = e?.message ?? 'Signup failed.';
+        return { ok: false, error: msg.replace('Firebase: ', '').replace(/ \(auth\/.*\)\.?/, '') };
+      }
+    }
+    // ── Local auth fallback (Firebase unavailable) ──────────────────────────
     try {
-      const cred = await createUserWithEmailAndPassword(auth, email, password);
-      await updateProfile(cred.user, { displayName: name });
-      // Create the profile document in Firestore
-      await setDoc(userDoc(cred.user.uid), {
-        name,
-        email,
-        businessName: '',
-        phone: '',
-        gst: '',
-        address: '',
-        currency: 'INR',
-        emailNotifications: true,
-        darkMode: true,
-        twoFactorAuth: false,
-        onboardingComplete: false,
+      const normalizedEmail = email.trim().toLowerCase();
+      const existing = await localDb.users.where('email').equals(normalizedEmail).first();
+      if (existing) return { ok: false, error: 'An account with this email already exists.' };
+      const uid = crypto.randomUUID();
+      const createdAt = new Date().toISOString();
+      await localDb.users.put({ id: uid, name: name.trim(), email: normalizedEmail, password, createdAt });
+      await localDb.profile.put({
+        id: uid, name: name.trim(), email: normalizedEmail,
+        businessName: '', phone: '', gst: '', address: '',
+        currency: 'INR', emailNotifications: true, darkMode: true,
+        twoFactorAuth: false, onboardingComplete: false, _syncStatus: 'pending',
       });
+      const appSession: AppSession = { uid, email: normalizedEmail, displayName: name.trim(), metadata: { creationTime: createdAt } };
+      setSession(appSession);
+      uidRef.current = uid;
+      sessionStorage.setItem('amora-local-uid', uid);
+      refresh(uid).catch(console.error);
       return { ok: true };
     } catch (e: any) {
-      const msg: string = e?.message ?? 'Signup failed.';
-      return { ok: false, error: msg.replace('Firebase: ', '').replace(/ \(auth\/.*\)\.?/, '') };
+      return { ok: false, error: 'Sign up failed. Please try again.' };
     }
-  }, []);
+  }, [refresh]);
 
   const loginDemo = useCallback(() => { }, []);
 
   const logout = useCallback(() => {
     const uid = uidRef.current;
     if (uid) clearLocalData(uid).catch(console.error);
-    firebaseSignOut(auth).catch(err => console.error('signOut:', err));
-  }, []);
+    if (auth) firebaseSignOut(auth).catch(err => console.error('signOut:', err));
+    sessionStorage.removeItem('amora-local-uid');
+    clearData();
+  }, [clearData]);
 
   // ── Onboarding ────────────────────────────────────────────────────────────
 
@@ -441,13 +543,14 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
   }) => {
     const uid = uidRef.current;
     if (!uid) return;
-    await updateDoc(userDoc(uid), {
-      businessName: info.businessName,
-      phone: info.phone,
-      gst: info.gst,
-      address: info.address,
-      onboardingComplete: true,
-    });
+    // Always update local DB first
+    await localDb.profile.update(uid, { ...info, onboardingComplete: true, _syncStatus: 'pending' }).catch(console.error);
+    // Sync to Firestore if available
+    if (canSync()) {
+      updateDoc(userDoc(uid), { ...info, onboardingComplete: true })
+        .then(() => localDb.profile.update(uid, { _syncStatus: 'synced' }))
+        .catch(console.error);
+    }
     setProfile(prev => prev ? { ...prev, ...info, onboardingComplete: true } : prev);
   }, []);
 
@@ -463,7 +566,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     // 2. Write local DB (pending)
     localDb.transactions.put({ ...tx, _uid: uid, _syncStatus: 'pending' }).catch(console.error);
     // 3. Try Firestore; on success mark synced
-    if (typeof navigator !== 'undefined' && navigator.onLine) {
+    if (canSync()) {
       setDoc(doc(userCol(uid, 'transactions'), id), {
         type: input.type, category: input.category,
         amount: input.amount, date: input.date, note: input.note,
@@ -478,7 +581,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     const uid = uidRef.current;
     if (!uid) return;
     const id = crypto.randomUUID();
-    const invoiceNo = `INV-${String(invoiceCountRef.current + 1).padStart(3, '0')}`;
+    const invoiceNo = `BILL-${String(invoiceCountRef.current + 1).padStart(3, '0')}`;
     invoiceCountRef.current += 1;
     const invoice: Invoice = {
       id, invoiceNo, client: input.client,
@@ -487,6 +590,9 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       clientEmail: input.clientEmail ?? '',
       clientPhone: input.clientPhone ?? '',
       clientAddress: input.clientAddress ?? '',
+      tableNo: input.tableNo ?? '',
+      orderType: (input.orderType as Invoice['orderType']) ?? 'Dine-In',
+      paymentMode: (input.paymentMode as Invoice['paymentMode']) ?? 'Cash',
     };
     const createdAt = new Date().toISOString();
     // 1. Update state immediately
@@ -494,7 +600,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     // 2. Write local DB (pending)
     localDb.invoices.put({ ...invoice, _uid: uid, _syncStatus: 'pending', _createdAt: createdAt }).catch(console.error);
     // 3. Try Firestore
-    if (typeof navigator !== 'undefined' && navigator.onLine) {
+    if (canSync()) {
       setDoc(doc(userCol(uid, 'invoices'), id), {
         invoiceNo, client: input.client,
         date: input.date, dueDate: input.dueDate || input.date,
@@ -502,6 +608,9 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
         clientEmail: input.clientEmail ?? '',
         clientPhone: input.clientPhone ?? '',
         clientAddress: input.clientAddress ?? '',
+        tableNo: input.tableNo ?? '',
+        orderType: input.orderType ?? 'Dine-In',
+        paymentMode: input.paymentMode ?? 'Cash',
       }).then(() => localDb.invoices.update(id, { _syncStatus: 'synced' }).catch(console.error))
         .catch(() => console.warn('[Offline] Invoice queued for sync'));
     }
@@ -523,10 +632,13 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
         ...(input.clientEmail !== undefined ? { clientEmail: input.clientEmail } : {}),
         ...(input.clientPhone !== undefined ? { clientPhone: input.clientPhone } : {}),
         ...(input.clientAddress !== undefined ? { clientAddress: input.clientAddress } : {}),
+        ...(input.tableNo !== undefined ? { tableNo: input.tableNo } : {}),
+        ...(input.orderType !== undefined ? { orderType: input.orderType as Invoice['orderType'] } : {}),
+        ...(input.paymentMode !== undefined ? { paymentMode: input.paymentMode as Invoice['paymentMode'] } : {}),
         ...(input.status !== undefined ? { status: input.status } : {}),
       };
       localDb.invoices.update(id, { ...updated, _syncStatus: 'pending' }).catch(console.error);
-      if (typeof navigator !== 'undefined' && navigator.onLine) {
+      if (canSync()) {
         updateDoc(doc(userCol(uid, 'invoices'), id), {
           client: updated.client,
           date: updated.date,
@@ -535,6 +647,9 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
           clientEmail: updated.clientEmail ?? '',
           clientPhone: updated.clientPhone ?? '',
           clientAddress: updated.clientAddress ?? '',
+          tableNo: updated.tableNo ?? '',
+          orderType: updated.orderType ?? 'Dine-In',
+          paymentMode: updated.paymentMode ?? 'Cash',
         }).then(() => localDb.invoices.update(id, { _syncStatus: 'synced' }).catch(console.error))
           .catch(() => console.warn('[Offline] Invoice update queued'));
       }
@@ -554,7 +669,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       const nextStatus: Invoice['status'] = isPaid ? 'Pending' : 'Paid';
       // Local DB: mark invoice status pending
       localDb.invoices.update(id, { status: nextStatus, _syncStatus: 'pending' }).catch(console.error);
-      if (typeof navigator !== 'undefined' && navigator.onLine) {
+      if (canSync()) {
         updateDoc(doc(userCol(uid, 'invoices'), id), { status: nextStatus })
           .then(() => localDb.invoices.update(id, { _syncStatus: 'synced' }).catch(console.error))
           .catch(() => console.warn('[Offline] Invoice status queued'));
@@ -563,13 +678,14 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
         const total = target.items.reduce((s, i) => s + i.qty * i.price, 0);
         const txId = crypto.randomUUID();
         const tx: Transaction = {
-          id: txId, type: 'Income', category: 'Client Payment', amount: total,
+          id: txId, type: 'Income', category: 'Bill Sales', amount: total,
           date: localDate(),
-          note: `${target.invoiceNo} — ${target.client}`,
+          note: `${target.invoiceNo} — ${target.tableNo ?? target.client}`,
+
         };
         setTransactions(p => [tx, ...p]);
         localDb.transactions.put({ ...tx, _uid: uid, _syncStatus: 'pending' }).catch(console.error);
-        if (typeof navigator !== 'undefined' && navigator.onLine) {
+        if (canSync()) {
           setDoc(doc(userCol(uid, 'transactions'), txId), {
             type: 'Income', category: 'Client Payment', amount: total,
             date: tx.date, note: tx.note,
@@ -595,7 +711,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     for (const emp of next) {
       if (!prevIds.has(emp.id)) {
         localDb.employees.put({ ...emp, _uid: uid, _syncStatus: 'pending', _createdAt: now }).catch(console.error);
-        if (typeof navigator !== 'undefined' && navigator.onLine) {
+        if (canSync()) {
           setDoc(doc(userCol(uid, 'employees'), emp.id), {
             name: emp.name, role: emp.role, avatar: emp.avatar,
             attendance: emp.attendance ?? {},
@@ -628,7 +744,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
             _syncStatus: 'pending' as const,
           };
           localDb.employees.update(emp.id, updateData).catch(console.error);
-          if (typeof navigator !== 'undefined' && navigator.onLine) {
+          if (canSync()) {
             updateDoc(doc(userCol(uid, 'employees'), emp.id), {
               name: emp.name,
               role: emp.role,
@@ -664,7 +780,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     for (const item of next) {
       if (!prevIds.has(item.id)) {
         localDb.inventory.put({ ...item, _uid: uid, _syncStatus: 'pending', _createdAt: now }).catch(console.error);
-        if (typeof navigator !== 'undefined' && navigator.onLine) {
+        if (canSync()) {
           setDoc(doc(userCol(uid, 'inventory'), item.id), {
             name: item.name, sku: item.sku, category: item.category, unit: item.unit,
             openingQty: item.openingQty, currentQty: item.currentQty,
@@ -682,7 +798,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
           reorderLevel:  item.reorderLevel,
           _syncStatus: 'pending',
         }).catch(console.error);
-        if (typeof navigator !== 'undefined' && navigator.onLine) {
+        if (canSync()) {
           updateDoc(doc(userCol(uid, 'inventory'), item.id), {
             openingQty:    item.openingQty,
             currentQty:    item.currentQty,
@@ -703,7 +819,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     if (!uid) return;
     setProfile(prev => prev ? { ...prev, ...p } : prev);
     localDb.profile.where('id').equals(uid).modify({ ...p, _syncStatus: 'pending' }).catch(console.error);
-    if (typeof navigator !== 'undefined' && navigator.onLine) {
+    if (canSync()) {
       updateDoc(userDoc(uid), { businessName: p.businessName, email: p.email, phone: p.phone, gst: p.gst, address: p.address })
         .then(() => localDb.profile.where('id').equals(uid).modify({ _syncStatus: 'synced' }).catch(console.error))
         .catch(() => console.warn('[Offline] Business profile queued'));
@@ -715,7 +831,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     if (!uid) return;
     setProfile(prev => prev ? { ...prev, emailNotifications: p.emailNotifications, darkMode: p.darkMode, currency: p.currency, twoFactorAuth: p.twoFactorAuth } : prev);
     localDb.profile.where('id').equals(uid).modify({ ...p, _syncStatus: 'pending' }).catch(console.error);
-    if (typeof navigator !== 'undefined' && navigator.onLine) {
+    if (canSync()) {
       updateDoc(userDoc(uid), { emailNotifications: p.emailNotifications, darkMode: p.darkMode, currency: p.currency, twoFactorAuth: p.twoFactorAuth })
         .then(() => localDb.profile.where('id').equals(uid).modify({ _syncStatus: 'synced' }).catch(console.error))
         .catch(() => console.warn('[Offline] Preferences queued'));
@@ -734,7 +850,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     empRef.current = empRef.current.filter(e => e.id !== id);
     setEmployees(prev => prev.filter(e => e.id !== id));
     localDb.employees.delete(id).catch(console.error);
-    if (uid && typeof navigator !== 'undefined' && navigator.onLine) {
+    if (uid && canSync()) {
       deleteDoc(doc(userCol(uid, 'employees'), id)).catch(console.error);
     }
   }, []);
@@ -743,7 +859,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     const uid = uidRef.current;
     setInvoices(prev => prev.filter(i => i.id !== id));
     localDb.invoices.delete(id).catch(console.error);
-    if (uid && typeof navigator !== 'undefined' && navigator.onLine) {
+    if (uid && canSync()) {
       deleteDoc(doc(userCol(uid, 'invoices'), id)).catch(console.error);
     }
   }, []);
@@ -752,7 +868,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     const uid = uidRef.current;
     setTransactions(prev => prev.filter(t => t.id !== id));
     localDb.transactions.delete(id).catch(console.error);
-    if (uid && typeof navigator !== 'undefined' && navigator.onLine) {
+    if (uid && canSync()) {
       deleteDoc(doc(userCol(uid, 'transactions'), id)).catch(console.error);
     }
   }, []);
@@ -762,7 +878,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     invtRef.current = invtRef.current.filter(i => i.id !== id);
     setInventory(prev => prev.filter(i => i.id !== id));
     localDb.inventory.delete(id).catch(console.error);
-    if (uid && typeof navigator !== 'undefined' && navigator.onLine) {
+    if (uid && canSync()) {
       deleteDoc(doc(userCol(uid, 'inventory'), id)).catch(console.error);
     }
   }, []);
@@ -770,28 +886,36 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
   const resetBusinessData = useCallback(() => {
     const uid = uidRef.current;
     if (!uid) return;
-    const deleteAll = async (colName: string) => {
-      const snaps = await getDocs(userCol(uid, colName));
-      const batch = writeBatch(db);
-      snaps.docs.forEach(d => batch.delete(d.ref));
-      await batch.commit();
-    };
+    // Clear local DB
     Promise.all([
-      deleteAll('employees'),
-      deleteAll('invoices'),
-      deleteAll('transactions'),
-      deleteAll('inventory'),
+      localDb.employees.where('_uid').equals(uid).delete(),
+      localDb.invoices.where('_uid').equals(uid).delete(),
+      localDb.transactions.where('_uid').equals(uid).delete(),
+      localDb.inventory.where('_uid').equals(uid).delete(),
     ]).then(() => {
       setEmployees([]); empRef.current = [];
       setInvoices([]); invoiceCountRef.current = 0;
       setTransactions([]);
       setInventory([]); invtRef.current = [];
     }).catch(err => console.error('resetBusinessData:', err));
+    // Also clear Firestore if available
+    if (canSync()) {
+      const deleteAll = async (colName: string) => {
+        const snaps = await getDocs(userCol(uid, colName));
+        const batch = writeBatch(db!);
+        snaps.docs.forEach(d => batch.delete(d.ref));
+        await batch.commit();
+      };
+      Promise.all([deleteAll('employees'), deleteAll('invoices'), deleteAll('transactions'), deleteAll('inventory')])
+        .catch(err => console.error('resetBusinessData Firestore:', err));
+    }
   }, []);
 
   const deleteCurrentAccount = useCallback(() => {
-    firebaseSignOut(auth).catch(err => console.error('deleteAccount signOut:', err));
-  }, []);
+    if (auth) firebaseSignOut(auth).catch(err => console.error('deleteAccount signOut:', err));
+    sessionStorage.removeItem('amora-local-uid');
+    clearData();
+  }, [clearData]);
 
   // ── Derived values ────────────────────────────────────────────────────────
 
@@ -814,6 +938,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     invoices,
     transactions,
     inventory,
+    catalogue,
     businessProfile: {
       businessName: profile?.businessName ?? '',
       email: profile?.email ?? '',
@@ -827,7 +952,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       currency: profile?.currency ?? 'INR',
       twoFactorAuth: profile?.twoFactorAuth ?? false,
     },
-  }), [employees, invoices, transactions, inventory, profile]);
+  }), [employees, invoices, transactions, inventory, catalogue, profile]);
 
   const dashboard = useMemo(() => computeDashboard(invoices, transactions), [invoices, transactions]);
 
@@ -836,7 +961,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     login, signup, loginDemo, logout,
     completeOnboarding,
     addTransaction, addInvoice, updateInvoice, toggleInvoiceStatus,
-    updateEmployees, updateInventory, updateBusinessProfile, updatePreferences,
+    updateEmployees, updateInventory, updateCatalogue, updateBusinessProfile, updatePreferences,
     deleteEmployee, deleteInvoice, deleteTransaction, deleteInventoryItem,
     resetBusinessData, deleteCurrentAccount,
     isOnline,
@@ -845,7 +970,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     ready, session, profile, currentUser, data,
     login, signup, loginDemo, logout, completeOnboarding,
     addTransaction, addInvoice, updateInvoice, toggleInvoiceStatus,
-    updateEmployees, updateInventory, updateBusinessProfile, updatePreferences,
+    updateEmployees, updateInventory, updateCatalogue, updateBusinessProfile, updatePreferences,
     deleteEmployee, deleteInvoice, deleteTransaction, deleteInventoryItem,
     resetBusinessData, deleteCurrentAccount, isOnline, dashboard,
   ]);

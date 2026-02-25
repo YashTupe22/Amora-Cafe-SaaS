@@ -42,6 +42,15 @@ export interface LocalProfile extends Profile {
   _syncStatus: 'synced' | 'pending';
 }
 
+// Local user account — used for auth when Firebase is unavailable
+export interface LocalUser {
+  id: string;       // UUID — acts as uid
+  name: string;
+  email: string;    // stored lowercase
+  password: string; // plain text, local-only
+  createdAt: string;
+}
+
 // ─── Database ─────────────────────────────────────────────────────────────────
 
 class SynplixDatabase extends Dexie {
@@ -50,6 +59,7 @@ class SynplixDatabase extends Dexie {
   transactions!: Table<LocalTransaction>;
   inventory!:    Table<LocalInventoryItem>;
   profile!:      Table<LocalProfile>;
+  users!:        Table<LocalUser>;
 
   constructor() {
     super('SynplixDB');
@@ -59,6 +69,15 @@ class SynplixDatabase extends Dexie {
       transactions: 'id, _uid, _syncStatus, date',
       inventory:    'id, _uid, _syncStatus, _createdAt',
       profile:      'id, _syncStatus',
+    });
+    // v2: add local users table for offline auth
+    this.version(2).stores({
+      employees:    'id, _uid, _syncStatus, _createdAt',
+      invoices:     'id, _uid, _syncStatus, _createdAt',
+      transactions: 'id, _uid, _syncStatus, date',
+      inventory:    'id, _uid, _syncStatus, _createdAt',
+      profile:      'id, _syncStatus',
+      users:        'id, &email',
     });
   }
 }

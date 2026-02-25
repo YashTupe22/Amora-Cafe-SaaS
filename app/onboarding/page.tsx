@@ -106,7 +106,7 @@ export default function OnboardingPage() {
                                     <input
                                         id="ob-business-name"
                                         className="dark-input"
-                                        placeholder="e.g. Synplix Consulting"
+                                        placeholder="e.g. Synplix"
                                         value={businessName}
                                         onChange={e => setBusinessName(e.target.value)}
                                         onKeyDown={e => e.key === 'Enter' && canProceed && handleNext()}

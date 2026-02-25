@@ -5,8 +5,8 @@ import { LanguageProvider } from "@/lib/i18n";
 import SwRegister from "@/components/SwRegister";
 
 export const metadata: Metadata = {
-  title: "Synplix — Business Dashboard",
-  description: "Modern SaaS business management platform for Synplix.",
+  title: "Synplix — Management",
+  description: "Business management platform by Synplix — bills, menu, staff & more.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,

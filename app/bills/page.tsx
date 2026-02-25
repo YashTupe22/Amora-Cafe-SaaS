@@ -8,6 +8,7 @@ import type { Invoice, InvoiceItem } from '@/lib/mockData';
 import { Plus, X, Eye, Check, ReceiptText, Edit2, Trash2 } from 'lucide-react';
 import { useAppStore } from '@/lib/appStore';
 import { localDate } from '@/lib/utils';
+import { sendBillEmail } from '@/lib/sendBillEmail';
 
 function getTotal(items: InvoiceItem[]) {
     return items.reduce((sum, i) => sum + i.qty * i.price, 0);
@@ -218,6 +219,7 @@ export default function BillsPage() {
     const { data, addInvoice, updateInvoice, toggleInvoiceStatus, deleteInvoice } = useAppStore();
     const bills = data.invoices;
     const catalogue = data.catalogue;
+    const businessProfile = data.businessProfile;
 
     const [showForm, setShowForm] = useState(false);
     const [editBill, setEditBill] = useState<Invoice | null>(null);
@@ -237,25 +239,22 @@ export default function BillsPage() {
     }));
 
     const handleCreate = (d: Parameters<typeof addInvoice>[0]) => {
-        const result = addInvoice(d);
+        const created = addInvoice(d);
         setShowForm(false);
-        // Send bill email if customer email is provided
-        if (d.clientEmail && result) {
-            fetch('/api/send-bill-email', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    to: d.clientEmail,
-                    customerName: d.client,
-                    invoiceNo: result.invoiceNo,
-                    date: d.date,
-                    items: d.items,
-                    paymentMode: d.paymentMode ?? 'Cash',
-                    orderType: d.orderType ?? 'Dine-In',
-                    tableNo: d.tableNo ?? '',
-                    billId: result.id,
-                }),
-            }).catch(err => console.error('[Email] Failed to send bill email:', err));
+
+        // Send confirmation email if customer email is provided
+        if (d.clientEmail) {
+            sendBillEmail({
+                customerName:  d.client || 'Customer',
+                customerEmail: d.clientEmail,
+                invoiceNo:     created.invoiceNo,
+                date:          d.date,
+                items:         d.items,
+                orderType:     d.orderType,
+                paymentMode:   d.paymentMode,
+                tableNo:       d.tableNo,
+                businessName:  businessProfile?.businessName || 'Synplix',
+            });
         }
     };
 

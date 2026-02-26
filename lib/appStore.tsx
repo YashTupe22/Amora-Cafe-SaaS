@@ -35,6 +35,8 @@ import {
 } from './syncEngine';
 import type { CatalogueItem, Employee, InventoryItem, Invoice, InvoiceItem, Transaction } from './mockData';
 import { INITIAL_CATALOGUE } from './mockData';
+import { hashPassword, comparePassword, isHashed } from './crypto';
+import { analytics, identifyUser, resetAnalytics, setDemoMode } from './analytics';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -386,6 +388,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
         if (user) {
           uidRef.current = user.uid;
           markReady();
+          identifyUser(user.uid, { email: user.email ?? '' });
           await refresh(user.uid);
         } else {
           clearData();
@@ -457,7 +460,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
   // ── Auth ──────────────────────────────────────────────────────────────────
 
   const login = useCallback(async (email: string, password: string) => {
-    // ── Firebase path ───────────────────────────────────────────────────────
+    // ── Firebase path ────────────────────────────────────────────────
     if (auth) {
       try {
         await signInWithEmailAndPassword(auth, email, password);
@@ -470,9 +473,19 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     // ── Local auth fallback (Firebase unavailable) ──────────────────────────
     try {
       const user = await localDb.users.where('email').equals(email.trim().toLowerCase()).first();
-      if (!user || user.password !== password) {
-        return { ok: false, error: 'Invalid email or password.' };
+      if (!user) return { ok: false, error: 'Invalid email or password.' };
+
+      // ── Migration: re-hash plain-text passwords left from pre-v2 ──────────
+      if (!isHashed(user.password)) {
+        // Only accept if the plain-text value still matches exactly
+        if (user.password !== password) return { ok: false, error: 'Invalid email or password.' };
+        const hashed = await hashPassword(password);
+        await localDb.users.update(user.id, { password: hashed }).catch(console.error);
+      } else {
+        const ok = await comparePassword(password, user.password);
+        if (!ok) return { ok: false, error: 'Invalid email or password.' };
       }
+
       const appSession: AppSession = { uid: user.id, email: user.email, displayName: user.name, metadata: { creationTime: user.createdAt } };
       setSession(appSession);
       uidRef.current = user.id;
@@ -508,7 +521,8 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       if (existing) return { ok: false, error: 'An account with this email already exists.' };
       const uid = crypto.randomUUID();
       const createdAt = new Date().toISOString();
-      await localDb.users.put({ id: uid, name: name.trim(), email: normalizedEmail, password, createdAt });
+      const hashedPw = await hashPassword(password);
+      await localDb.users.put({ id: uid, name: name.trim(), email: normalizedEmail, password: hashedPw, createdAt });
       await localDb.profile.put({
         id: uid, name: name.trim(), email: normalizedEmail,
         businessName: '', phone: '', gst: '', address: '',
@@ -526,13 +540,17 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     }
   }, [refresh]);
 
-  const loginDemo = useCallback(() => { }, []);
+  const loginDemo = useCallback(() => {
+    setDemoMode(true);
+    analytics.demoModeEntered();
+  }, []);
 
   const logout = useCallback(() => {
     const uid = uidRef.current;
     if (uid) clearLocalData(uid).catch(console.error);
     if (auth) firebaseSignOut(auth).catch(err => console.error('signOut:', err));
     sessionStorage.removeItem('amora-local-uid');
+    resetAnalytics();
     clearData();
   }, [clearData]);
 
@@ -710,6 +728,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     const now = new Date().toISOString();
     for (const emp of next) {
       if (!prevIds.has(emp.id)) {
+        analytics.employeeAdded({ role: emp.role });
         localDb.employees.put({ ...emp, _uid: uid, _syncStatus: 'pending', _createdAt: now }).catch(console.error);
         if (canSync()) {
           setDoc(doc(userCol(uid, 'employees'), emp.id), {

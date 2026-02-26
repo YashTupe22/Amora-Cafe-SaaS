@@ -3,6 +3,7 @@ import "./globals.css";
 import { AppStoreProvider } from "@/lib/appStore";
 import { LanguageProvider } from "@/lib/i18n";
 import SwRegister from "@/components/SwRegister";
+import PostHogProvider from "@/components/PostHogProvider";
 
 export const metadata: Metadata = {
   title: "Synplix — Management",
@@ -35,12 +36,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <AppStoreProvider>
-          <LanguageProvider>
-            <SwRegister />
-            {children}
-          </LanguageProvider>
-        </AppStoreProvider>
+        <PostHogProvider>
+          <AppStoreProvider>
+            <LanguageProvider>
+              <SwRegister />
+              {children}
+            </LanguageProvider>
+          </AppStoreProvider>
+        </PostHogProvider>
       </body>
     </html>
   );

@@ -2,6 +2,7 @@
 
 import { jsPDF } from 'jspdf';
 import type { Profile } from './appStore';
+import { analytics } from './analytics';
 
 interface DashboardSnapshot {
   totalRevenue: number;
@@ -60,5 +61,6 @@ export function exportDashboardPdf(dashboard: DashboardSnapshot, profile: Profil
   );
 
   doc.save(`synplix-dashboard-${new Date().toISOString().slice(0, 10)}.pdf`);
+  analytics.invoiceExportedPdf();
 }
 

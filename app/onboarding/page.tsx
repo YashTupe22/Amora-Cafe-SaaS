@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Building2, Phone, FileText, MapPin, ArrowRight, Check, Zap } from 'lucide-react';
 import { useAppStore } from '@/lib/appStore';
+import { analytics } from '@/lib/analytics';
 
 const STEPS = [
     { id: 1, label: 'Business', icon: Building2, title: 'What\'s your business name?', subtitle: 'This will appear on your invoices and reports.' },
@@ -36,6 +37,7 @@ export default function OnboardingPage() {
     const handleFinish = async () => {
         setSaving(true);
         await completeOnboarding({ businessName: businessName || 'My Business', phone, gst, address });
+        analytics.onboardingCompleted();
         setSaving(false);
         router.push('/dashboard');
     };

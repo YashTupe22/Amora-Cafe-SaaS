@@ -1,20 +1,158 @@
 rules_version = '2';
+
+// ────────────────────────────────────────────────────────────────────────────
+// Synplix — Production Firestore Security Rules
+// Deployed via: firebase deploy --only firestore:rules
+//
+// Data model:
+//   users/{uid}                        ← business profile / settings doc
+//   users/{uid}/employees/{docId}      ← staff records
+//   users/{uid}/invoices/{docId}       ← bills / invoices
+//   users/{uid}/transactions/{docId}   ← income & expense ledger
+//   users/{uid}/inventory/{docId}      ← stock items
+//   support_requests/{docId}           ← help-desk submissions
+// ────────────────────────────────────────────────────────────────────────────
+
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Each user can only read/write their own profile and subcollections
-    match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+    // ── Shared helpers ──────────────────────────────────────────────────────
 
-      match /{subcollection}/{docId} {
-        allow read, write: if request.auth != null && request.auth.uid == userId;
+    // True when the caller is authenticated and owns the resource.
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    // Reject documents larger than 500 KB to prevent abuse / bloat.
+    function notOversized() {
+      return request.resource.data.size() < 500000;
+    }
+
+    // ── User settings doc (users/{uid}) ─────────────────────────────────────
+    // Stores business profile, preferences, onboarding state.
+    match /users/{uid} {
+      // Owner-only read and write. No one else can see or mutate profiles.
+      allow read: if isOwner(uid);
+
+      allow create: if isOwner(uid)
+        && notOversized()
+        // Require the mandatory fields every new profile must have
+        && request.resource.data.keys().hasAll(['name', 'email', 'onboardingComplete'])
+        // Types: name must be a non-empty string
+        && request.resource.data.name is string
+        && request.resource.data.email is string;
+
+      allow update: if isOwner(uid)
+        && notOversized()
+        // Prevent changing the owner uid/email once the doc exists
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['id']));
+
+      // Hard delete not permitted from the client; use Firebase Admin SDK or
+      // the Firebase console for account deletion.
+      allow delete: if false;
+
+      // ── Employee sub-collection (users/{uid}/employees/{docId}) ───────────
+      match /employees/{docId} {
+        allow read: if isOwner(uid);
+
+        allow create: if isOwner(uid)
+          && notOversized()
+          && request.resource.data.keys().hasAll(['name', 'role', 'createdAt'])
+          && request.resource.data.name is string
+          && request.resource.data.role is string;
+
+        allow update: if isOwner(uid)
+          && notOversized();
+
+        allow delete: if isOwner(uid);
+      }
+
+      // ── Invoice sub-collection (users/{uid}/invoices/{docId}) ─────────────
+      match /invoices/{docId} {
+        allow read: if isOwner(uid);
+
+        allow create: if isOwner(uid)
+          && notOversized()
+          && request.resource.data.keys().hasAll(['invoiceNo', 'client', 'date', 'status', 'items', 'createdAt'])
+          && request.resource.data.client is string
+          && request.resource.data.status in ['Paid', 'Pending']
+          // items must be present and be a list
+          && request.resource.data.items is list;
+
+        allow update: if isOwner(uid)
+          && notOversized()
+          // Once created, invoiceNo should never change
+          && request.resource.data.invoiceNo == resource.data.invoiceNo
+          && request.resource.data.status in ['Paid', 'Pending'];
+
+        allow delete: if isOwner(uid);
+      }
+
+      // ── Transaction sub-collection (users/{uid}/transactions/{docId}) ─────
+      match /transactions/{docId} {
+        allow read: if isOwner(uid);
+
+        allow create: if isOwner(uid)
+          && notOversized()
+          && request.resource.data.keys().hasAll(['type', 'category', 'amount', 'date'])
+          && request.resource.data.type in ['Income', 'Expense']
+          && request.resource.data.amount is number
+          // Guard: amount must be a positive number greater than zero
+          && request.resource.data.amount > 0
+          && request.resource.data.category is string;
+
+        allow update: if isOwner(uid)
+          && notOversized()
+          && request.resource.data.amount is number
+          && request.resource.data.amount > 0;
+
+        allow delete: if isOwner(uid);
+      }
+
+      // ── Inventory sub-collection (users/{uid}/inventory/{docId}) ──────────
+      match /inventory/{docId} {
+        allow read: if isOwner(uid);
+
+        allow create: if isOwner(uid)
+          && notOversized()
+          && request.resource.data.keys().hasAll(['name', 'currentQty', 'createdAt'])
+          && request.resource.data.name is string
+          && request.resource.data.currentQty is number
+          && request.resource.data.currentQty >= 0;
+
+        allow update: if isOwner(uid)
+          && notOversized()
+          && request.resource.data.currentQty is number
+          && request.resource.data.currentQty >= 0;
+
+        allow delete: if isOwner(uid);
       }
     }
 
-    // Support requests: authenticated users can create only
+    // ── Support requests (support_requests/{docId}) ─────────────────────────
+    // Any authenticated user can CREATE a support request.
+    // Read, update, and delete are disabled for all clients — admin only
+    // (accessible via Firebase Admin SDK or the Firebase console).
     match /support_requests/{docId} {
-      allow create: if request.auth != null;
+      allow create: if request.auth != null
+        && notOversized()
+        && request.resource.data.keys().hasAll(['name', 'email', 'message'])
+        && request.resource.data.name is string
+        && request.resource.data.email is string
+        && request.resource.data.message is string
+        // Guard: message must not be blank
+        && request.resource.data.message.size() > 0;
+
+      // Deny all client-side reads, updates, and deletes
       allow read, update, delete: if false;
+    }
+
+    // ── Deny everything else ────────────────────────────────────────────────
+    // Belt-and-suspenders: any collection not explicitly matched above is
+    // inaccessible to all clients.
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }
+

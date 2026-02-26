@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useAppStore } from '@/lib/appStore';
 import { exportAppDataToExcel } from '@/lib/exportExcel';
 import { useTranslation, type Lang } from '@/lib/i18n';
+import { analytics } from '@/lib/analytics';
 
 type ProfileFieldKey = 'businessName' | 'email' | 'phone' | 'gst' | 'address';
 type AccountFieldKey = 'adminName' | 'loginEmail' | 'password';
@@ -159,7 +160,10 @@ export default function SettingsPage() {
                         </div>
                         <select
                             value={lang}
-                            onChange={e => setLang(e.target.value as Lang)}
+                            onChange={e => {
+                                setLang(e.target.value as Lang);
+                                analytics.languageSwitched(e.target.value);
+                            }}
                             className="dark-input"
                             style={{ padding: '6px 10px', fontSize: 13, width: 130 }}
                         >
@@ -207,7 +211,11 @@ export default function SettingsPage() {
                                     onClick={() => {
                                         if (!s.canToggle) return;
                                         if (s.key === 'emailNotifications') setPrefsDraft(p => ({ ...p, emailNotifications: !p.emailNotifications }));
-                                        if (s.key === 'twoFactorAuth') setPrefsDraft(p => ({ ...p, twoFactorAuth: !p.twoFactorAuth }));
+                                        if (s.key === 'twoFactorAuth') {
+                                            const next = !prefsDraft.twoFactorAuth;
+                                            setPrefsDraft(p => ({ ...p, twoFactorAuth: next }));
+                                            analytics.settings2faToggled(next);
+                                        }
                                     }}
                                 >
                                     <div

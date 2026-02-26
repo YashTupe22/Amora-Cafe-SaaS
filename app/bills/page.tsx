@@ -8,6 +8,7 @@ import type { Invoice, InvoiceItem } from '@/lib/mockData';
 import { Plus, X, Eye, Check, ReceiptText, Edit2, Trash2 } from 'lucide-react';
 import { useAppStore } from '@/lib/appStore';
 import { localDate } from '@/lib/utils';
+import { analytics } from '@/lib/analytics';
 
 function getTotal(items: InvoiceItem[]) {
     return items.reduce((sum, i) => sum + i.qty * i.price, 0);
@@ -238,6 +239,12 @@ export default function BillsPage() {
 
     const handleCreate = (d: Parameters<typeof addInvoice>[0]) => {
         addInvoice(d);
+        analytics.billCreated({
+            orderType:   d.orderType,
+            paymentMode: d.paymentMode,
+            itemCount:   d.items.filter(it => it.description.trim()).length,
+            total:       d.items.reduce((s, i) => s + i.qty * i.price, 0),
+        });
         setShowForm(false);
     };
 

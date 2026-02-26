@@ -2,6 +2,7 @@
 
 import type { Employee, InventoryItem, Invoice, Transaction } from './mockData';
 import * as XLSX from 'xlsx';
+import { analytics } from './analytics';
 
 type ExportData = {
   employees: Employee[];
@@ -116,5 +117,6 @@ export function exportAppDataToExcel(data: ExportData) {
   a.click();
   a.remove();
   window.URL.revokeObjectURL(url);
+  analytics.dataExportedExcel();
 }
 

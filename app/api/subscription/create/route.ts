@@ -65,6 +65,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 5. Create Razorpay subscription — pass customer_id so it is linked in Razorpay Dashboard
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const subscription = await razorpay.subscriptions.create({
       plan_id:          razorpayPlanId,
       customer_id:      customerId,
@@ -72,7 +73,7 @@ export async function POST(req: NextRequest) {
       quantity:         1,
       total_count:      billingCycle === 'annual' ? 1 : 12,
       notes:            { uid, plan, billingCycle },
-    });
+    } as any);
 
     // 6. Save pending subscription record to Firestore
     await subDocRef.set({

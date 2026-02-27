@@ -10,7 +10,6 @@
 import { useCallback } from 'react';
 import { useAppStore }   from '@/lib/appStore';
 import { canAccess, requiresUpgrade, minPlanFor, type PlanName } from '@/lib/planAccess';
-import { auth }          from '@/lib/firebase';
 
 export type { PlanName };
 
@@ -43,44 +42,14 @@ export interface UseSubscriptionReturn {
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 
 export function useSubscription(): UseSubscriptionReturn {
-  const { subscription } = useAppStore();
+  const { subscription, reloadSubscription } = useAppStore();
 
   const plan = (subscription?.plan ?? 'free') as PlanName;
 
   const refreshSubscription = useCallback(async () => {
-    try {
-      // Get a fresh Firebase ID token
-      const idToken = auth?.currentUser
-        ? await auth.currentUser.getIdToken(/* forceRefresh */ true)
-        : null;
-
-      if (!idToken) return; // not authenticated — nothing to refresh
-
-      const res = await fetch('/api/subscription/status', {
-        headers: { Authorization: `Bearer ${idToken}` },
-      });
-      if (!res.ok) return;
-
-      const data = await res.json() as {
-        plan:             string;
-        status:           string;
-        billingCycle:     string | null;
-        currentPeriodEnd: string | null;
-        cancelAtPeriodEnd: boolean;
-        razorpaySubId:    string | null;
-      };
-
-      // Push the fresh data into appStore by dispatching a custom event that
-      // appStore can listen to, OR — simpler: the caller (checkout page) will
-      // do a page navigation which re-triggers loadSubscription via onAuthStateChanged.
-      // For in-page refreshes we dispatch a storage event that triggers a re-read.
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('subscription-updated', { detail: data }));
-      }
-    } catch (e) {
-      console.warn('[useSubscription] refreshSubscription failed:', e);
-    }
-  }, []);
+    // Re-fetch from Firestore via appStore — updates React state immediately.
+    await reloadSubscription();
+  }, [reloadSubscription]);
 
   return {
     plan,

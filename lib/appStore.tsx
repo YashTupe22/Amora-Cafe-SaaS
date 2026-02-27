@@ -139,6 +139,8 @@ interface AppStoreContextValue {
   resetBusinessData: () => void;
   deleteCurrentAccount: () => void;
   isOnline: boolean;
+  /** Re-fetches the subscription document from Firestore and updates state. */
+  reloadSubscription: () => Promise<void>;
   dashboard: {
     totalRevenue: number;
     totalExpenses: number;
@@ -396,6 +398,11 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     setTransactions([]);
     setInventory([]); invtRef.current = [];
   }, []);
+
+  /** Public method — re-fetches subscription from Firestore for the current user. */
+  const reloadSubscription = useCallback(async () => {
+    if (uidRef.current) await loadSubscription(uidRef.current);
+  }, [loadSubscription]);
 
   // Firebase auth listener — fires immediately with cached user (no network needed)
   useEffect(() => {
@@ -1032,13 +1039,14 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     resetBusinessData, deleteCurrentAccount,
     isOnline,
     dashboard,
+    reloadSubscription,
   }), [
     ready, session, profile, currentUser, data,
     login, signup, loginDemo, logout, completeOnboarding,
     addTransaction, addInvoice, updateInvoice, toggleInvoiceStatus,
     updateEmployees, updateInventory, updateCatalogue, updateBusinessProfile, updatePreferences,
     deleteEmployee, deleteInvoice, deleteTransaction, deleteInventoryItem,
-    resetBusinessData, deleteCurrentAccount, isOnline, dashboard,
+    resetBusinessData, deleteCurrentAccount, isOnline, dashboard, reloadSubscription,
   ]);
 
   return <AppStoreContext.Provider value={value}>{children}</AppStoreContext.Provider>;

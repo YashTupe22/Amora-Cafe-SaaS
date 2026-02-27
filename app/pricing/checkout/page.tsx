@@ -15,6 +15,7 @@ import { useRouter, useSearchParams }                         from 'next/navigat
 import Link                                                   from 'next/link';
 import { auth }                                               from '@/lib/firebase';
 import { useAppStore }                                        from '@/lib/appStore';
+import { useSubscription }                                    from '@/hooks/useSubscription';
 import { PLAN_PRICING, type PlanName }                        from '@/lib/planAccess';
 
 // ─── Razorpay type shim ───────────────────────────────────────────────────────
@@ -86,6 +87,7 @@ function CheckoutFlow() {
   const router      = useRouter();
   const params      = useSearchParams();
   const { profile, subscription } = useAppStore();
+  const { refreshSubscription }   = useSubscription();
 
   const plan  = (params.get('plan')  ?? 'pro') as PlanName;
   const cycle = (params.get('cycle') ?? 'monthly') as 'monthly' | 'annual';
@@ -176,7 +178,9 @@ function CheckoutFlow() {
               return;
             }
             setStep('done');
-            // 6. Redirect to dashboard — onAuthStateChanged will reload subscription
+            // 6. Reload subscription in appStore so plan gates unlock immediately,
+            //    THEN navigate — no stale plan state on dashboard.
+            await refreshSubscription();
             setTimeout(() => {
               router.push(`/dashboard?upgraded=1&plan=${plan}`);
             }, 1000);

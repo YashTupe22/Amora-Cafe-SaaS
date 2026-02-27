@@ -1,9 +1,43 @@
 'use client';
 
-import { Bell, Search, Menu, LogOut, Settings, X, LayoutDashboard, FileText, ArrowLeftRight, Boxes, Users } from 'lucide-react';
+import { Bell, Search, Menu, LogOut, Settings, X, LayoutDashboard, FileText, ArrowLeftRight, Boxes, Users, CheckCircle, XCircle, CreditCard, TrendingDown, Info, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppStore } from '@/lib/appStore';
+import type { AppNotificationType } from '@/lib/appStore';
+
+// ── Notification helpers ─────────────────────────────────────────────────────
+
+function timeAgo(date: Date): string {
+  const s = Math.floor((Date.now() - date.getTime()) / 1000);
+  if (s < 60) return 'just now';
+  if (s < 3600) return `${Math.floor(s / 60)}m ago`;
+  if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
+  return `${Math.floor(s / 86400)}d ago`;
+}
+
+function notifIcon(type: AppNotificationType) {
+  const s = 15;
+  switch (type) {
+    case 'bill_paid':     return <CheckCircle  size={s} color="#22c55e" />;
+    case 'bill_cancelled':return <XCircle      size={s} color="#ef4444" />;
+    case 'subscription':  return <CreditCard   size={s} color="#a78bfa" />;
+    case 'new_bill':      return <FileText     size={s} color="#38bdf8" />;
+    case 'expense':       return <TrendingDown size={s} color="#f87171" />;
+    default:              return <Info         size={s} color="#94a3b8" />;
+  }
+}
+
+function notifAccent(type: AppNotificationType): string {
+  switch (type) {
+    case 'bill_paid':     return 'rgba(34,197,94,0.12)';
+    case 'bill_cancelled':return 'rgba(239,68,68,0.12)';
+    case 'subscription':  return 'rgba(167,139,250,0.12)';
+    case 'new_bill':      return 'rgba(56,189,248,0.12)';
+    case 'expense':       return 'rgba(248,113,113,0.12)';
+    default:              return 'rgba(255,255,255,0.06)';
+  }
+}
 
 interface TopBarProps {
     title: string;
@@ -21,20 +55,23 @@ interface SearchResult {
 
 export default function TopBar({ title, subtitle, onMenuToggle }: TopBarProps) {
     const router = useRouter();
-    const { profile, currentUser, data, logout, isOnline } = useAppStore();
+    const { profile, currentUser, data, logout, isOnline, notifications, unreadCount, markAllRead, dismissNotification } = useAppStore();
 
     const [query, setQuery] = useState('');
     const [showSearch, setShowSearch] = useState(false);
     const [showProfile, setShowProfile] = useState(false);
+    const [showNotifications, setShowNotifications] = useState(false);
 
     const profileRef = useRef<HTMLDivElement>(null);
     const searchRef = useRef<HTMLDivElement>(null);
+    const notifRef = useRef<HTMLDivElement>(null);
 
     // Close dropdowns on outside click
     useEffect(() => {
         const handler = (e: MouseEvent) => {
             if (profileRef.current && !profileRef.current.contains(e.target as Node)) setShowProfile(false);
             if (searchRef.current && !searchRef.current.contains(e.target as Node)) setShowSearch(false);
+            if (notifRef.current && !notifRef.current.contains(e.target as Node)) setShowNotifications(false);
         };
         document.addEventListener('mousedown', handler);
         return () => document.removeEventListener('mousedown', handler);
@@ -164,10 +201,81 @@ export default function TopBar({ title, subtitle, onMenuToggle }: TopBarProps) {
                 </div>
 
                 {/* ── Notification bell ── */}
-                <button style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative', color: '#94a3b8', flexShrink: 0 }}>
-                    <Bell size={16} />
-                    <span style={{ position: 'absolute', top: 7, right: 7, width: 7, height: 7, borderRadius: '50%', background: '#f97316', boxShadow: '0 0 6px rgba(249,115,22,0.8)' }} />
-                </button>
+                <div ref={notifRef} style={{ position: 'relative' }}>
+                    <button
+                        onClick={() => {
+                            setShowNotifications(p => !p);
+                            if (!showNotifications) markAllRead();
+                        }}
+                        style={{ width: 36, height: 36, borderRadius: 10, background: showNotifications ? 'rgba(249,115,22,0.12)' : 'rgba(255,255,255,0.05)', border: `1px solid ${showNotifications ? 'rgba(249,115,22,0.35)' : 'rgba(255,255,255,0.08)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative', color: '#94a3b8', flexShrink: 0, transition: 'all 0.2s' }}
+                        aria-label="Notifications"
+                    >
+                        <Bell size={16} />
+                        {unreadCount > 0 && (
+                            <span style={{ position: 'absolute', top: 6, right: 6, minWidth: 8, height: 8, borderRadius: '50%', background: '#f97316', boxShadow: '0 0 6px rgba(249,115,22,0.9)', fontSize: 9, fontWeight: 700, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: unreadCount > 9 ? '0 3px' : 0 }}>
+                                {unreadCount > 9 ? '9+' : ''}
+                            </span>
+                        )}
+                    </button>
+
+                    {showNotifications && (
+                        <div style={{ position: 'absolute', top: 'calc(100% + 10px)', right: 0, width: 340, background: '#111827', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 14, boxShadow: '0 20px 60px rgba(0,0,0,0.55)', zIndex: 100, overflow: 'hidden' }}>
+                            {/* Header */}
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px 10px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+                                <div>
+                                    <p style={{ fontSize: 13, fontWeight: 700, color: '#f1f5f9' }}>Notifications</p>
+                                    <p style={{ fontSize: 11, color: '#475569', marginTop: 1 }}>{notifications.length === 0 ? 'All caught up' : `${notifications.length} notification${notifications.length !== 1 ? 's' : ''}`}</p>
+                                </div>
+                                {notifications.length > 0 && (
+                                    <button
+                                        onClick={() => notifications.forEach(n => dismissNotification(n.id))}
+                                        style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', color: '#475569', fontSize: 11, padding: '4px 6px', borderRadius: 6, transition: 'color 0.15s' }}
+                                        onMouseEnter={e => (e.currentTarget.style.color = '#ef4444')}
+                                        onMouseLeave={e => (e.currentTarget.style.color = '#475569')}
+                                    >
+                                        <Trash2 size={12} /> Clear all
+                                    </button>
+                                )}
+                            </div>
+
+                            {/* List */}
+                            <div style={{ maxHeight: 380, overflowY: 'auto' }}>
+                                {notifications.length === 0 ? (
+                                    <div style={{ padding: '32px 16px', textAlign: 'center' }}>
+                                        <Bell size={28} color="#1e293b" style={{ margin: '0 auto 10px' }} />
+                                        <p style={{ fontSize: 13, color: '#334155', fontWeight: 600 }}>No notifications yet</p>
+                                        <p style={{ fontSize: 11, color: '#1e293b', marginTop: 4 }}>Bill payments, upgrades & more will appear here</p>
+                                    </div>
+                                ) : (
+                                    notifications.map(n => (
+                                        <div
+                                            key={n.id}
+                                            style={{ display: 'flex', alignItems: 'flex-start', gap: 11, padding: '11px 14px', borderBottom: '1px solid rgba(255,255,255,0.04)', background: n.read ? 'transparent' : 'rgba(249,115,22,0.03)', transition: 'background 0.15s' }}
+                                        >
+                                            <div style={{ width: 30, height: 30, borderRadius: 8, background: notifAccent(n.type), display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
+                                                {notifIcon(n.type)}
+                                            </div>
+                                            <div style={{ flex: 1, minWidth: 0 }}>
+                                                <p style={{ fontSize: 12, fontWeight: 600, color: '#f1f5f9', lineHeight: 1.3 }}>{n.title}</p>
+                                                <p style={{ fontSize: 11, color: '#64748b', marginTop: 2, lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.message}</p>
+                                                <p style={{ fontSize: 10, color: '#334155', marginTop: 3 }}>{timeAgo(n.createdAt)}</p>
+                                            </div>
+                                            <button
+                                                onClick={() => dismissNotification(n.id)}
+                                                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#334155', padding: 2, borderRadius: 4, flexShrink: 0, display: 'flex', transition: 'color 0.15s' }}
+                                                onMouseEnter={e => (e.currentTarget.style.color = '#94a3b8')}
+                                                onMouseLeave={e => (e.currentTarget.style.color = '#334155')}
+                                                aria-label="Dismiss"
+                                            >
+                                                <X size={12} />
+                                            </button>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </div>
 
                 {/* ── Profile avatar + dropdown ── */}
                 <div ref={profileRef} style={{ position: 'relative' }}>

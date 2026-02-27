@@ -73,6 +73,23 @@ export interface Subscription {
   razorpaySubId:     string | null;
 }
 
+export type AppNotificationType =
+  | 'bill_paid'
+  | 'bill_cancelled'
+  | 'subscription'
+  | 'new_bill'
+  | 'expense'
+  | 'info';
+
+export interface AppNotification {
+  id: string;
+  type: AppNotificationType;
+  title: string;
+  message: string;
+  createdAt: Date;
+  read: boolean;
+}
+
 interface AddTransactionInput {
   type: Transaction['type'];
   category: string;
@@ -141,6 +158,10 @@ interface AppStoreContextValue {
   isOnline: boolean;
   /** Re-fetches the subscription document from Firestore and updates state. */
   reloadSubscription: () => Promise<void>;
+  notifications: AppNotification[];
+  unreadCount: number;
+  markAllRead: () => void;
+  dismissNotification: (id: string) => void;
   dashboard: {
     totalRevenue: number;
     totalExpenses: number;
@@ -315,6 +336,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     return INITIAL_CATALOGUE;
   });
   const [subscription, setSubscription] = useState<Subscription | null>(null);
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [ready, setReady] = useState(false);
   const [isOnline, setIsOnline] = useState(
     typeof navigator !== 'undefined' ? navigator.onLine : true
@@ -325,6 +347,25 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
   const empRef = useRef<Employee[]>([]);
   const invtRef = useRef<InventoryItem[]>([]);
   const invoiceCountRef = useRef<number>(0);
+  const prevSubPlanRef = useRef<string>('');
+
+  // ── Notification helpers ────────────────────────────────────────────────
+  const addNotification = useCallback((n: Omit<AppNotification, 'id' | 'createdAt' | 'read'>) => {
+    setNotifications(prev => [{
+      ...n,
+      id: crypto.randomUUID(),
+      createdAt: new Date(),
+      read: false,
+    }, ...prev].slice(0, 50));
+  }, []);
+
+  const markAllRead = useCallback(() => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  }, []);
+
+  const dismissNotification = useCallback((id: string) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
+  }, []);
 
   const refresh = useCallback(async (uid: string) => {
     // ── Step 1: Load from IndexedDB immediately (works offline) ──────────
@@ -373,26 +414,41 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       const snap = await getDoc(doc(db, 'subscriptions', uid));
       if (snap.exists()) {
         const d = snap.data();
+        const plan: string = d.plan ?? 'free';
+        const status: string = d.status ?? 'active';
         setSubscription({
-          plan:             d.plan    ?? 'free',
-          status:           d.status  ?? 'active',
+          plan,
+          status:           status as SubscriptionStatus,
           billingCycle:     d.billingCycle  ?? null,
           currentPeriodEnd: d.currentPeriodEnd?.toDate?.() ?? null,
           cancelAtPeriodEnd: d.cancelAtPeriodEnd ?? false,
           razorpaySubId:    d.razorpaySubId ?? null,
         });
+        // Notify only when transitioning to a paid active plan
+        if (plan !== 'free' && status === 'active' && plan !== prevSubPlanRef.current) {
+          const planLabel = plan.charAt(0).toUpperCase() + plan.slice(1);
+          addNotification({
+            type: 'subscription',
+            title: `${planLabel} Plan Activated`,
+            message: `Your ${planLabel} subscription is now active. Enjoy your new features!`,
+          });
+        }
+        prevSubPlanRef.current = plan;
       } else {
         setSubscription({ plan: 'free', status: 'active', billingCycle: null, currentPeriodEnd: null, cancelAtPeriodEnd: false, razorpaySubId: null });
+        prevSubPlanRef.current = 'free';
       }
     } catch (e) {
       console.warn('[Subscription] Failed to load:', e);
     }
-  }, []);
+  }, [addNotification]);
 
   const clearData = useCallback(() => {
     uidRef.current = undefined;
     setProfile(null);
     setSubscription(null);
+    setNotifications([]);
+    prevSubPlanRef.current = '';
     setEmployees([]); empRef.current = [];
     setInvoices([]); invoiceCountRef.current = 0;
     setTransactions([]);
@@ -669,6 +725,11 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     const createdAt = new Date().toISOString();
     // 1. Update state immediately
     setInvoices(prev => [invoice, ...prev]);
+    addNotification({
+      type: 'new_bill',
+      title: 'New Bill Created',
+      message: `${invoiceNo} for ${input.client || input.tableNo || 'table'} — ${invoice.items.length} item${invoice.items.length !== 1 ? 's' : ''}`,
+    });
     // 2. Write local DB (pending)
     localDb.invoices.put({ ...invoice, _uid: uid, _syncStatus: 'pending', _createdAt: createdAt }).catch(console.error);
     // 3. Try Firestore
@@ -693,8 +754,18 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
   const updateInvoice = useCallback((id: string, input: Partial<AddInvoiceInput & { status: Invoice['status'] }>) => {
     const uid = uidRef.current;
     if (!uid) return;
+    // Capture notification intent before setInvoices (needs prev state)
+    let pendingNotif: Omit<AppNotification, 'id' | 'createdAt' | 'read'> | null = null;
     setInvoices(prev => prev.map(inv => {
       if (inv.id !== id) return inv;
+      // Only fire notification when status actually changes
+      if (input.status !== undefined && input.status !== inv.status) {
+        if (input.status === 'Paid') {
+          pendingNotif = { type: 'bill_paid', title: 'Bill Paid', message: `${inv.invoiceNo} (${inv.tableNo || inv.client}) marked as paid` };
+        } else if (input.status === 'Cancelled') {
+          pendingNotif = { type: 'bill_cancelled', title: 'Bill Cancelled', message: `${inv.invoiceNo} (${inv.tableNo || inv.client}) was cancelled` };
+        }
+      }
       const updated: Invoice = {
         ...inv,
         ...(input.client !== undefined ? { client: input.client } : {}),
@@ -728,9 +799,8 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       }
       return updated;
     }));
-  }, []);
-
-  // ── toggleInvoiceStatus ───────────────────────────────────────────────────
+    if (pendingNotif) addNotification(pendingNotif);
+  }, [addNotification]); ───────────────────────────────────────────────────
 
   const toggleInvoiceStatus = useCallback((id: string) => {
     const uid = uidRef.current;
@@ -749,6 +819,11 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       }
       if (!isPaid) {
         const total = target.items.reduce((s, i) => s + i.qty * i.price, 0);
+        addNotification({
+          type: 'bill_paid',
+          title: 'Bill Paid',
+          message: `${target.invoiceNo} (${target.tableNo || target.client}) — ₹${total.toLocaleString('en-IN')} received`,
+        });
         const txId = crypto.randomUUID();
         const tx: Transaction = {
           id: txId, type: 'Income', category: 'Bill Sales', amount: total,
@@ -768,7 +843,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       }
       return prev.map(i => i.id === id ? { ...i, status: nextStatus } : i);
     });
-  }, []);
+  }, [addNotification]);
 
   // ── updateEmployees (diff-sync with embedded attendance) ─────────────────
 
@@ -1030,6 +1105,8 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
 
   const dashboard = useMemo(() => computeDashboard(invoices, transactions), [invoices, transactions]);
 
+  const unreadCount = useMemo(() => notifications.filter(n => !n.read).length, [notifications]);
+
   const value = useMemo<AppStoreContextValue>(() => ({
     ready, session, profile, subscription, currentUser, data,
     login, signup, loginDemo, logout,
@@ -1041,6 +1118,10 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     isOnline,
     dashboard,
     reloadSubscription,
+    notifications,
+    unreadCount,
+    markAllRead,
+    dismissNotification,
   }), [
     ready, session, profile, currentUser, data,
     login, signup, loginDemo, logout, completeOnboarding,
@@ -1048,6 +1129,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     updateEmployees, updateInventory, updateCatalogue, updateBusinessProfile, updatePreferences,
     deleteEmployee, deleteInvoice, deleteTransaction, deleteInventoryItem,
     resetBusinessData, deleteCurrentAccount, isOnline, dashboard, reloadSubscription,
+    notifications, unreadCount, markAllRead, dismissNotification,
   ]);
 
   return <AppStoreContext.Provider value={value}>{children}</AppStoreContext.Provider>;

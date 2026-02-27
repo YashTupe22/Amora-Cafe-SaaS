@@ -47,7 +47,7 @@ export interface LocalUser {
   id: string;       // UUID — acts as uid
   name: string;
   email: string;    // stored lowercase
-  password: string; // plain text, local-only
+  password: string; // bcrypt hash (via lib/crypto.ts) — never stored plain text
   createdAt: string;
 }
 

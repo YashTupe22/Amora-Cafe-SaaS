@@ -55,6 +55,24 @@ export interface Profile {
   onboardingComplete: boolean;
 }
 
+export type SubscriptionStatus =
+  | 'trialing'
+  | 'active'
+  | 'past_due'
+  | 'halted'
+  | 'cancelled';
+
+export type BillingCycle = 'monthly' | 'annual';
+
+export interface Subscription {
+  plan:              string;   // 'free' | 'starter' | 'pro' | 'enterprise'
+  status:            SubscriptionStatus;
+  billingCycle:      BillingCycle | null;
+  currentPeriodEnd:  Date | null;
+  cancelAtPeriodEnd: boolean;
+  razorpaySubId:     string | null;
+}
+
 interface AddTransactionInput {
   type: Transaction['type'];
   category: string;
@@ -89,6 +107,7 @@ interface AppStoreContextValue {
   ready: boolean;
   session: AppSession | null;
   profile: Profile | null;
+  subscription: Subscription | null;
   currentUser: UserAccount | null;
   data: {
     employees: Employee[];
@@ -293,6 +312,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     }
     return INITIAL_CATALOGUE;
   });
+  const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [ready, setReady] = useState(false);
   const [isOnline, setIsOnline] = useState(
     typeof navigator !== 'undefined' ? navigator.onLine : true
@@ -344,9 +364,33 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  /** Fetch subscription from Firestore's top-level 'subscriptions' collection. */
+  const loadSubscription = useCallback(async (uid: string) => {
+    if (!db) return;
+    try {
+      const snap = await getDoc(doc(db, 'subscriptions', uid));
+      if (snap.exists()) {
+        const d = snap.data();
+        setSubscription({
+          plan:             d.plan    ?? 'free',
+          status:           d.status  ?? 'active',
+          billingCycle:     d.billingCycle  ?? null,
+          currentPeriodEnd: d.currentPeriodEnd?.toDate?.() ?? null,
+          cancelAtPeriodEnd: d.cancelAtPeriodEnd ?? false,
+          razorpaySubId:    d.razorpaySubId ?? null,
+        });
+      } else {
+        setSubscription({ plan: 'free', status: 'active', billingCycle: null, currentPeriodEnd: null, cancelAtPeriodEnd: false, razorpaySubId: null });
+      }
+    } catch (e) {
+      console.warn('[Subscription] Failed to load:', e);
+    }
+  }, []);
+
   const clearData = useCallback(() => {
     uidRef.current = undefined;
     setProfile(null);
+    setSubscription(null);
     setEmployees([]); empRef.current = [];
     setInvoices([]); invoiceCountRef.current = 0;
     setTransactions([]);
@@ -369,7 +413,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
           if (user) {
             setSession({ uid: user.id, email: user.email, displayName: user.name, metadata: { creationTime: user.createdAt } });
             uidRef.current = user.id;
-            refresh(user.id).finally(markReady);
+            Promise.all([refresh(user.id), loadSubscription(user.id)]).finally(markReady);
           } else {
             sessionStorage.removeItem('amora-local-uid');
             markReady();
@@ -389,7 +433,10 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
           uidRef.current = user.uid;
           markReady();
           identifyUser(user.uid, { email: user.email ?? '' });
-          await refresh(user.uid);
+          await Promise.all([
+            refresh(user.uid),
+            loadSubscription(user.uid),
+          ]);
         } else {
           clearData();
           markReady();
@@ -404,7 +451,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     );
 
     return () => { unsubscribe(); clearTimeout(timeout); };
-  }, [refresh, clearData]);
+  }, [refresh, clearData, loadSubscription]);
 
   // ── Online / offline detection + background sync ──────────────────────
   useEffect(() => {
@@ -490,12 +537,12 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       setSession(appSession);
       uidRef.current = user.id;
       sessionStorage.setItem('amora-local-uid', user.id);
-      refresh(user.id).catch(console.error);
+      Promise.all([refresh(user.id), loadSubscription(user.id)]).catch(console.error);
       return { ok: true };
     } catch (e: any) {
       return { ok: false, error: 'Login failed. Please try again.' };
     }
-  }, [refresh]);
+  }, [refresh, loadSubscription]);
 
   const signup = useCallback(async (name: string, email: string, password: string) => {
     // ── Firebase path ───────────────────────────────────────────────────────
@@ -533,12 +580,12 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       setSession(appSession);
       uidRef.current = uid;
       sessionStorage.setItem('amora-local-uid', uid);
-      refresh(uid).catch(console.error);
+      Promise.all([refresh(uid), loadSubscription(uid)]).catch(console.error);
       return { ok: true };
     } catch (e: any) {
       return { ok: false, error: 'Sign up failed. Please try again.' };
     }
-  }, [refresh]);
+  }, [refresh, loadSubscription]);
 
   const loginDemo = useCallback(() => {
     setDemoMode(true);
@@ -976,7 +1023,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
   const dashboard = useMemo(() => computeDashboard(invoices, transactions), [invoices, transactions]);
 
   const value = useMemo<AppStoreContextValue>(() => ({
-    ready, session, profile, currentUser, data,
+    ready, session, profile, subscription, currentUser, data,
     login, signup, loginDemo, logout,
     completeOnboarding,
     addTransaction, addInvoice, updateInvoice, toggleInvoiceStatus,

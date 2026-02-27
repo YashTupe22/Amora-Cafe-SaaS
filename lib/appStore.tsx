@@ -800,7 +800,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       return updated;
     }));
     if (pendingNotif) addNotification(pendingNotif);
-  }, [addNotification]); ───────────────────────────────────────────────────
+  }, [addNotification]);
 
   const toggleInvoiceStatus = useCallback((id: string) => {
     const uid = uidRef.current;

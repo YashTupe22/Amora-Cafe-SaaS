@@ -83,7 +83,7 @@ service cloud.firestore {
           && notOversized()
           // Once created, invoiceNo should never change
           && request.resource.data.invoiceNo == resource.data.invoiceNo
-          && request.resource.data.status in ['Paid', 'Pending'];
+          && request.resource.data.status in ['Paid', 'Pending', 'Cancelled'];
 
         allow delete: if isOwner(uid);
       }
@@ -145,6 +145,14 @@ service cloud.firestore {
 
       // Deny all client-side reads, updates, and deletes
       allow read, update, delete: if false;
+    }
+
+    // ── Subscriptions (subscriptions/{uid}) ─────────────────────────────────
+    // Clients may READ their own subscription document for plan gating.
+    // All writes remain server-only via the Admin SDK.
+    match /subscriptions/{uid} {
+      allow read: if isOwner(uid);
+      allow create, update, delete: if false;
     }
 
     // ── Deny everything else ────────────────────────────────────────────────

@@ -43,7 +43,7 @@ interface RazorpaySubscriptionEntity {
   status:              string;
   current_start:       number | null;
   current_end:         number | null;
-  notes?:              { uid?: string };
+  notes?:              { uid?: string; plan?: string; billingCycle?: string };
   short_url?:          string;
   charge_at?:          number;
   ended_at?:           number;
@@ -92,13 +92,17 @@ function buildUpdate(event: string, entity: RazorpaySubscriptionEntity): Record<
 
   switch (event) {
     case 'subscription.activated':
-    case 'subscription.charged':
+    case 'subscription.charged': {
+      // Include plan from notes so renewals keep the correct plan on the doc.
+      const notesPlan = entity.notes?.plan;
       return {
         ...base,
         status:           'active',
         currentPeriodEnd,
         cancelAtPeriodEnd: false,
+        ...(notesPlan && notesPlan !== 'free' ? { plan: notesPlan } : {}),
       };
+    }
 
     case 'subscription.cancelled':
     case 'subscription.completed': {
@@ -167,13 +171,41 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, ignored: true });
   }
 
-  // 5. Build Firestore update
-  const update = buildUpdate(event, subEntity);
-
   try {
     const db = getAdminDb();
-    await db.collection('subscriptions').doc(uid).set(update, { merge: true });
-    console.info(`[webhook] ${event} → uid=${uid} updated`, JSON.stringify(update));
+    const docRef = db.collection('subscriptions').doc(uid);
+    const existingSnap = await docRef.get();
+    const existingData = existingSnap.data() ?? {};
+
+    const currentSubId = existingData.razorpaySubId as string | undefined;
+    const isSameSubscription = !currentSubId || currentSubId === subEntity.id;
+
+    // Ignore ALL events from a subscription that is no longer the user's
+    // current one.  This prevents a stale Starter 'subscription.charged' from
+    // overwriting razorpaySubId (which would then make the subsequent
+    // 'subscription.cancelled' bypass the guard and downgrade the user to Free).
+    if (!isSameSubscription) {
+      console.info('[webhook] Ignoring event for non-current subscription', {
+        uid,
+        event,
+        webhookSubId: subEntity.id,
+        currentSubId,
+      });
+      return NextResponse.json({ ok: true, ignored: true });
+    }
+
+    // 5. Build Firestore update
+    const update = buildUpdate(event, subEntity);
+
+    await docRef.set(update, { merge: true });
+
+    console.info('[webhook] subscription update', {
+      uid,
+      event,
+      previousPlan: existingData.plan ?? 'free',
+      nextPlan:     (update.plan as string | undefined) ?? existingData.plan ?? 'free',
+      razorpaySubId: subEntity.id,
+    });
   } catch (err) {
     console.error('[webhook] Firestore write failed', err);
     // Return 500 so Razorpay retries the webhook

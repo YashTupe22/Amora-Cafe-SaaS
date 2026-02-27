@@ -1,11 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import AppLayout from '@/components/layout/AppLayout';
 import Badge from '@/components/ui/Badge';
 import type { Employee } from '@/lib/mockData';
-import { X, Check, UserPlus, ChevronLeft, ChevronRight, Clock } from 'lucide-react';
+import { X, Check, UserPlus, ChevronLeft, ChevronRight, Clock, Lock } from 'lucide-react';
 import { useAppStore } from '@/lib/appStore';
+import { useSubscription } from '@/hooks/useSubscription';
 import { localDate } from '@/lib/utils';
 
 const TODAY = localDate();
@@ -231,6 +233,32 @@ export default function AttendancePage() {
     const { data, updateEmployees } = useAppStore();
     const employees = data.employees as Employee[];
     const { deleteEmployee } = useAppStore();
+    const { canAccess } = useSubscription();
+
+    // ── Plan gate: attendance is Starter+ only ────────────────────────────────
+    if (!canAccess('attendance')) {
+        return (
+            <AppLayout title="Attendance" subtitle="Track employee attendance & payroll">
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 24px', textAlign: 'center' }}>
+                    <div style={{ width: 80, height: 80, borderRadius: 20, background: 'linear-gradient(135deg, rgba(249,115,22,0.2), rgba(234,88,12,0.1))', border: '1px solid rgba(249,115,22,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24 }}>
+                        <Lock size={36} color="#f97316" />
+                    </div>
+                    <h2 style={{ fontSize: 22, fontWeight: 800, color: '#f1f5f9', marginBottom: 10 }}>Attendance Tracking</h2>
+                    <p style={{ fontSize: 14, color: '#64748b', maxWidth: 420, marginBottom: 28, lineHeight: 1.7 }}>
+                        Employee attendance tracking and payroll sheets are available on the{' '}
+                        <strong style={{ color: '#fb923c' }}>Starter plan</strong> and above.
+                        Upgrade to unlock monthly attendance grids, overtime tracking and salary deduction rules.
+                    </p>
+                    <Link
+                        href="/pricing"
+                        style={{ padding: '12px 32px', borderRadius: 12, background: 'linear-gradient(135deg, #f97316, #ea580c)', color: 'white', fontWeight: 700, fontSize: 14, textDecoration: 'none', boxShadow: '0 8px 24px rgba(249,115,22,0.35)' }}
+                    >
+                        View Plans &amp; Upgrade
+                    </Link>
+                </div>
+            </AppLayout>
+        );
+    }
 
     const now = new Date();
     const [viewYear, setViewYear] = useState(now.getFullYear());

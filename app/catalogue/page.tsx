@@ -3,8 +3,12 @@
 import { useState, useMemo } from 'react';
 import AppLayout from '@/components/layout/AppLayout';
 import Badge from '@/components/ui/Badge';
+import LimitBar from '@/components/ui/LimitBar';
 import { Plus, X, Edit2, Trash2, Search, BookOpen, ToggleLeft, ToggleRight } from 'lucide-react';
 import { useAppStore } from '@/lib/appStore';
+import { useSubscription } from '@/hooks/useSubscription';
+import { getPlanLimit } from '@/lib/planAccess';
+import type { PlanName } from '@/lib/planAccess';
 import type { CatalogueItem, MenuCategory } from '@/lib/mockData';
 import { MENU_CATEGORIES } from '@/lib/mockData';
 
@@ -97,6 +101,11 @@ function ItemForm({ title, initial, onSave, onCancel }: ItemFormProps) {
 export default function CataloguePage() {
     const { data, updateCatalogue } = useAppStore();
     const catalogue = data.catalogue;
+    const { plan } = useSubscription();
+
+    // ── Plan limit: menu items ────────────────────────────────────────
+    const menuItemLimit  = getPlanLimit(plan as PlanName, 'menuItems');
+    const atMenuLimit    = isFinite(menuItemLimit) && catalogue.length >= menuItemLimit;
 
     const [showForm, setShowForm] = useState(false);
     const [editItem, setEditItem] = useState<CatalogueItem | null>(null);
@@ -130,6 +139,7 @@ export default function CataloguePage() {
     }, [filtered]);
 
     const handleCreate = (data: Omit<CatalogueItem, 'id'>) => {
+        if (atMenuLimit) return; // hard stop at plan limit
         const id = `cat-${crypto.randomUUID().slice(0, 8)}`;
         updateCatalogue(prev => [...prev, { id, ...data }]);
         setShowForm(false);
@@ -152,6 +162,8 @@ export default function CataloguePage() {
 
     return (
         <AppLayout title="Catalogue" subtitle="Manage your menu items and prices across all categories">
+            {/* Usage limit bar */}
+            <LimitBar used={catalogue.length} limit={menuItemLimit} label="Menu items" />
             {/* Summary bar */}
             <div className="rg-3" style={{ marginBottom: 24 }}>
                 {[
@@ -193,7 +205,12 @@ export default function CataloguePage() {
                     ))}
                 </div>
                 {/* Add button */}
-                <button onClick={() => { setEditItem(null); setShowForm(!showForm); }} className="glow-btn" style={{ padding: '9px 18px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <button
+                    onClick={() => { if (!atMenuLimit) { setEditItem(null); setShowForm(!showForm); } }}
+                    className="glow-btn"
+                    disabled={atMenuLimit}
+                    style={{ padding: '9px 18px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6, opacity: atMenuLimit ? 0.45 : 1, cursor: atMenuLimit ? 'not-allowed' : 'pointer' }}
+                >
                     <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}><Plus size={14} /> Add Item</span>
                 </button>
             </div>

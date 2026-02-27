@@ -18,6 +18,7 @@ import {
     Cell,
 } from 'recharts';
 import { useAppStore } from '@/lib/appStore';
+import { useSubscription } from '@/hooks/useSubscription';
 import { exportDashboardPdf } from '@/lib/exportDashboardPdf';
 
 function formatCurrency(v: number) {
@@ -50,6 +51,8 @@ const CustomTooltip = ({ active, payload, label }: TooltipLikeProps) => {
 function DashboardContent() {
     const { dashboard, currentUser, profile, data } = useAppStore();
     const searchParams = useSearchParams();
+    const { canAccess } = useSubscription();
+    const canPdf = canAccess('pdfExport');
     const [showWelcome,  setShowWelcome]  = useState(false);
     const [showUpgraded, setShowUpgraded] = useState(false);
 
@@ -157,11 +160,17 @@ function DashboardContent() {
                 </div>
             )}
             {/* Top actions */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+                {!canPdf && (
+                    <span style={{ fontSize: 12, color: '#64748b' }}>
+                        PDF export requires <a href="/pricing" style={{ color: '#fb923c', fontWeight: 700, textDecoration: 'none' }}>Starter plan</a>
+                    </span>
+                )}
                 <button
                     className="glow-btn"
-                    style={{ padding: '9px 18px', fontSize: 13 }}
-                    onClick={() => exportDashboardPdf(dashboard, profile)}
+                    style={{ padding: '9px 18px', fontSize: 13, opacity: canPdf ? 1 : 0.4, cursor: canPdf ? 'pointer' : 'not-allowed' }}
+                    onClick={() => { if (canPdf) exportDashboardPdf(dashboard, profile); }}
+                    disabled={!canPdf}
                 >
                     <span>Download PDF</span>
                 </button>

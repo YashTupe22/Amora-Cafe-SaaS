@@ -5,6 +5,7 @@ import { Building2, Bell, Globe, Shield, User, Download } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppStore } from '@/lib/appStore';
+import { useSubscription } from '@/hooks/useSubscription';
 import { exportAppDataToExcel } from '@/lib/exportExcel';
 import { useTranslation, type Lang } from '@/lib/i18n';
 import { analytics } from '@/lib/analytics';
@@ -19,6 +20,8 @@ type Field =
 export default function SettingsPage() {
     const router = useRouter();
     const { data, currentUser, updateBusinessProfile, updatePreferences, resetBusinessData, deleteCurrentAccount, logout } = useAppStore();
+    const { canAccess } = useSubscription();
+    const canExport = canAccess('pdfExport');
 
     const [profileDraft, setProfileDraft] = useState(data.businessProfile);
     const [prefsDraft, setPrefsDraft] = useState(data.preferences);
@@ -244,13 +247,20 @@ export default function SettingsPage() {
                         Download a full snapshot of your current workspace — employees, invoices, transactions, inventory and basic settings — in an Excel file.
                     </p>
                     <button
-                        onClick={() => exportAppDataToExcel(data)}
+                        onClick={() => { if (canExport) exportAppDataToExcel(data); }}
                         className="glow-btn"
-                        style={{ padding: '9px 22px', fontSize: 13, display: 'inline-flex', alignItems: 'center', gap: 8 }}
+                        disabled={!canExport}
+                        title={canExport ? undefined : 'Excel export requires Starter plan or above'}
+                        style={{ padding: '9px 22px', fontSize: 13, display: 'inline-flex', alignItems: 'center', gap: 8, opacity: canExport ? 1 : 0.4, cursor: canExport ? 'pointer' : 'not-allowed' }}
                     >
                         <Download size={14} />
                         <span>Export All Data (.xlsx)</span>
                     </button>
+                    {!canExport && (
+                        <p style={{ fontSize: 12, color: '#64748b', marginTop: 8 }}>
+                            Excel export is available on the <a href="/pricing" style={{ color: '#fb923c', fontWeight: 700, textDecoration: 'none' }}>Starter plan</a> and above.
+                        </p>
+                    )}
                 </div>
 
                 {/* Danger Zone */}

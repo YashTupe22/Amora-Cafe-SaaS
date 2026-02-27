@@ -4,9 +4,13 @@ import { useState } from 'react';
 import Link from 'next/link';
 import AppLayout from '@/components/layout/AppLayout';
 import Badge from '@/components/ui/Badge';
+import LimitBar from '@/components/ui/LimitBar';
 import type { Invoice, InvoiceItem } from '@/lib/mockData';
 import { Plus, X, Eye, Check, ReceiptText, Edit2, Ban } from 'lucide-react';
 import { useAppStore } from '@/lib/appStore';
+import { useSubscription } from '@/hooks/useSubscription';
+import { getPlanLimit } from '@/lib/planAccess';
+import type { PlanName } from '@/lib/planAccess';
 import { localDate } from '@/lib/utils';
 import { analytics } from '@/lib/analytics';
 
@@ -219,6 +223,13 @@ export default function BillsPage() {
     const { data, addInvoice, updateInvoice, toggleInvoiceStatus } = useAppStore();
     const bills = data.invoices;
     const catalogue = data.catalogue;
+    const { plan } = useSubscription();
+
+    // ── Monthly bill limit ──────────────────────────────────────────
+    const currentMonth   = new Date().toISOString().slice(0, 7); // "YYYY-MM"
+    const billsThisMonth = bills.filter(b => b.date && b.date.startsWith(currentMonth)).length;
+    const billLimit      = getPlanLimit(plan as PlanName, 'billsPerMonth');
+    const atBillLimit    = isFinite(billLimit) && billsThisMonth >= billLimit;
 
     const [showForm, setShowForm] = useState(false);
     const [editBill, setEditBill] = useState<Invoice | null>(null);
@@ -238,6 +249,7 @@ export default function BillsPage() {
     }));
 
     const handleCreate = (d: Parameters<typeof addInvoice>[0]) => {
+        if (atBillLimit) return; // hard stop at plan limit
         addInvoice(d);
         analytics.billCreated({
             orderType:   d.orderType,
@@ -283,12 +295,21 @@ export default function BillsPage() {
                 ))}
             </div>
 
+            {/* Monthly bill usage bar */}
+            <LimitBar used={billsThisMonth} limit={billLimit} label="Bills this month" />
+
             {/* Action */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 18 }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 10, marginBottom: 18 }}>
+                {atBillLimit && (
+                    <Link href="/pricing" style={{ fontSize: 12, color: '#ef4444', fontWeight: 600, textDecoration: 'none' }}>
+                        Monthly limit reached — Upgrade
+                    </Link>
+                )}
                 <button
-                    onClick={() => { setEditBill(null); setShowForm(!showForm); }}
+                    onClick={() => { if (!atBillLimit) { setEditBill(null); setShowForm(!showForm); } }}
                     className="glow-btn"
-                    style={{ padding: '10px 20px', fontSize: 14, display: 'flex', alignItems: 'center', gap: 7 }}
+                    disabled={atBillLimit}
+                    style={{ padding: '10px 20px', fontSize: 14, display: 'flex', alignItems: 'center', gap: 7, opacity: atBillLimit ? 0.45 : 1, cursor: atBillLimit ? 'not-allowed' : 'pointer' }}
                 >
                     <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Plus size={15} /> New Bill</span>
                 </button>

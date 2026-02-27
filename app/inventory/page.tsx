@@ -3,7 +3,11 @@
 import { useMemo, useState } from 'react';
 import AppLayout from '@/components/layout/AppLayout';
 import StatCard from '@/components/ui/StatCard';
+import LimitBar from '@/components/ui/LimitBar';
 import { useAppStore } from '@/lib/appStore';
+import { useSubscription } from '@/hooks/useSubscription';
+import { getPlanLimit } from '@/lib/planAccess';
+import type { PlanName } from '@/lib/planAccess';
 import type { InventoryItem } from '@/lib/mockData';
 import { Plus, Package2, AlertTriangle, BarChart2, Trash2 } from 'lucide-react';
 
@@ -12,6 +16,11 @@ type DraftItem = Omit<InventoryItem, 'id'>;
 export default function InventoryPage() {
   const { data, updateInventory, deleteInventoryItem } = useAppStore();
   const inventory = data.inventory as InventoryItem[];
+  const { plan } = useSubscription();
+
+  // ── Plan limit: inventory items ─────────────────────────────────
+  const inventoryLimit = getPlanLimit(plan as PlanName, 'inventoryItems');
+  const atInvLimit     = isFinite(inventoryLimit) && inventory.length >= inventoryLimit;
 
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -66,6 +75,7 @@ export default function InventoryPage() {
   const saveItem = () => {
     if (!draft.name.trim()) return;
     if (!draft.sku.trim()) return;
+    if (!editingId && atInvLimit) return; // hard stop — cannot add new item at limit
     if (editingId) {
       updateInventory(prev =>
         prev.map(i => (i.id === editingId ? { ...i, ...draft, name: draft.name.trim(), sku: draft.sku.trim() } : i)),
@@ -111,6 +121,8 @@ export default function InventoryPage() {
 
   return (
     <AppLayout title="Inventory" subtitle="Simple stock tracking tailored for Indian service businesses">
+      {/* Usage limit bar */}
+      <LimitBar used={inventory.length} limit={inventoryLimit} label="Inventory items" />
       {/* Overview row */}
       <div
         style={{
@@ -161,9 +173,10 @@ export default function InventoryPage() {
       {/* Toolbar */}
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 18 }}>
         <button
-          onClick={startAdd}
+          onClick={() => { if (!atInvLimit) startAdd(); }}
           className="glow-btn"
-          style={{ padding: '9px 18px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 7 }}
+          disabled={atInvLimit}
+          style={{ padding: '9px 18px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 7, opacity: atInvLimit ? 0.45 : 1, cursor: atInvLimit ? 'not-allowed' : 'pointer' }}
         >
           <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <Plus size={14} /> Add Item

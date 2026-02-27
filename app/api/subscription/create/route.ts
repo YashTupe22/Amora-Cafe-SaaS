@@ -60,11 +60,14 @@ export async function POST(req: NextRequest) {
     if (!customerId) {
       const customer = await razorpay.customers.create({ email, notes: { uid } });
       customerId = customer.id;
+      // Persist immediately so we don't create a duplicate customer on retry
+      await subDocRef.set({ razorpayCustomerId: customerId }, { merge: true });
     }
 
-    // 5. Create Razorpay subscription
+    // 5. Create Razorpay subscription — pass customer_id so it is linked in Razorpay Dashboard
     const subscription = await razorpay.subscriptions.create({
       plan_id:          razorpayPlanId,
+      customer_id:      customerId,
       customer_notify:  1,
       quantity:         1,
       total_count:      billingCycle === 'annual' ? 1 : 12,

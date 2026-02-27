@@ -14,10 +14,12 @@ import {
     Zap,
     BookOpen,
     X,
+    Crown,
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useAppStore } from '@/lib/appStore';
 import { useTranslation } from '@/lib/i18n';
+import { useSubscription } from '@/hooks/useSubscription';
 
 const NAV_ITEMS = [
     { href: '/dashboard',  key: 'nav.dashboard'  as const, icon: LayoutDashboard },
@@ -40,6 +42,17 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     const router = useRouter();
     const { logout } = useAppStore();
     const { t } = useTranslation();
+    const { plan } = useSubscription();
+
+    const PLAN_COLORS: Record<string, string> = {
+      free:       '#64748b',
+      starter:    '#3b82f6',
+      pro:        '#f59e0b',
+      enterprise: '#8b5cf6',
+    };
+    const planColor  = PLAN_COLORS[plan] ?? '#64748b';
+    const planLabel  = plan.charAt(0).toUpperCase() + plan.slice(1);
+    const showUpgrade = plan === 'free' || plan === 'starter';
 
     return (
         <aside className={clsx('sidebar', isOpen && 'sidebar--open')}>
@@ -86,6 +99,33 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
             {/* Logout */}
             <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 16 }}>
+                {/* Plan badge */}
+                <div
+                    style={{
+                        display:      'flex',
+                        alignItems:   'center',
+                        justifyContent: 'space-between',
+                        padding:      '8px 10px',
+                        marginBottom: 10,
+                        background:   `rgba(${planColor === '#f59e0b' ? '245,158,11' : planColor === '#3b82f6' ? '59,130,246' : planColor === '#8b5cf6' ? '139,92,246' : '100,116,139'},0.12)`,
+                        borderRadius: 9,
+                        border:       `1px solid ${planColor}33`,
+                    }}
+                >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                        <Crown size={13} color={planColor} />
+                        <span style={{ fontSize: 12, fontWeight: 600, color: planColor }}>{planLabel} Plan</span>
+                    </div>
+                    {showUpgrade && (
+                        <Link
+                            href="/pricing"
+                            onClick={onClose}
+                            style={{ fontSize: 11, fontWeight: 700, color: '#f59e0b', textDecoration: 'none', background: 'rgba(245,158,11,0.15)', padding: '2px 8px', borderRadius: 5 }}
+                        >
+                            Upgrade
+                        </Link>
+                    )}
+                </div>
                 <button
                     type="button"
                     className="nav-link"

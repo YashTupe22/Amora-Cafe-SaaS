@@ -50,7 +50,8 @@ const CustomTooltip = ({ active, payload, label }: TooltipLikeProps) => {
 function DashboardContent() {
     const { dashboard, currentUser, profile, data } = useAppStore();
     const searchParams = useSearchParams();
-    const [showWelcome, setShowWelcome] = useState(false);
+    const [showWelcome,  setShowWelcome]  = useState(false);
+    const [showUpgraded, setShowUpgraded] = useState(false);
 
     useEffect(() => {
         if (searchParams.get('welcome') === '1' && currentUser) {
@@ -60,6 +61,15 @@ function DashboardContent() {
         }
         return;
     }, [searchParams, currentUser]);
+
+    useEffect(() => {
+        if (searchParams.get('upgraded') === '1') {
+            const t1 = window.setTimeout(() => setShowUpgraded(true), 300);
+            const t2 = window.setTimeout(() => setShowUpgraded(false), 5000);
+            return () => { window.clearTimeout(t1); window.clearTimeout(t2); };
+        }
+        return;
+    }, [searchParams]);
 
     return (
         <AppLayout
@@ -112,6 +122,36 @@ function DashboardContent() {
                         <p style={{ fontSize: 12, color: '#e2e8f0' }}>Welcome back,</p>
                         <p style={{ fontSize: 13, fontWeight: 700, color: '#f9fafb' }}>
                             {currentUser.name.split(' ')[0]} 👋
+                        </p>
+                    </div>
+                </div>
+            )}
+            {showUpgraded && (
+                <div
+                    style={{
+                        position:       'fixed',
+                        top:            20,
+                        right:          24,
+                        zIndex:         40,
+                        padding:        '14px 20px',
+                        display:        'flex',
+                        alignItems:     'center',
+                        gap:            12,
+                        borderRadius:   999,
+                        background:     'linear-gradient(135deg, rgba(245,158,11,0.25), rgba(239,68,68,0.15))',
+                        border:         '1px solid rgba(245,158,11,0.7)',
+                        boxShadow:      '0 18px 40px rgba(15,23,42,0.7)',
+                        backdropFilter: 'blur(20px)',
+                        animation:      'fade-down 0.35s ease-out',
+                    }}
+                >
+                    <span style={{ fontSize: 20 }}>🎉</span>
+                    <div>
+                        <p style={{ fontSize: 13, fontWeight: 700, color: '#fef3c7', margin: 0 }}>
+                            Plan upgraded successfully!
+                        </p>
+                        <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)', margin: '2px 0 0' }}>
+                            Your new features are now active.
                         </p>
                     </div>
                 </div>

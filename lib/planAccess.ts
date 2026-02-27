@@ -112,8 +112,8 @@ export const RECOMMENDED_PLAN: PlanName = 'pro';
  * Returns true when the given plan has access to a boolean feature,
  * or if the limit is non-zero/non-finite for numeric limits.
  */
-export function canAccess(plan: PlanName, feature: PlanLimitKey): boolean {
-  const val = PLAN_LIMITS[plan][feature];
+export function canAccess(plan: PlanName, feature: PlanLimitKey | string): boolean {
+  const val = PLAN_LIMITS[plan][feature as PlanLimitKey];
   if (typeof val === 'boolean') return val;
   if (typeof val === 'number') return val > 0;
   return false;
@@ -123,8 +123,8 @@ export function canAccess(plan: PlanName, feature: PlanLimitKey): boolean {
  * Returns the numeric limit for a plan & limit name.
  * Returns Infinity for unlimited. Returns 0 for boolean features.
  */
-export function getPlanLimit(plan: PlanName, limitName: PlanLimitKey): number {
-  const val = PLAN_LIMITS[plan][limitName];
+export function getPlanLimit(plan: PlanName, limitName: PlanLimitKey | string): number {
+  const val = PLAN_LIMITS[plan][limitName as PlanLimitKey];
   if (typeof val === 'number') return val;
   return 0;
 }
@@ -133,14 +133,14 @@ export function getPlanLimit(plan: PlanName, limitName: PlanLimitKey): number {
  * Returns true when the feature requires upgrading from the current plan.
  * Useful for showing upgrade prompts.
  */
-export function requiresUpgrade(currentPlan: PlanName, feature: PlanLimitKey): boolean {
+export function requiresUpgrade(currentPlan: PlanName, feature: PlanLimitKey | string): boolean {
   return !canAccess(currentPlan, feature);
 }
 
 /**
  * Returns the cheapest plan that enables a given feature.
  */
-export function minPlanFor(feature: PlanLimitKey): PlanName {
+export function minPlanFor(feature: PlanLimitKey | string): PlanName {
   const order: PlanName[] = ['free', 'starter', 'pro', 'enterprise'];
   return order.find(p => canAccess(p, feature)) ?? 'enterprise';
 }

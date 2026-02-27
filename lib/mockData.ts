@@ -85,7 +85,7 @@ export interface Invoice {
   date: string;
   dueDate: string;          // Same as date for cafe bills
   items: InvoiceItem[];
-  status: 'Paid' | 'Pending';
+  status: 'Paid' | 'Pending' | 'Cancelled';
   // Cafe-specific fields
   tableNo?: string;
   orderType?: 'Dine-In' | 'Takeaway' | 'Delivery';

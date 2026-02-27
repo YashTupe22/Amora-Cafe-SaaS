@@ -5,7 +5,7 @@ import Link from 'next/link';
 import AppLayout from '@/components/layout/AppLayout';
 import Badge from '@/components/ui/Badge';
 import type { Invoice, InvoiceItem } from '@/lib/mockData';
-import { Plus, X, Eye, Check, ReceiptText, Edit2, Trash2 } from 'lucide-react';
+import { Plus, X, Eye, Check, ReceiptText, Edit2, Ban } from 'lucide-react';
 import { useAppStore } from '@/lib/appStore';
 import { localDate } from '@/lib/utils';
 import { analytics } from '@/lib/analytics';
@@ -216,7 +216,7 @@ function BillForm({ title, initial, menuItems, pastBills, onSave, onCancel }: Bi
 // ── Main Page ────────────────────────────────────────────────────────────────
 
 export default function BillsPage() {
-    const { data, addInvoice, updateInvoice, toggleInvoiceStatus, deleteInvoice } = useAppStore();
+    const { data, addInvoice, updateInvoice, toggleInvoiceStatus } = useAppStore();
     const bills = data.invoices;
     const catalogue = data.catalogue;
 
@@ -359,7 +359,7 @@ export default function BillsPage() {
                                         )}
                                     </td>
                                     <td style={{ fontWeight: 700, color: '#f1f5f9' }}>₹{getTotal(bill.items).toLocaleString('en-IN')}</td>
-                                    <td><Badge variant={bill.status === 'Paid' ? 'success' : 'warning'}>{bill.status}</Badge></td>
+                                    <td><Badge variant={bill.status === 'Paid' ? 'success' : bill.status === 'Cancelled' ? 'danger' : 'warning'}>{bill.status}</Badge></td>
                                     <td>
                                         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                                             <button onClick={() => setPreview(bill)} style={{ padding: '6px 10px', borderRadius: 8, background: 'rgba(249,115,22,0.1)', border: '1px solid rgba(249,115,22,0.2)', color: '#fb923c', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontSize: 12 }}>
@@ -368,14 +368,21 @@ export default function BillsPage() {
                                             <button onClick={() => { setShowForm(false); setEditBill(bill); window.scrollTo({ top: 0, behavior: 'smooth' }); }} style={{ padding: '6px 10px', borderRadius: 8, background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.2)', color: '#a78bfa', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontSize: 12 }}>
                                                 <Edit2 size={12} /> Edit
                                             </button>
+                                            {bill.status !== 'Cancelled' && (
                                             <button onClick={() => toggleInvoiceStatus(bill.id)} style={{ padding: '6px 10px', borderRadius: 8, fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, background: bill.status === 'Paid' ? 'rgba(245,158,11,0.1)' : 'rgba(34,197,94,0.1)', border: bill.status === 'Paid' ? '1px solid rgba(245,158,11,0.2)' : '1px solid rgba(34,197,94,0.2)', color: bill.status === 'Paid' ? '#f59e0b' : '#22c55e' }}>
                                                 <Check size={12} /> {bill.status === 'Paid' ? 'Mark Pending' : 'Mark Paid'}
                                             </button>
+                                            )}
                                             <Link href={`/bills/${bill.id}`} style={{ padding: '6px 10px', borderRadius: 8, fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(249,115,22,0.1)', border: '1px solid rgba(249,115,22,0.25)', color: '#fb923c', textDecoration: 'none' }}>
                                                 <ReceiptText size={12} /> Receipt
                                             </Link>
-                                            <button onClick={() => { if (window.confirm(`Delete bill ${bill.invoiceNo}?`)) deleteInvoice(bill.id); }} style={{ padding: '6px 10px', borderRadius: 8, background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', color: '#ef4444', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontSize: 12 }}>
-                                                <Trash2 size={12} /> Delete
+                                            <button
+                                                onClick={() => { if (window.confirm(`Cancel bill ${bill.invoiceNo}? This cannot be undone.`)) updateInvoice(bill.id, { status: 'Cancelled' }); }}
+                                                disabled={bill.status === 'Paid' || bill.status === 'Cancelled'}
+                                                title={bill.status === 'Paid' ? 'Cannot cancel a paid bill' : bill.status === 'Cancelled' ? 'Bill already cancelled' : 'Cancel bill'}
+                                                style={{ padding: '6px 10px', borderRadius: 8, background: (bill.status === 'Paid' || bill.status === 'Cancelled') ? 'rgba(100,116,139,0.08)' : 'rgba(239,68,68,0.1)', border: `1px solid ${(bill.status === 'Paid' || bill.status === 'Cancelled') ? 'rgba(100,116,139,0.15)' : 'rgba(239,68,68,0.25)'}`, color: (bill.status === 'Paid' || bill.status === 'Cancelled') ? '#475569' : '#ef4444', cursor: (bill.status === 'Paid' || bill.status === 'Cancelled') ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, opacity: (bill.status === 'Paid' || bill.status === 'Cancelled') ? 0.5 : 1 }}
+                                            >
+                                                <Ban size={12} /> Cancel
                                             </button>
                                         </div>
                                     </td>

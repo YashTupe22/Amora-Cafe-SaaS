@@ -2,7 +2,7 @@
 
 import AppLayout from '@/components/layout/AppLayout';
 import { Building2, Bell, Globe, Shield, User, Download } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppStore } from '@/lib/appStore';
 import { useSubscription } from '@/hooks/useSubscription';
@@ -27,6 +27,24 @@ export default function SettingsPage() {
     const [prefsDraft, setPrefsDraft] = useState(data.preferences);
     const [savedMsg, setSavedMsg] = useState('');
     const { lang, setLang, t } = useTranslation();
+
+    // Sync draft once when real profile data arrives from Firestore.
+    // Using a ref so user edits mid-session are never overwritten.
+    const profileSynced = useRef(false);
+    useEffect(() => {
+        if (!profileSynced.current && data.businessProfile.businessName) {
+            setProfileDraft(data.businessProfile);
+            profileSynced.current = true;
+        }
+    }, [data.businessProfile]);
+
+    const prefsSynced = useRef(false);
+    useEffect(() => {
+        if (!prefsSynced.current) {
+            setPrefsDraft(data.preferences);
+            prefsSynced.current = true;
+        }
+    }, [data.preferences]);
 
     const sections = useMemo<{ title: string; icon: React.ReactNode; fields: Field[] }[]>(() => {
         return [

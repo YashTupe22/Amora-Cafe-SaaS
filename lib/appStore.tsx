@@ -716,6 +716,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
           date: updated.date,
           dueDate: updated.dueDate,
           items: updated.items,
+          status: updated.status,
           clientEmail: updated.clientEmail ?? '',
           clientPhone: updated.clientPhone ?? '',
           clientAddress: updated.clientAddress ?? '',

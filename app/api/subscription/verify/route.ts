@@ -11,6 +11,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createHmac } from 'crypto';
 import { verifyIdToken, getAdminDb } from '@/lib/firebaseAdmin';
+import { getRazorpay } from '@/lib/razorpay';
+import type { BillingCycle } from '@/lib/razorpayPlans';
+import type { PlanName } from '@/lib/planAccess';
 import { FieldValue } from 'firebase-admin/firestore';
 
 export async function POST(req: NextRequest) {
@@ -54,18 +57,54 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Subscription not found for this user' }, { status: 404 });
     }
 
+    const data = existing.data() ?? {};
+
     // Calculate period end: 30 days for monthly, 365 days for annual
-    const billingCycle      = existing.data()!.billingCycle as string;
+    const billingCycle      = (data.billingCycle as BillingCycle | undefined) ?? 'monthly';
     const periodDays        = billingCycle === 'annual' ? 365 : 30;
     const currentPeriodEnd  = new Date(Date.now() + periodDays * 24 * 60 * 60 * 1000);
 
+    let plan: PlanName = (data.plan as PlanName) ?? 'free';
+
+    // If the plan was never seeded (or is still 'free') but payment verification
+    // succeeded, recover the canonical plan from Razorpay subscription notes.
+    if (!plan || plan === 'free') {
+      try {
+        const razorpay = getRazorpay();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const rzSub: any = await razorpay.subscriptions.fetch(razorpay_subscription_id);
+        const notesPlan = rzSub?.notes?.plan as PlanName | undefined;
+        const notesCycle = rzSub?.notes?.billingCycle as BillingCycle | undefined;
+        if (notesPlan && notesPlan !== 'free') {
+          plan = notesPlan;
+        }
+        if (notesCycle === 'monthly' || notesCycle === 'annual') {
+          // Override billing cycle if Razorpay has a more trustworthy value.
+          // This also ensures older docs with numeric billingCycle get corrected.
+          const daysFromNotes = notesCycle === 'annual' ? 365 : 30;
+          const endFromNotes  = new Date(Date.now() + daysFromNotes * 24 * 60 * 60 * 1000);
+          (currentPeriodEnd as Date) = endFromNotes;
+        }
+      } catch (e) {
+        console.warn('[subscription/verify] Failed to recover plan from Razorpay subscription', e);
+      }
+    }
+
     await subDocRef.update({
       status:           'active',
-      currentPeriodEnd: currentPeriodEnd,
+      plan,
+      currentPeriodEnd,
       updatedAt:        FieldValue.serverTimestamp(),
     });
 
-    return NextResponse.json({ ok: true, plan: existing.data()!.plan });
+    console.info('[subscription/verify] activated', {
+      uid,
+      plan,
+      billingCycle,
+      razorpay_subscription_id,
+    });
+
+    return NextResponse.json({ ok: true, plan });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Unknown error';
     if (msg.includes('Missing or malformed') || msg.includes('ID token')) {

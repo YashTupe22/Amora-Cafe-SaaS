@@ -1,10 +1,11 @@
 'use client';
 
-import { Bell, Search, Menu, LogOut, Settings, X, LayoutDashboard, FileText, ArrowLeftRight, Boxes, Users, CheckCircle, XCircle, CreditCard, TrendingDown, Info, Trash2 } from 'lucide-react';
+import { Bell, Search, Menu, LogOut, Settings, X, LayoutDashboard, FileText, ArrowLeftRight, Boxes, Users, CheckCircle, XCircle, CreditCard, TrendingDown, Info, Trash2, MapPin, Phone, Building2, Crown, CalendarClock } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppStore } from '@/lib/appStore';
 import type { AppNotificationType } from '@/lib/appStore';
+import { useSubscription } from '@/hooks/useSubscription';
 
 // ── Notification helpers ─────────────────────────────────────────────────────
 
@@ -56,6 +57,7 @@ interface SearchResult {
 export default function TopBar({ title, subtitle, onMenuToggle }: TopBarProps) {
     const router = useRouter();
     const { profile, currentUser, data, logout, isOnline, notifications, unreadCount, markAllRead, dismissNotification } = useAppStore();
+    const { plan, status, isActive, cancelAtPeriodEnd, currentPeriodEnd } = useSubscription();
 
     const [query, setQuery] = useState('');
     const [showSearch, setShowSearch] = useState(false);
@@ -288,8 +290,19 @@ export default function TopBar({ title, subtitle, onMenuToggle }: TopBarProps) {
                         {initials}
                     </button>
 
-                    {showProfile && (
-                        <div style={{ position: 'absolute', top: 'calc(100% + 10px)', right: 0, width: 240, background: '#111827', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 14, boxShadow: '0 20px 60px rgba(0,0,0,0.5)', zIndex: 100, overflow: 'hidden' }}>
+                    {showProfile && (() => {
+                        const planColors: Record<string, { bg: string; border: string; text: string }> = {
+                            free:       { bg: 'rgba(100,116,139,0.12)', border: 'rgba(100,116,139,0.3)', text: '#94a3b8' },
+                            starter:    { bg: 'rgba(56,189,248,0.12)',  border: 'rgba(56,189,248,0.3)',  text: '#38bdf8' },
+                            pro:        { bg: 'rgba(167,139,250,0.12)', border: 'rgba(167,139,250,0.3)', text: '#a78bfa' },
+                            enterprise: { bg: 'rgba(249,115,22,0.12)',  border: 'rgba(249,115,22,0.3)',  text: '#fb923c' },
+                        };
+                        const pc = planColors[plan] || planColors.free;
+                        const periodEnd = currentPeriodEnd ? new Date(currentPeriodEnd) : null;
+                        const daysLeft = periodEnd ? Math.max(0, Math.ceil((periodEnd.getTime() - Date.now()) / 86400000)) : null;
+
+                        return (
+                        <div style={{ position: 'absolute', top: 'calc(100% + 10px)', right: 0, width: 290, background: '#111827', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 14, boxShadow: '0 20px 60px rgba(0,0,0,0.5)', zIndex: 100, overflow: 'hidden' }}>
                             {/* User info */}
                             <div style={{ padding: '16px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -299,10 +312,80 @@ export default function TopBar({ title, subtitle, onMenuToggle }: TopBarProps) {
                                         <p style={{ fontSize: 11, color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{profile?.email || currentUser?.email || ''}</p>
                                     </div>
                                 </div>
-                                {profile?.businessName && (
-                                    <div style={{ marginTop: 8, padding: '5px 8px', background: 'rgba(249,115,22,0.08)', borderRadius: 6, fontSize: 11, color: '#fb923c', fontWeight: 600 }}>
-                                        {profile.businessName}
+                            </div>
+
+                            {/* Restaurant / Cafe Info */}
+                            {(profile?.businessName || profile?.address || profile?.phone || profile?.gst) && (
+                                <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+                                    <p style={{ fontSize: 10, fontWeight: 700, color: '#475569', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 8 }}>Restaurant Info</p>
+
+                                    {profile?.businessName && (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                                            <Building2 size={13} color="#fb923c" style={{ flexShrink: 0 }} />
+                                            <p style={{ fontSize: 12, fontWeight: 600, color: '#f1f5f9', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{profile.businessName}</p>
+                                        </div>
+                                    )}
+                                    {profile?.address && (
+                                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 6 }}>
+                                            <MapPin size={13} color="#64748b" style={{ flexShrink: 0, marginTop: 1 }} />
+                                            <p style={{ fontSize: 11, color: '#94a3b8', lineHeight: 1.4 }}>{profile.address}</p>
+                                        </div>
+                                    )}
+                                    {profile?.phone && (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                                            <Phone size={13} color="#64748b" style={{ flexShrink: 0 }} />
+                                            <p style={{ fontSize: 11, color: '#94a3b8' }}>{profile.phone}</p>
+                                        </div>
+                                    )}
+                                    {profile?.gst && (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                            <FileText size={13} color="#64748b" style={{ flexShrink: 0 }} />
+                                            <p style={{ fontSize: 11, color: '#94a3b8' }}>GST: {profile.gst}</p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Subscription Info */}
+                            <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+                                <p style={{ fontSize: 10, fontWeight: 700, color: '#475569', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 8 }}>Subscription</p>
+
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                                    <Crown size={14} color={pc.text} />
+                                    <span style={{ fontSize: 12, fontWeight: 700, color: pc.text, textTransform: 'capitalize' }}>{plan}</span>
+                                    <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 7px', borderRadius: 20, background: pc.bg, border: `1px solid ${pc.border}`, color: pc.text, textTransform: 'capitalize' }}>
+                                        {cancelAtPeriodEnd ? 'Cancelling' : status}
+                                    </span>
+                                </div>
+
+                                {plan !== 'free' && periodEnd && (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                        <CalendarClock size={13} color="#64748b" />
+                                        <div>
+                                            <p style={{ fontSize: 11, color: '#94a3b8' }}>
+                                                {cancelAtPeriodEnd ? 'Ends' : 'Renews'} on{' '}
+                                                <span style={{ fontWeight: 600, color: '#f1f5f9' }}>
+                                                    {periodEnd.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                                </span>
+                                            </p>
+                                            {daysLeft !== null && daysLeft <= 7 && (
+                                                <p style={{ fontSize: 10, color: '#f97316', fontWeight: 600, marginTop: 2 }}>
+                                                    {daysLeft === 0 ? 'Expires today!' : `${daysLeft} day${daysLeft !== 1 ? 's' : ''} remaining`}
+                                                </p>
+                                            )}
+                                        </div>
                                     </div>
+                                )}
+
+                                {plan === 'free' && (
+                                    <button
+                                        onClick={() => { setShowProfile(false); router.push('/pricing'); }}
+                                        style={{ width: '100%', marginTop: 4, padding: '7px 0', borderRadius: 8, background: 'linear-gradient(135deg, #f97316, #ea580c)', border: 'none', color: 'white', fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'opacity 0.15s' }}
+                                        onMouseEnter={e => (e.currentTarget.style.opacity = '0.85')}
+                                        onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+                                    >
+                                        Upgrade Plan
+                                    </button>
                                 )}
                             </div>
 
@@ -337,7 +420,8 @@ export default function TopBar({ title, subtitle, onMenuToggle }: TopBarProps) {
                                 Sign Out
                             </button>
                         </div>
-                    )}
+                        );
+                    })()}
                 </div>
             </div>
         </header>

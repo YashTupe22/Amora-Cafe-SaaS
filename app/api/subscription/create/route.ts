@@ -88,6 +88,15 @@ export async function POST(req: NextRequest) {
       createdAt:          existing.exists ? existing.data()!.createdAt : FieldValue.serverTimestamp(),
     }, { merge: true });
 
+    // Lightweight instrumentation to help trace subscription creation issues.
+    console.info('[subscription/create] created', {
+      uid,
+      plan,
+      billingCycle,
+      subscriptionId: subscription.id,
+      razorpayCustomerId: customerId,
+    });
+
     return NextResponse.json({
       subscriptionId: subscription.id,
       razorpayKeyId:  process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,

@@ -22,7 +22,7 @@ interface AppSession {
 import {
   doc, getDoc, setDoc, updateDoc,
   collection, getDocs, deleteDoc,
-  writeBatch, query, orderBy,
+  writeBatch, query, orderBy, onSnapshot, limit,
 } from 'firebase/firestore';
 import { auth, db } from './firebase';
 import { localDb } from './localDb';
@@ -337,6 +337,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
   });
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  const notifUnsubRef = useRef<(() => void) | null>(null);
   const [ready, setReady] = useState(false);
   const [isOnline, setIsOnline] = useState(
     typeof navigator !== 'undefined' ? navigator.onLine : true
@@ -360,11 +361,67 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const markAllRead = useCallback(() => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    setNotifications(prev => {
+      // Optimistic UI update
+      const updated = prev.map(n => ({ ...n, read: true }));
+      // Persist unread→read to Firestore (fire-and-forget)
+      if (db && uidRef.current) {
+        const uid = uidRef.current;
+        prev.filter(n => !n.read).forEach(n => {
+          updateDoc(doc(db!, 'users', uid, 'notifications', n.id), { read: true }).catch(() => {});
+        });
+      }
+      return updated;
+    });
   }, []);
 
   const dismissNotification = useCallback((id: string) => {
     setNotifications(prev => prev.filter(n => n.id !== id));
+    // Also delete from Firestore (silent fail for in-memory-only notifications)
+    if (db && uidRef.current) {
+      deleteDoc(doc(db!, 'users', uidRef.current, 'notifications', id)).catch(() => {});
+    }
+  }, []);
+
+  /** Attaches a real-time Firestore listener for admin-pushed notifications. */
+  const subscribeToFirestoreNotifications = useCallback((uid: string) => {
+    if (!db) return;
+    // Unsubscribe previous listener if any
+    notifUnsubRef.current?.();
+    const q = query(
+      collection(db, 'users', uid, 'notifications'),
+      orderBy('createdAt', 'desc'),
+      limit(50),
+    );
+    notifUnsubRef.current = onSnapshot(q, snapshot => {
+      snapshot.docChanges().forEach(change => {
+        if (change.type === 'added') {
+          const d = change.doc.data();
+          const newNotif: AppNotification = {
+            id:        change.doc.id,
+            type:      (d.type ?? 'info') as AppNotificationType,
+            title:     d.title ?? '',
+            message:   d.message ?? '',
+            read:      d.read ?? false,
+            createdAt: d.createdAt?.toDate?.() ?? new Date(),
+          };
+          setNotifications(prev => {
+            // Avoid duplicates
+            if (prev.some(n => n.id === newNotif.id)) return prev;
+            return [newNotif, ...prev].slice(0, 50);
+          });
+        }
+        if (change.type === 'modified') {
+          const d = change.doc.data();
+          setNotifications(prev => prev.map(n =>
+            n.id === change.doc.id ? { ...n, read: d.read ?? n.read } : n
+          ));
+        }
+        if (change.type === 'removed') {
+          setNotifications(prev => prev.filter(n => n.id !== change.doc.id));
+        }
+      });
+    }, () => { /* silent fail */ });
   }, []);
 
   const refresh = useCallback(async (uid: string) => {
@@ -445,6 +502,8 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
 
   const clearData = useCallback(() => {
     uidRef.current = undefined;
+    notifUnsubRef.current?.();
+    notifUnsubRef.current = null;
     setProfile(null);
     setSubscription(null);
     setNotifications([]);
@@ -476,6 +535,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
           if (user) {
             setSession({ uid: user.id, email: user.email, displayName: user.name, metadata: { creationTime: user.createdAt } });
             uidRef.current = user.id;
+            subscribeToFirestoreNotifications(user.id);
             Promise.all([refresh(user.id), loadSubscription(user.id)]).finally(markReady);
           } else {
             sessionStorage.removeItem('amora-local-uid');
@@ -496,6 +556,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
           uidRef.current = user.uid;
           markReady();
           identifyUser(user.uid, { email: user.email ?? '' });
+          subscribeToFirestoreNotifications(user.uid);
           await Promise.all([
             refresh(user.uid),
             loadSubscription(user.uid),
@@ -514,7 +575,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     );
 
     return () => { unsubscribe(); clearTimeout(timeout); };
-  }, [refresh, clearData, loadSubscription]);
+  }, [refresh, clearData, loadSubscription, subscribeToFirestoreNotifications]);
 
   // ── Online / offline detection + background sync ──────────────────────
   useEffect(() => {

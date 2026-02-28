@@ -127,6 +127,19 @@ service cloud.firestore {
 
         allow delete: if isOwner(uid);
       }
+      // ── Notifications sub-collection (users/{uid}/notifications/{docId}) ──
+      // Admin SDK writes these (bypasses rules). Client can read, mark as read, dismiss.
+      match /notifications/{docId} {
+        allow read:   if isOwner(uid);
+        // Only allow toggling read flag, not other fields
+        allow update: if isOwner(uid)
+          && notOversized()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']);
+        // Allow client to dismiss (delete) their own notifications
+        allow delete: if isOwner(uid);
+        // No client-side creates — admin SDK only
+        allow create: if false;
+      }
     }
 
     // ── Support requests (support_requests/{docId}) ─────────────────────────

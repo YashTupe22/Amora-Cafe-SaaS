@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import {
   Users, Crown, Search, RefreshCw, Edit3, Trash2, ChevronRight,
   Building2, Phone, MapPin, FileText, Calendar, CheckCircle,
-  XCircle, AlertTriangle, Shield, LogOut, Save, X, Activity,
+  XCircle, AlertTriangle, Shield, LogOut, Save, X, Activity, Bell, Send,
 } from 'lucide-react';
 import { useAppStore } from '@/lib/appStore';
 import { auth } from '@/lib/firebase';
@@ -80,6 +80,140 @@ const statusStyle: Record<string, { bg: string; text: string }> = {
   halted:    { bg: 'rgba(249,115,22,0.12)', text: '#fb923c' },
   cancelled: { bg: 'rgba(239,68,68,0.12)',  text: '#ef4444' },
 };
+
+// ── Send Notification modal ───────────────────────────────────────────────────
+
+const NOTIF_TYPES = [
+  { value: 'info',           label: 'Info' },
+  { value: 'subscription',   label: 'Subscription' },
+  { value: 'new_bill',       label: 'New Bill' },
+  { value: 'bill_paid',      label: 'Bill Paid' },
+  { value: 'bill_cancelled', label: 'Bill Cancelled' },
+  { value: 'expense',        label: 'Expense' },
+];
+
+function SendNotifModal({
+  target,
+  targetLabel,
+  onClose,
+}: {
+  target:      string;   // uid or 'ALL'
+  targetLabel: string;   // display name
+  onClose:     () => void;
+}) {
+  const [type,    setType]    = useState('info');
+  const [title,   setTitle]   = useState('');
+  const [message, setMessage] = useState('');
+  const [sending, setSending] = useState(false);
+  const [sent,    setSent]    = useState(false);
+  const [error,   setError]   = useState('');
+
+  const handleSend = async () => {
+    if (!title.trim() || !message.trim()) { setError('Title and message are required.'); return; }
+    setSending(true); setError('');
+    try {
+      const res = await apiFetch('/api/superadmin/notify', {
+        method: 'POST',
+        body: JSON.stringify({ uid: target, type, title: title.trim(), message: message.trim() }),
+      });
+      setSent(true);
+      setTimeout(onClose, 1800);
+      void res;
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to send');
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const inputStyle: React.CSSProperties = {
+    width: '100%', padding: '8px 12px', background: 'rgba(255,255,255,0.05)',
+    border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8,
+    color: '#f1f5f9', fontSize: 13, outline: 'none',
+  };
+  const labelStyle: React.CSSProperties = {
+    fontSize: 11, fontWeight: 700, color: '#475569',
+    letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: 5, display: 'block',
+  };
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+      <div style={{ width: '100%', maxWidth: 460, background: '#0f172a', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 16, boxShadow: '0 30px 80px rgba(0,0,0,0.7)', overflow: 'hidden' }}>
+
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 20px', borderBottom: '1px solid rgba(255,255,255,0.07)', background: 'rgba(249,115,22,0.05)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(249,115,22,0.15)', border: '1px solid rgba(249,115,22,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Bell size={15} color="#fb923c" />
+            </div>
+            <div>
+              <p style={{ fontSize: 14, fontWeight: 700, color: '#f1f5f9' }}>Send Notification</p>
+              <p style={{ fontSize: 11, color: '#64748b', marginTop: 1 }}>To: <span style={{ color: '#fb923c', fontWeight: 600 }}>{targetLabel}</span></p>
+            </div>
+          </div>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', display: 'flex', padding: 4 }}>
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Form */}
+        <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div>
+            <label style={labelStyle}>Type</label>
+            <select value={type} onChange={e => setType(e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}>
+              {NOTIF_TYPES.map(t => (
+                <option key={t.value} value={t.value} style={{ background: '#0f172a' }}>{t.label}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label style={labelStyle}>Title</label>
+            <input
+              value={title}
+              onChange={e => setTitle(e.target.value)}
+              placeholder="e.g. Important Update"
+              style={inputStyle}
+            />
+          </div>
+          <div>
+            <label style={labelStyle}>Message</label>
+            <textarea
+              value={message}
+              onChange={e => setMessage(e.target.value)}
+              placeholder="Write your notification message here…"
+              rows={4}
+              style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.5 }}
+            />
+          </div>
+
+          {error && (
+            <div style={{ padding: '9px 12px', borderRadius: 8, background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', fontSize: 12, color: '#ef4444' }}>{error}</div>
+          )}
+          {sent && (
+            <div style={{ padding: '9px 12px', borderRadius: 8, background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 12, color: '#22c55e', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <CheckCircle size={14} /> Notification sent successfully!
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div style={{ display: 'flex', gap: 10, padding: '0 20px 20px', justifyContent: 'flex-end' }}>
+          <button onClick={onClose} style={{ padding: '9px 18px', borderRadius: 9, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8', fontSize: 13, cursor: 'pointer' }}>
+            Cancel
+          </button>
+          <button
+            onClick={handleSend}
+            disabled={sending || sent}
+            style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 9, background: sent ? 'rgba(34,197,94,0.2)' : sending ? '#374151' : 'linear-gradient(135deg, #f97316, #ea580c)', border: 'none', color: sent ? '#22c55e' : 'white', fontSize: 13, fontWeight: 700, cursor: sending || sent ? 'not-allowed' : 'pointer' }}
+          >
+            <Send size={13} />
+            {sending ? 'Sending…' : sent ? 'Sent!' : 'Send Notification'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // ── Edit modal ────────────────────────────────────────────────────────────────
 
@@ -264,6 +398,7 @@ export default function SuperAdminPage() {
   const [loadError, setLoadError]   = useState('');
   const [selected, setSelected]     = useState<UserRow | null>(null);
   const [editUser, setEditUser]     = useState<UserRow | null>(null);
+  const [notifTarget, setNotifTarget] = useState<{ uid: string; label: string } | null>(null);
   const [deleting, setDeleting]     = useState<string | null>(null);
   const [tab, setTab]               = useState<'customers' | 'subscriptions'>('customers');
 
@@ -384,8 +519,12 @@ export default function SuperAdminPage() {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <span style={{ fontSize: 12, color: '#475569' }}>{ADMIN_EMAIL}</span>
-          <button
-            onClick={() => { logout(); router.replace('/'); }}
+          <button              onClick={() => setNotifTarget({ uid: 'ALL', label: 'All Users (Broadcast)' })}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 8, background: 'rgba(249,115,22,0.1)', border: '1px solid rgba(249,115,22,0.25)', color: '#fb923c', fontSize: 12, cursor: 'pointer', fontWeight: 600 }}
+            >
+              <Bell size={13} /> Broadcast
+            </button>
+          <button            onClick={() => { logout(); router.replace('/'); }}
             style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 8, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#ef4444', fontSize: 12, cursor: 'pointer' }}
           >
             <LogOut size={13} /> Sign Out
@@ -515,9 +654,17 @@ export default function SuperAdminPage() {
               {/* Panel header */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
                 <p style={{ fontSize: 14, fontWeight: 700, color: '#f1f5f9' }}>User Detail</p>
-                <button onClick={() => setSelected(null)} style={{ background: 'none', border: 'none', color: '#475569', cursor: 'pointer', display: 'flex' }}>
-                  <X size={16} />
-                </button>
+                <div style={{ display: 'flex', gap: 8 }}>
+                    <button
+                      onClick={() => setNotifTarget({ uid: selected.uid, label: selected.name || selected.email })}
+                      style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 12px', borderRadius: 7, background: 'rgba(249,115,22,0.1)', border: '1px solid rgba(249,115,22,0.25)', color: '#fb923c', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}
+                    >
+                      <Bell size={11} /> Notify
+                    </button>
+                    <button onClick={() => setSelected(null)} style={{ background: 'none', border: 'none', color: '#475569', cursor: 'pointer', display: 'flex', padding: 4 }}>
+                      <X size={16} />
+                    </button>
+                  </div>
               </div>
 
               <div style={{ padding: 18, display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -671,6 +818,15 @@ export default function SuperAdminPage() {
           user={editUser}
           onClose={() => setEditUser(null)}
           onSaved={handleSubSaved}
+        />
+      )}
+
+      {/* Send Notification modal */}
+      {notifTarget && (
+        <SendNotifModal
+          target={notifTarget.uid}
+          targetLabel={notifTarget.label}
+          onClose={() => setNotifTarget(null)}
         />
       )}
 

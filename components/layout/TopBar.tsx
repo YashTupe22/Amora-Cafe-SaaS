@@ -9,7 +9,8 @@ import { useSubscription } from '@/hooks/useSubscription';
 
 // ── Notification helpers ─────────────────────────────────────────────────────
 
-function timeAgo(date: Date): string {
+function timeAgo(date: Date | null | undefined): string {
+  if (!date || !(date instanceof Date) || isNaN(date.getTime())) return 'just now';
   const s = Math.floor((Date.now() - date.getTime()) / 1000);
   if (s < 60) return 'just now';
   if (s < 3600) return `${Math.floor(s / 60)}m ago`;
@@ -56,7 +57,7 @@ interface SearchResult {
 
 export default function TopBar({ title, subtitle, onMenuToggle }: TopBarProps) {
     const router = useRouter();
-    const { profile, currentUser, data, logout, isOnline, notifications, unreadCount, markAllRead, dismissNotification } = useAppStore();
+    const { profile, currentUser, data, logout, isOnline, notifications, unreadCount, markAllRead, dismissNotification, clearAllNotifications } = useAppStore();
     const { plan, status, isActive, cancelAtPeriodEnd, currentPeriodEnd } = useSubscription();
 
     const [query, setQuery] = useState('');
@@ -207,6 +208,7 @@ export default function TopBar({ title, subtitle, onMenuToggle }: TopBarProps) {
                     <button
                         onClick={() => {
                             setShowNotifications(p => !p);
+                            // Mark all read when OPENING (not closing)
                             if (!showNotifications) markAllRead();
                         }}
                         style={{ width: 36, height: 36, borderRadius: 10, background: showNotifications ? 'rgba(249,115,22,0.12)' : 'rgba(255,255,255,0.05)', border: `1px solid ${showNotifications ? 'rgba(249,115,22,0.35)' : 'rgba(255,255,255,0.08)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative', color: '#94a3b8', flexShrink: 0, transition: 'all 0.2s' }}
@@ -214,8 +216,8 @@ export default function TopBar({ title, subtitle, onMenuToggle }: TopBarProps) {
                     >
                         <Bell size={16} />
                         {unreadCount > 0 && (
-                            <span style={{ position: 'absolute', top: 6, right: 6, minWidth: 8, height: 8, borderRadius: '50%', background: '#f97316', boxShadow: '0 0 6px rgba(249,115,22,0.9)', fontSize: 9, fontWeight: 700, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: unreadCount > 9 ? '0 3px' : 0 }}>
-                                {unreadCount > 9 ? '9+' : ''}
+                            <span style={{ position: 'absolute', top: -4, right: -4, minWidth: 16, height: 16, borderRadius: 8, background: '#f97316', boxShadow: '0 0 6px rgba(249,115,22,0.9)', fontSize: 9, fontWeight: 700, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 3px', lineHeight: 1 }}>
+                                {unreadCount > 99 ? '99+' : unreadCount}
                             </span>
                         )}
                     </button>
@@ -230,7 +232,7 @@ export default function TopBar({ title, subtitle, onMenuToggle }: TopBarProps) {
                                 </div>
                                 {notifications.length > 0 && (
                                     <button
-                                        onClick={() => notifications.forEach(n => dismissNotification(n.id))}
+                                        onClick={() => clearAllNotifications()}
                                         style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', color: '#475569', fontSize: 11, padding: '4px 6px', borderRadius: 6, transition: 'color 0.15s' }}
                                         onMouseEnter={e => (e.currentTarget.style.color = '#ef4444')}
                                         onMouseLeave={e => (e.currentTarget.style.color = '#475569')}

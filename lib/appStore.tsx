@@ -162,6 +162,7 @@ interface AppStoreContextValue {
   unreadCount: number;
   markAllRead: () => void;
   dismissNotification: (id: string) => void;
+  clearAllNotifications: () => Promise<void>;
   dashboard: {
     totalRevenue: number;
     totalExpenses: number;
@@ -386,7 +387,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
   /** Attaches a real-time Firestore listener for admin-pushed notifications. */
   const subscribeToFirestoreNotifications = useCallback((uid: string) => {
     if (!db) return;
-    // Unsubscribe previous listener if any
+    // Unsubscribe any previous listener
     notifUnsubRef.current?.();
     const q = query(
       collection(db, 'users', uid, 'notifications'),
@@ -394,34 +395,74 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       limit(50),
     );
     notifUnsubRef.current = onSnapshot(q, snapshot => {
-      snapshot.docChanges().forEach(change => {
+      const changes = snapshot.docChanges();
+
+      // ── Collect all "added" changes in one batch ───────────────────────
+      // This avoids the one-by-one prepend bug that reverses the sort order.
+      const added: AppNotification[] = [];
+      const modified: { id: string; read: boolean }[] = [];
+      const removed: string[] = [];
+
+      changes.forEach(change => {
+        const d = change.doc.data();
         if (change.type === 'added') {
-          const d = change.doc.data();
-          const newNotif: AppNotification = {
+          added.push({
             id:        change.doc.id,
             type:      (d.type ?? 'info') as AppNotificationType,
             title:     d.title ?? '',
             message:   d.message ?? '',
             read:      d.read ?? false,
+            // serverTimestamp() resolves to null on write then fills in — fall back to now
             createdAt: d.createdAt?.toDate?.() ?? new Date(),
-          };
-          setNotifications(prev => {
-            // Avoid duplicates
-            if (prev.some(n => n.id === newNotif.id)) return prev;
-            return [newNotif, ...prev].slice(0, 50);
           });
-        }
-        if (change.type === 'modified') {
-          const d = change.doc.data();
-          setNotifications(prev => prev.map(n =>
-            n.id === change.doc.id ? { ...n, read: d.read ?? n.read } : n
-          ));
-        }
-        if (change.type === 'removed') {
-          setNotifications(prev => prev.filter(n => n.id !== change.doc.id));
+        } else if (change.type === 'modified') {
+          modified.push({ id: change.doc.id, read: d.read ?? false });
+        } else if (change.type === 'removed') {
+          removed.push(change.doc.id);
         }
       });
-    }, () => { /* silent fail */ });
+
+      if (added.length > 0) {
+        // Sort newest-first before merging
+        added.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+        setNotifications(prev => {
+          // Filter out duplicates, then merge and re-sort
+          const existingIds = new Set(prev.map(n => n.id));
+          const fresh = added.filter(n => !existingIds.has(n.id));
+          if (fresh.length === 0) return prev;
+          return [...fresh, ...prev].slice(0, 50);
+        });
+      }
+      if (modified.length > 0) {
+        const modMap = new Map(modified.map(m => [m.id, m.read]));
+        setNotifications(prev =>
+          prev.map(n => modMap.has(n.id) ? { ...n, read: modMap.get(n.id)! } : n)
+        );
+      }
+      if (removed.length > 0) {
+        const removedSet = new Set(removed);
+        setNotifications(prev => prev.filter(n => !removedSet.has(n.id)));
+      }
+    }, (err) => {
+      // Silently ignore permission errors (e.g. user not yet logged in)
+      console.warn('[Notifications] onSnapshot error:', err.message);
+    });
+  }, []);
+
+  /** Clears ALL notifications — removes them from state and Firestore in one batch. */
+  const clearAllNotifications = useCallback(async () => {
+    const uid = uidRef.current;
+    setNotifications([]);
+    if (!db || !uid) return;
+    try {
+      const snap = await getDocs(collection(db, 'users', uid, 'notifications'));
+      if (snap.empty) return;
+      const batch = writeBatch(db);
+      snap.docs.forEach(d => batch.delete(d.ref));
+      await batch.commit();
+    } catch {
+      // Silent fail — state is already cleared locally
+    }
   }, []);
 
   const refresh = useCallback(async (uid: string) => {
@@ -1183,6 +1224,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     unreadCount,
     markAllRead,
     dismissNotification,
+    clearAllNotifications,
   }), [
     ready, session, profile, currentUser, data,
     login, signup, loginDemo, logout, completeOnboarding,
@@ -1190,7 +1232,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     updateEmployees, updateInventory, updateCatalogue, updateBusinessProfile, updatePreferences,
     deleteEmployee, deleteInvoice, deleteTransaction, deleteInventoryItem,
     resetBusinessData, deleteCurrentAccount, isOnline, dashboard, reloadSubscription,
-    notifications, unreadCount, markAllRead, dismissNotification,
+    notifications, unreadCount, markAllRead, dismissNotification, clearAllNotifications,
   ]);
 
   return <AppStoreContext.Provider value={value}>{children}</AppStoreContext.Provider>;

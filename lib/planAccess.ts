@@ -30,6 +30,7 @@ export const PLAN_LIMITS = {
     multiOutlet:       false,
     rbac:              false,
     twoFactor:         false,
+    whatsappBill:      false,
     // Meta
     support:           'Community',
   },
@@ -48,6 +49,7 @@ export const PLAN_LIMITS = {
     multiOutlet:       false,
     rbac:              false,
     twoFactor:         false,
+    whatsappBill:      false,
     support:           'Email',
   },
   pro: {
@@ -65,6 +67,7 @@ export const PLAN_LIMITS = {
     multiOutlet:       true,
     rbac:              true,
     twoFactor:         true,
+    whatsappBill:      true,
     support:           'Priority Email',
   },
   enterprise: {
@@ -82,6 +85,7 @@ export const PLAN_LIMITS = {
     multiOutlet:       true,
     rbac:              true,
     twoFactor:         true,
+    whatsappBill:      true,
     support:           'Dedicated CSM',
   },
 } as const;

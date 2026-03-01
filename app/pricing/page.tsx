@@ -67,6 +67,7 @@ const FEATURES: { label: string; free: string; starter: string; pro: string; ent
   { label: 'Multi-Outlet',      free: '—',        starter: '—',        pro: '✓',          enterprise: '✓' },
   { label: 'RBAC',              free: '—',        starter: '—',        pro: '✓',          enterprise: '✓' },
   { label: '2FA Security',      free: '—',        starter: '—',        pro: '✓',          enterprise: '✓' },
+  { label: 'WhatsApp Bills',    free: '—',        starter: '—',        pro: '✓',          enterprise: '✓' },
   { label: 'Support',           free: 'Community', starter: 'Email',   pro: 'Priority',   enterprise: 'Dedicated CSM' },
   { label: 'Data Retention',    free: '3 months', starter: '6 months', pro: '1 year',     enterprise: 'Unlimited' },
 ];
@@ -275,6 +276,7 @@ export default function PricingPage() {
                   PLAN_LIMITS[plan.key].multiOutlet   ? 'Multi-outlet' : null,
                   PLAN_LIMITS[plan.key].rbac          ? 'Team roles (RBAC)' : null,
                   PLAN_LIMITS[plan.key].twoFactor     ? '2FA security' : null,
+                  PLAN_LIMITS[plan.key].whatsappBill  ? 'WhatsApp bill sharing' : null,
                 ]
                   .filter(Boolean)
                   .map((f, i) => (
@@ -399,7 +401,7 @@ export default function PricingPage() {
 
       {/* FAQ / footer nudge */}
       <div style={{ textAlign: 'center', marginTop: 56, color: 'rgba(255,255,255,0.4)', fontSize: '13px' }}>
-        <p>Questions? Contact us at <a href="mailto:support@amoracafe.in" style={{ color: '#f59e0b' }}>support@amoracafe.in</a></p>
+        <p>Questions? Contact us at <a href="mailto:yashrtupe01@gmail.com" style={{ color: '#f59e0b' }}>support@amoracafe.in</a></p>
         <p>All plans include a 7-day free trial. Cancel anytime.</p>
       </div>
     </div>

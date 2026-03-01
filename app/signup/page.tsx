@@ -50,7 +50,7 @@ export default function SignupPage() {
             <Zap size={26} color="white" />
           </div>
           <div style={{ textAlign: 'center' }}>
-            <h1 style={{ fontSize: 22, fontWeight: 800, color: '#f1f5f9', letterSpacing: '-0.3px' }}>Create your Synplix account</h1>
+            <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.3px' }}>Create your Synplix account</h1>
             <p style={{ fontSize: 13, color: '#64748b', marginTop: 4 }}>Built for Indian small businesses</p>
           </div>
         </div>

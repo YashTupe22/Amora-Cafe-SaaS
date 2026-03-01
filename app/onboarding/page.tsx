@@ -95,7 +95,7 @@ export default function OnboardingPage() {
                 {/* Card */}
                 <div className="glass-card animate-fade-in" style={{ padding: '36px 32px' }}>
                     <div style={{ marginBottom: 28 }}>
-                        <h2 style={{ fontSize: 20, fontWeight: 700, color: '#f1f5f9', marginBottom: 6 }}>{STEPS[step].title}</h2>
+                        <h2 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 6 }}>{STEPS[step].title}</h2>
                         <p style={{ fontSize: 13, color: '#64748b' }}>{STEPS[step].subtitle}</p>
                     </div>
 
@@ -159,7 +159,7 @@ export default function OnboardingPage() {
                                 ].map(([label, value]) => (
                                     <div key={label} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                                         <span style={{ fontSize: 12, color: '#64748b' }}>{label}</span>
-                                        <span style={{ fontSize: 12, color: '#f1f5f9', fontWeight: 500, maxWidth: 200, textAlign: 'right', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{value}</span>
+                                        <span style={{ fontSize: 12, color: 'var(--text-primary)', fontWeight: 500, maxWidth: 200, textAlign: 'right', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{value}</span>
                                     </div>
                                 ))}
                             </div>

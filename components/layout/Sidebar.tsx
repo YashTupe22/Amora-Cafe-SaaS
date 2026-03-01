@@ -98,7 +98,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             </nav>
 
             {/* Logout */}
-            <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 16 }}>
+            <div style={{ borderTop: '1px solid var(--dropdown-divider)', paddingTop: 16 }}>
                 {/* Plan badge */}
                 <div
                     style={{

@@ -47,7 +47,7 @@ function ItemForm({ title, initial, onSave, onCancel }: ItemFormProps) {
     return (
         <div className="glass-card animate-fade-in" style={{ padding: 24, marginBottom: 22 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-                <h2 style={{ fontSize: 15, fontWeight: 700, color: '#f1f5f9' }}>{title}</h2>
+                <h2 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>{title}</h2>
                 <button onClick={onCancel} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}><X size={18} /></button>
             </div>
 
@@ -73,8 +73,8 @@ function ItemForm({ title, initial, onSave, onCancel }: ItemFormProps) {
                 <input className="dark-input" placeholder="Short description shown on bill…" value={description} onChange={e => setDescription(e.target.value)} style={inp} />
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: 16 }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', fontSize: 13, color: '#94a3b8' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid var(--glass-border)', paddingTop: 16 }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', fontSize: 13, color: 'var(--text-secondary)' }}>
                     <button
                         type="button"
                         onClick={() => setAvailable(v => !v)}
@@ -85,7 +85,7 @@ function ItemForm({ title, initial, onSave, onCancel }: ItemFormProps) {
                     {available ? 'Available' : 'Unavailable'}
                 </label>
                 <div style={{ display: 'flex', gap: 10 }}>
-                    <button onClick={onCancel} style={{ padding: '10px 20px', borderRadius: 8, background: 'rgba(100,116,139,0.1)', border: '1px solid rgba(100,116,139,0.2)', color: '#94a3b8', cursor: 'pointer', fontSize: 13 }}>
+                    <button onClick={onCancel} style={{ padding: '10px 20px', borderRadius: 8, background: 'var(--icon-btn-bg)', border: '1px solid var(--icon-btn-border)', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 13 }}>
                         Cancel
                     </button>
                     <button className="glow-btn" onClick={handleSave} style={{ padding: '10px 24px', fontSize: 14 }}>
@@ -194,8 +194,8 @@ export default function CataloguePage() {
                             onClick={() => setFilterCat(cat as MenuCategory | 'All')}
                             style={{
                                 padding: '6px 14px', borderRadius: 999, fontSize: 12, fontWeight: 600, cursor: 'pointer',
-                                background: filterCat === cat ? (cat === 'All' ? 'rgba(249,115,22,0.2)' : CAT_COLORS[cat as MenuCategory].bg) : 'rgba(255,255,255,0.04)',
-                                border: `1px solid ${filterCat === cat ? (cat === 'All' ? 'rgba(249,115,22,0.4)' : CAT_COLORS[cat as MenuCategory].dot) : 'rgba(255,255,255,0.08)'}`,
+                                background: filterCat === cat ? (cat === 'All' ? 'rgba(249,115,22,0.2)' : CAT_COLORS[cat as MenuCategory].bg) : 'var(--icon-btn-bg)',
+                                border: `1px solid ${filterCat === cat ? (cat === 'All' ? 'rgba(249,115,22,0.4)' : CAT_COLORS[cat as MenuCategory].dot) : 'var(--icon-btn-border)'}`,
                                 color: filterCat === cat ? (cat === 'All' ? '#fb923c' : CAT_COLORS[cat as MenuCategory].color) : '#64748b',
                                 transition: 'all 0.15s',
                             }}
@@ -231,7 +231,7 @@ export default function CataloguePage() {
                 return (
                     <div key={cat} className="glass-card" style={{ marginBottom: 20, padding: 0, overflow: 'hidden' }}>
                         {/* Category header */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 20px', borderBottom: '1px solid var(--glass-border)', background: 'var(--icon-btn-bg)' }}>
                             <span style={{ width: 10, height: 10, borderRadius: '50%', background: col.dot, flexShrink: 0 }} />
                             <span style={{ fontSize: 14, fontWeight: 700, color: col.color }}>{cat}</span>
                             <span style={{ marginLeft: 'auto', fontSize: 12, color: '#64748b', fontWeight: 600 }}>
@@ -246,14 +246,14 @@ export default function CataloguePage() {
                         ) : (
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 1 }}>
                                 {items.map(item => (
-                                    <div key={item.id} style={{ padding: '14px 18px', display: 'flex', alignItems: 'flex-start', gap: 12, borderRight: '1px solid rgba(255,255,255,0.04)', borderBottom: '1px solid rgba(255,255,255,0.04)', opacity: item.available ? 1 : 0.5 }}>
+                                    <div key={item.id} style={{ padding: '14px 18px', display: 'flex', alignItems: 'flex-start', gap: 12, borderRight: '1px solid var(--glass-border)', borderBottom: '1px solid var(--glass-border)', opacity: item.available ? 1 : 0.5 }}>
                                         {/* Icon */}
                                         <div style={{ width: 38, height: 38, borderRadius: 10, background: col.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                                             <BookOpen size={16} color={col.color} />
                                         </div>
                                         <div style={{ flex: 1, minWidth: 0 }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                                                <p style={{ fontSize: 13, fontWeight: 700, color: '#f1f5f9', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1 }}>{item.name}</p>
+                                                <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1 }}>{item.name}</p>
                                                 <span style={{ fontSize: 13, fontWeight: 800, color: '#fb923c', whiteSpace: 'nowrap' }}>₹{item.price}</span>
                                             </div>
                                             {item.description && (

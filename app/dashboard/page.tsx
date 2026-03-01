@@ -50,6 +50,7 @@ const CustomTooltip = ({ active, payload, label }: TooltipLikeProps) => {
 
 function DashboardContent() {
     const { dashboard, currentUser, profile, data } = useAppStore();
+    const isDark = profile?.darkMode !== false;
     const searchParams = useSearchParams();
     const { canAccess } = useSubscription();
     const canPdf = canAccess('pdfExport');
@@ -122,8 +123,8 @@ function DashboardContent() {
                             .slice(0, 2)}
                     </div>
                     <div>
-                        <p style={{ fontSize: 12, color: '#e2e8f0' }}>Welcome back,</p>
-                        <p style={{ fontSize: 13, fontWeight: 700, color: '#f9fafb' }}>
+                        <p style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Welcome back,</p>
+                        <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>
                             {currentUser.name.split(' ')[0]} 👋
                         </p>
                     </div>
@@ -150,10 +151,10 @@ function DashboardContent() {
                 >
                     <span style={{ fontSize: 20 }}>🎉</span>
                     <div>
-                        <p style={{ fontSize: 13, fontWeight: 700, color: '#fef3c7', margin: 0 }}>
+                        <p style={{ fontSize: 13, fontWeight: 700, color: isDark ? '#fef3c7' : '#92400e', margin: 0 }}>
                             Plan upgraded successfully!
                         </p>
-                        <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)', margin: '2px 0 0' }}>
+                        <p style={{ fontSize: 11, color: 'var(--text-secondary)', margin: '2px 0 0' }}>
                             Your new features are now active.
                         </p>
                     </div>
@@ -232,7 +233,7 @@ function DashboardContent() {
                     </div>
                     <ResponsiveContainer width="100%" height={260}>
                         <LineChart data={dashboard.revenueChart} margin={{ top: 4, right: 8, left: -10, bottom: 0 }}>
-                            <CartesianGrid stroke="rgba(255,255,255,0.04)" strokeDasharray="4 4" />
+                            <CartesianGrid stroke={isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.07)'} strokeDasharray="4 4" />
                             <XAxis dataKey="month" tick={{ fill: 'var(--text-secondary)', fontSize: 12 }} axisLine={false} tickLine={false} />
                             <YAxis tick={{ fill: 'var(--text-secondary)', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={v => `₹${(v / 1000).toFixed(0)}k`} />
                             <Tooltip content={<CustomTooltip />} />
@@ -335,7 +336,7 @@ function DashboardContent() {
                                             alignItems: 'center',
                                             justifyContent: 'space-between',
                                             padding: '11px 0',
-                                            borderBottom: idx < last5.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
+                                            borderBottom: idx < last5.length - 1 ? '1px solid var(--glass-border)' : 'none',
                                         }}
                                     >
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -355,10 +356,10 @@ function DashboardContent() {
                                                 {tx.type === 'Income' ? '↗' : '↙'}
                                             </div>
                                             <div>
-                                                <p style={{ fontSize: 13, fontWeight: 600, color: '#f1f5f9', lineHeight: 1.3 }}>
+                                                <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.3 }}>
                                                     {tx.note || tx.category}
                                                 </p>
-                                                <p style={{ fontSize: 11, color: '#475569', marginTop: 2 }}>
+                                                <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
                                                     {new Date(tx.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: '2-digit' })} · {tx.category}
                                                 </p>
                                             </div>
@@ -420,13 +421,13 @@ function DashboardContent() {
                                                 >
                                                     {idx + 1}
                                                 </span>
-                                                <span style={{ fontSize: 13, fontWeight: 600, color: '#f1f5f9' }}>{client}</span>
+                                                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{client}</span>
                                             </div>
                                             <span style={{ fontSize: 13, fontWeight: 700, color: '#22c55e' }}>
                                                 ₹{revenue.toLocaleString('en-IN')}
                                             </span>
                                         </div>
-                                        <div style={{ height: 5, borderRadius: 3, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+                                        <div style={{ height: 5, borderRadius: 3, background: 'var(--glass-border)', overflow: 'hidden' }}>
                                             <div
                                                 style={{
                                                     width: `${Math.round((revenue / max) * 100)}%`,

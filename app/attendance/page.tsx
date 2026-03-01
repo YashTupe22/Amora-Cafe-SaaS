@@ -62,7 +62,7 @@ function EmployeeProfileModal({ emp, onClose, onEdit }: { emp: Employee; onClose
                         {emp.avatar}
                     </div>
                     <div>
-                        <h2 style={{ fontSize: 18, fontWeight: 800, color: '#f1f5f9' }}>{emp.name}</h2>
+                        <h2 style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-primary)' }}>{emp.name}</h2>
                         <p style={{ fontSize: 13, color: '#64748b', marginTop: 2 }}>{emp.role}</p>
                     </div>
                 </div>
@@ -75,9 +75,9 @@ function EmployeeProfileModal({ emp, onClose, onEdit }: { emp: Employee; onClose
                         { label: 'Salary', value: emp.salary ? `₹${emp.salary.toLocaleString('en-IN')}/mo` : '—' },
                         { label: 'Deduction Rules', value: emp.salaryDeductionRules || '—' },
                     ].map(({ label, value }) => (
-                        <div key={label} style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 10, padding: '10px 14px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                        <div key={label} style={{ background: 'var(--icon-btn-bg)', borderRadius: 10, padding: '10px 14px', border: '1px solid var(--glass-border)' }}>
                             <p style={{ fontSize: 11, color: '#475569', fontWeight: 600, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{label}</p>
-                            <p style={{ fontSize: 13, color: '#e2e8f0', fontWeight: 600, wordBreak: 'break-word' }}>{value}</p>
+                            <p style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 600, wordBreak: 'break-word' }}>{value}</p>
                         </div>
                     ))}
                 </div>
@@ -178,7 +178,7 @@ function EditEmployeeModal({
                 onClick={e => e.stopPropagation()}
             >
                 <button onClick={onClose} style={{ position: 'absolute', top: 14, right: 14, background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}><X size={18} /></button>
-                <h3 style={{ fontSize: 15, fontWeight: 700, color: '#f1f5f9', marginBottom: 20 }}>Edit Employee</h3>
+                <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 20 }}>Edit Employee</h3>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 14 }}>
                     <div>
                         <label style={{ fontSize: 12, color: '#64748b', display: 'block', marginBottom: 6 }}>Full Name *</label>
@@ -196,7 +196,7 @@ function EditEmployeeModal({
                     </div>
                     <div>
                         <label style={{ fontSize: 12, color: '#64748b', display: 'block', marginBottom: 6 }}>Date of Joining</label>
-                        <input className="dark-input" type="date" value={form.dateOfJoining} onChange={e => setField('dateOfJoining', e.target.value)} style={{ ...inp, colorScheme: 'dark' }} />
+                        <input className="dark-input" type="date" value={form.dateOfJoining} onChange={e => setField('dateOfJoining', e.target.value)} style={{ ...inp }} />
                     </div>
                     <div>
                         <label style={{ fontSize: 12, color: '#64748b', display: 'block', marginBottom: 6 }}>Email</label>
@@ -219,7 +219,7 @@ function EditEmployeeModal({
                     </div>
                 </div>
                 <div style={{ display: 'flex', gap: 10, marginTop: 20, justifyContent: 'flex-end' }}>
-                    <button onClick={onClose} style={{ padding: '10px 18px', borderRadius: 10, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8', cursor: 'pointer', fontSize: 13 }}>Cancel</button>
+                    <button onClick={onClose} style={{ padding: '10px 18px', borderRadius: 10, background: 'var(--icon-btn-bg)', border: '1px solid var(--icon-btn-border)', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 13 }}>Cancel</button>
                     <button className="glow-btn" onClick={save} style={{ padding: '10px 24px', fontSize: 13 }}><span>Save Changes</span></button>
                 </div>
             </div>
@@ -243,7 +243,7 @@ export default function AttendancePage() {
                     <div style={{ width: 80, height: 80, borderRadius: 20, background: 'linear-gradient(135deg, rgba(249,115,22,0.2), rgba(234,88,12,0.1))', border: '1px solid rgba(249,115,22,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24 }}>
                         <Lock size={36} color="#f97316" />
                     </div>
-                    <h2 style={{ fontSize: 22, fontWeight: 800, color: '#f1f5f9', marginBottom: 10 }}>Attendance Tracking</h2>
+                    <h2 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 10 }}>Attendance Tracking</h2>
                     <p style={{ fontSize: 14, color: '#64748b', maxWidth: 420, marginBottom: 28, lineHeight: 1.7 }}>
                         Employee attendance tracking and payroll sheets are available on the{' '}
                         <strong style={{ color: '#fb923c' }}>Starter plan</strong> and above.
@@ -381,7 +381,7 @@ export default function AttendancePage() {
             {showAddForm && (
                 <div className="glass-card animate-fade-in" style={{ padding: 24, marginBottom: 20 }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-                        <h3 style={{ fontSize: 15, fontWeight: 700, color: '#f1f5f9' }}>Add New Employee</h3>
+                        <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>Add New Employee</h3>
                         <button onClick={() => { setShowAddForm(false); setForm(EMPTY_FORM); setFormErrors({}); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}><X size={18} /></button>
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 14 }}>
@@ -402,7 +402,7 @@ export default function AttendancePage() {
                         </div>
                         <div>
                             <label style={{ fontSize: 12, color: '#64748b', display: 'block', marginBottom: 6 }}>Date of Joining</label>
-                            <input className="dark-input" type="date" value={form.dateOfJoining} onChange={e => setField('dateOfJoining', e.target.value)} style={{ ...inp, colorScheme: 'dark' }} />
+                            <input className="dark-input" type="date" value={form.dateOfJoining} onChange={e => setField('dateOfJoining', e.target.value)} style={{ ...inp }} />
                         </div>
                         <div>
                             <label style={{ fontSize: 12, color: '#64748b', display: 'block', marginBottom: 6 }}>Email</label>
@@ -425,7 +425,7 @@ export default function AttendancePage() {
                         </div>
                     </div>
                     <div style={{ display: 'flex', gap: 10, marginTop: 18, justifyContent: 'flex-end' }}>
-                        <button onClick={() => { setShowAddForm(false); setForm(EMPTY_FORM); setFormErrors({}); }} style={{ padding: '10px 18px', borderRadius: 10, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8', cursor: 'pointer', fontSize: 13 }}>Cancel</button>
+                        <button onClick={() => { setShowAddForm(false); setForm(EMPTY_FORM); setFormErrors({}); }} style={{ padding: '10px 18px', borderRadius: 10, background: 'var(--icon-btn-bg)', border: '1px solid var(--icon-btn-border)', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 13 }}>Cancel</button>
                         <button className="glow-btn" onClick={addEmployee} style={{ padding: '10px 24px', fontSize: 13 }}><span>Add Employee</span></button>
                     </div>
                 </div>
@@ -455,13 +455,13 @@ export default function AttendancePage() {
                             const status = emp.attendance[today] ?? null;
                             const hasOT = (emp.overtime ?? {})[today] ?? false;
                             return (
-                                <div key={emp.id} className="glass-card" style={{ padding: '16px 18px', borderColor: status === 'present' ? 'rgba(34,197,94,0.3)' : status === 'absent' ? 'rgba(239,68,68,0.3)' : 'rgba(255,255,255,0.1)', transition: 'border-color 0.2s' }}>
+                <div key={emp.id} className="glass-card" style={{ padding: '16px 18px', borderColor: status === 'present' ? 'rgba(34,197,94,0.3)' : status === 'absent' ? 'rgba(239,68,68,0.3)' : 'var(--glass-border)', transition: 'border-color 0.2s' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14, cursor: 'pointer' }} onClick={() => setProfileEmp(emp)}>
                                         <div style={{ width: 38, height: 38, borderRadius: 10, background: 'linear-gradient(135deg, #f97316, #ea580c)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: 'white' }}>
                                             {emp.avatar}
                                         </div>
                                         <div style={{ flex: 1 }}>
-                                            <p style={{ fontSize: 14, fontWeight: 600, color: '#f1f5f9' }}>{emp.name}</p>
+                                            <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{emp.name}</p>
                                             <p style={{ fontSize: 12, color: '#64748b' }}>{emp.role}</p>
                                         </div>
                                     </div>
@@ -491,13 +491,13 @@ export default function AttendancePage() {
             {/* Monthly Summary */}
             <div className="glass-card" style={{ padding: 24 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
-                    <h2 style={{ fontSize: 15, fontWeight: 700, color: '#f1f5f9' }}>Monthly Summary</h2>
+                    <h2 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>Monthly Summary</h2>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <button onClick={prevMonth} style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <button onClick={prevMonth} style={{ width: 32, height: 32, borderRadius: 8, background: 'var(--icon-btn-bg)', border: '1px solid var(--icon-btn-border)', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <ChevronLeft size={16} />
                         </button>
-                        <span style={{ fontSize: 13, fontWeight: 600, color: '#f1f5f9', minWidth: 130, textAlign: 'center' }}>{MONTH_NAMES[viewMonth]} {viewYear}</span>
-                        <button onClick={nextMonth} style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', minWidth: 130, textAlign: 'center' }}>{MONTH_NAMES[viewMonth]} {viewYear}</span>
+                        <button onClick={nextMonth} style={{ width: 32, height: 32, borderRadius: 8, background: 'var(--icon-btn-bg)', border: '1px solid var(--icon-btn-border)', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <ChevronRight size={16} />
                         </button>
                     </div>
@@ -535,10 +535,10 @@ export default function AttendancePage() {
                                         <td style={{ color: '#22c55e', fontWeight: 600 }}>{present}</td>
                                         <td style={{ color: '#ef4444', fontWeight: 600 }}>{absent}</td>
                                         <td style={{ color: '#f59e0b', fontWeight: 600 }}>{otDays > 0 ? otDays : '—'}</td>
-                                        <td style={{ color: '#94a3b8' }}>{workDays.length}</td>
+                                        <td style={{ color: 'var(--text-secondary)' }}>{workDays.length}</td>
                                         <td>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                                <div style={{ flex: 1, height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.07)', overflow: 'hidden' }}>
+                                                <div style={{ flex: 1, height: 6, borderRadius: 3, background: 'var(--glass-border)', overflow: 'hidden' }}>
                                                     <div style={{ width: `${pct}%`, height: '100%', borderRadius: 3, background: pct >= 80 ? '#22c55e' : pct >= 60 ? '#f59e0b' : '#ef4444', transition: 'width 0.4s ease' }} />
                                                 </div>
                                                 <span style={{ fontSize: 13, fontWeight: 600, minWidth: 36 }}>{pct}%</span>

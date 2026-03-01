@@ -188,7 +188,7 @@ export default function InventoryPage() {
       {showForm && (
         <div className="glass-card animate-fade-in" style={{ padding: 22, marginBottom: 22 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-            <h3 style={{ fontSize: 15, fontWeight: 800, color: '#f1f5f9' }}>
+            <h3 style={{ fontSize: 15, fontWeight: 800, color: 'var(--text-primary)' }}>
               {editingId ? 'Edit Inventory Item' : 'Add Inventory Item'}
             </h3>
           </div>
@@ -370,9 +370,9 @@ export default function InventoryPage() {
               style={{
                 padding: '9px 18px',
                 borderRadius: 10,
-                background: 'rgba(255,255,255,0.05)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                color: '#94a3b8',
+                background: 'var(--icon-btn-bg)',
+                border: '1px solid var(--icon-btn-border)',
+                color: 'var(--text-secondary)',
                 cursor: 'pointer',
                 fontSize: 13,
               }}
@@ -388,7 +388,7 @@ export default function InventoryPage() {
 
       {/* Inventory table */}
       <div className="glass-card" style={{ padding: 24 }}>
-        <h2 style={{ fontSize: 15, fontWeight: 800, color: '#f1f5f9', marginBottom: 14 }}>Inventory List</h2>
+        <h2 style={{ fontSize: 15, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 14 }}>Inventory List</h2>
         <div className="table-scroll">
           <table className="data-table">
             <thead>
@@ -412,15 +412,15 @@ export default function InventoryPage() {
                 const low = item.currentQty <= item.reorderLevel;
                 return (
                   <tr key={item.id}>
-                    <td style={{ color: '#f1f5f9', fontWeight: 600 }}>{item.name}</td>
+                    <td style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{item.name}</td>
                     <td style={{ color: '#64748b', fontSize: 12 }}>{item.sku}</td>
-                    <td style={{ color: '#94a3b8' }}>{item.category}</td>
-                    <td style={{ color: '#94a3b8' }}>{item.unit}</td>
+                    <td style={{ color: 'var(--text-secondary)' }}>{item.category}</td>
+                    <td style={{ color: 'var(--text-secondary)' }}>{item.unit}</td>
                     <td style={{ textAlign: 'right', fontWeight: 700 }}>{item.currentQty.toLocaleString('en-IN')}</td>
                     <td style={{ textAlign: 'right', color: '#64748b' }}>{item.reorderLevel}</td>
                     <td style={{ textAlign: 'right', color: '#94a3b8' }}>₹{item.purchasePrice.toLocaleString('en-IN')}</td>
-                    <td style={{ textAlign: 'right', fontWeight: 700, color: '#e5e7eb' }}>₹{value.toLocaleString('en-IN')}</td>
-                    <td style={{ textAlign: 'center', color: '#94a3b8' }}>{item.gstRate}%</td>
+                    <td style={{ textAlign: 'right', fontWeight: 700, color: 'var(--text-primary)' }}>₹{value.toLocaleString('en-IN')}</td>
+                    <td style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>{item.gstRate}%</td>
                     <td>
                       <span>
                         {low ? (
@@ -439,7 +439,7 @@ export default function InventoryPage() {
                           borderRadius: 8,
                           border: '1px solid rgba(148,163,184,0.4)',
                           background: 'rgba(15,23,42,0.4)',
-                          color: '#e5e7eb',
+                          color: 'var(--text-primary)',
                           fontSize: 12,
                           cursor: 'pointer',
                         }}

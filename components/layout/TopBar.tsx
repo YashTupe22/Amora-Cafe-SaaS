@@ -57,7 +57,7 @@ interface SearchResult {
 
 export default function TopBar({ title, subtitle, onMenuToggle }: TopBarProps) {
     const router = useRouter();
-    const { profile, currentUser, data, logout, isOnline, notifications, unreadCount, markAllRead, dismissNotification, clearAllNotifications } = useAppStore();
+    const { profile, currentUser, data, logout, isOnline, notifications, unreadCount, markAllRead, dismissNotification, clearAllNotifications, updatePreferences } = useAppStore();
     const { plan, status, isActive, cancelAtPeriodEnd, currentPeriodEnd } = useSubscription();
 
     const [query, setQuery] = useState('');
@@ -118,7 +118,7 @@ export default function TopBar({ title, subtitle, onMenuToggle }: TopBarProps) {
     };
 
     return (
-        <header style={{ height: 68, background: 'rgba(255,255,255,0.05)', borderBottom: '1px solid rgba(255,255,255,0.1)', backdropFilter: 'blur(16px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 20px', position: 'sticky', top: 0, zIndex: 30, gap: 12 }}>
+        <header style={{ height: 68, background: 'var(--topbar-bg)', borderBottom: '1px solid var(--topbar-border)', backdropFilter: 'blur(16px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 20px', position: 'sticky', top: 0, zIndex: 30, gap: 12 }}>
 
             {/* Left */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
@@ -126,8 +126,8 @@ export default function TopBar({ title, subtitle, onMenuToggle }: TopBarProps) {
                     <Menu size={20} />
                 </button>
                 <div style={{ minWidth: 0 }}>
-                    <h1 style={{ fontSize: 18, fontWeight: 700, color: '#f1f5f9', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{title}</h1>
-                    {subtitle && <p style={{ fontSize: 12, color: '#64748b', marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{subtitle}</p>}
+                    <h1 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{title}</h1>
+                    {subtitle && <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{subtitle}</p>}
                 </div>
             </div>
 
@@ -153,18 +153,18 @@ export default function TopBar({ title, subtitle, onMenuToggle }: TopBarProps) {
 
                 {/* ── Search ── */}
                 <div ref={searchRef} className="topbar-search" style={{ position: 'relative' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.05)', border: `1px solid ${showSearch ? 'rgba(249,115,22,0.4)' : 'rgba(255,255,255,0.08)'}`, borderRadius: 10, padding: '7px 12px', transition: 'border-color 0.2s' }}>
-                        <Search size={14} color="#64748b" />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--search-bg)', border: `1px solid ${showSearch ? 'var(--search-focus-border)' : 'var(--search-border)'}`, borderRadius: 10, padding: '7px 12px', transition: 'border-color 0.2s' }}>
+                        <Search size={14} color="var(--text-secondary)" />
                         <input
                             id="global-search"
                             placeholder="Search…"
                             value={query}
                             onChange={e => setQuery(e.target.value)}
                             onFocus={() => setShowSearch(true)}
-                            style={{ background: 'none', border: 'none', outline: 'none', color: '#f1f5f9', fontSize: 13, width: 130 }}
+                            style={{ background: 'none', border: 'none', outline: 'none', color: 'var(--text-primary)', fontSize: 13, width: 130 }}
                         />
                         {query && (
-                            <button onClick={() => { setQuery(''); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', padding: 0, display: 'flex' }}>
+                            <button onClick={() => { setQuery(''); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', padding: 0, display: 'flex' }}>
                                 <X size={12} />
                             </button>
                         )}
@@ -172,12 +172,12 @@ export default function TopBar({ title, subtitle, onMenuToggle }: TopBarProps) {
 
                     {/* Search results dropdown */}
                     {showSearch && query.trim() && (
-                        <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, width: 320, background: '#111827', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, boxShadow: '0 20px 60px rgba(0,0,0,0.5)', zIndex: 100, overflow: 'hidden' }}>
+                        <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, width: 320, background: 'var(--dropdown-bg)', border: '1px solid var(--dropdown-border)', borderRadius: 12, boxShadow: 'var(--dropdown-shadow)', zIndex: 100, overflow: 'hidden' }}>
                             {results.length === 0 ? (
-                                <div style={{ padding: '16px 18px', color: '#475569', fontSize: 13, textAlign: 'center' }}>No results for &quot;{query}&quot;</div>
+                                <div style={{ padding: '16px 18px', color: 'var(--text-muted)', fontSize: 13, textAlign: 'center' }}>No results for &quot;{query}&quot;</div>
                             ) : (
                                 <>
-                                    <div style={{ padding: '10px 14px 6px', fontSize: 11, color: '#475569', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                                    <div style={{ padding: '10px 14px 6px', fontSize: 11, color: 'var(--text-muted)', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
                                         {results.length} result{results.length > 1 ? 's' : ''}
                                     </div>
                                     {results.map((r, i) => (
@@ -185,15 +185,15 @@ export default function TopBar({ title, subtitle, onMenuToggle }: TopBarProps) {
                                             key={i}
                                             onClick={() => { router.push(r.href); setQuery(''); setShowSearch(false); }}
                                             style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', padding: '10px 14px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', transition: 'background 0.15s' }}
-                                            onMouseEnter={e => (e.currentTarget.style.background = 'rgba(249,115,22,0.08)')}
+                                            onMouseEnter={e => (e.currentTarget.style.background = 'var(--hover-bg-active)')}
                                             onMouseLeave={e => (e.currentTarget.style.background = 'none')}
                                         >
                                             <div style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(249,115,22,0.12)', border: '1px solid rgba(249,115,22,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fb923c', flexShrink: 0 }}>
                                                 {r.icon}
                                             </div>
                                             <div style={{ minWidth: 0 }}>
-                                                <p style={{ fontSize: 13, fontWeight: 600, color: '#f1f5f9', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.label}</p>
-                                                <p style={{ fontSize: 11, color: '#64748b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.type} · {r.sub}</p>
+                                                <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.label}</p>
+                                                <p style={{ fontSize: 11, color: 'var(--text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.type} · {r.sub}</p>
                                             </div>
                                         </button>
                                     ))}
@@ -208,10 +208,9 @@ export default function TopBar({ title, subtitle, onMenuToggle }: TopBarProps) {
                     <button
                         onClick={() => {
                             setShowNotifications(p => !p);
-                            // Mark all read when OPENING (not closing)
                             if (!showNotifications) markAllRead();
                         }}
-                        style={{ width: 36, height: 36, borderRadius: 10, background: showNotifications ? 'rgba(249,115,22,0.12)' : 'rgba(255,255,255,0.05)', border: `1px solid ${showNotifications ? 'rgba(249,115,22,0.35)' : 'rgba(255,255,255,0.08)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative', color: '#94a3b8', flexShrink: 0, transition: 'all 0.2s' }}
+                        style={{ width: 36, height: 36, borderRadius: 10, background: showNotifications ? 'var(--icon-btn-active-bg)' : 'var(--icon-btn-bg)', border: `1px solid ${showNotifications ? 'var(--icon-btn-active-border)' : 'var(--icon-btn-border)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative', color: 'var(--text-secondary)', flexShrink: 0, transition: 'all 0.2s' }}
                         aria-label="Notifications"
                     >
                         <Bell size={16} />
@@ -223,19 +222,19 @@ export default function TopBar({ title, subtitle, onMenuToggle }: TopBarProps) {
                     </button>
 
                     {showNotifications && (
-                        <div style={{ position: 'absolute', top: 'calc(100% + 10px)', right: 0, width: 340, background: '#111827', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 14, boxShadow: '0 20px 60px rgba(0,0,0,0.55)', zIndex: 100, overflow: 'hidden' }}>
+                        <div style={{ position: 'absolute', top: 'calc(100% + 10px)', right: 0, width: 340, background: 'var(--dropdown-bg)', border: '1px solid var(--dropdown-border)', borderRadius: 14, boxShadow: 'var(--dropdown-shadow)', zIndex: 100, overflow: 'hidden' }}>
                             {/* Header */}
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px 10px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px 10px', borderBottom: '1px solid var(--dropdown-divider)' }}>
                                 <div>
-                                    <p style={{ fontSize: 13, fontWeight: 700, color: '#f1f5f9' }}>Notifications</p>
-                                    <p style={{ fontSize: 11, color: '#475569', marginTop: 1 }}>{notifications.length === 0 ? 'All caught up' : `${notifications.length} notification${notifications.length !== 1 ? 's' : ''}`}</p>
+                                    <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>Notifications</p>
+                                    <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 1 }}>{notifications.length === 0 ? 'All caught up' : `${notifications.length} notification${notifications.length !== 1 ? 's' : ''}`}</p>
                                 </div>
                                 {notifications.length > 0 && (
                                     <button
                                         onClick={() => clearAllNotifications()}
-                                        style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', color: '#475569', fontSize: 11, padding: '4px 6px', borderRadius: 6, transition: 'color 0.15s' }}
+                                        style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: 11, padding: '4px 6px', borderRadius: 6, transition: 'color 0.15s' }}
                                         onMouseEnter={e => (e.currentTarget.style.color = '#ef4444')}
-                                        onMouseLeave={e => (e.currentTarget.style.color = '#475569')}
+                                        onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
                                     >
                                         <Trash2 size={12} /> Clear all
                                     </button>
@@ -246,29 +245,29 @@ export default function TopBar({ title, subtitle, onMenuToggle }: TopBarProps) {
                             <div style={{ maxHeight: 380, overflowY: 'auto' }}>
                                 {notifications.length === 0 ? (
                                     <div style={{ padding: '32px 16px', textAlign: 'center' }}>
-                                        <Bell size={28} color="#1e293b" style={{ margin: '0 auto 10px' }} />
-                                        <p style={{ fontSize: 13, color: '#334155', fontWeight: 600 }}>No notifications yet</p>
-                                        <p style={{ fontSize: 11, color: '#1e293b', marginTop: 4 }}>Bill payments, upgrades & more will appear here</p>
+                                        <Bell size={28} color="var(--empty-icon)" style={{ margin: '0 auto 10px' }} />
+                                        <p style={{ fontSize: 13, color: 'var(--empty-title)', fontWeight: 600 }}>No notifications yet</p>
+                                        <p style={{ fontSize: 11, color: 'var(--empty-desc)', marginTop: 4 }}>Bill payments, upgrades & more will appear here</p>
                                     </div>
                                 ) : (
                                     notifications.map(n => (
                                         <div
                                             key={n.id}
-                                            style={{ display: 'flex', alignItems: 'flex-start', gap: 11, padding: '11px 14px', borderBottom: '1px solid rgba(255,255,255,0.04)', background: n.read ? 'transparent' : 'rgba(249,115,22,0.03)', transition: 'background 0.15s' }}
+                                            style={{ display: 'flex', alignItems: 'flex-start', gap: 11, padding: '11px 14px', borderBottom: '1px solid var(--dropdown-divider)', background: n.read ? 'transparent' : 'rgba(249,115,22,0.03)', transition: 'background 0.15s' }}
                                         >
                                             <div style={{ width: 30, height: 30, borderRadius: 8, background: notifAccent(n.type), display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
                                                 {notifIcon(n.type)}
                                             </div>
                                             <div style={{ flex: 1, minWidth: 0 }}>
-                                                <p style={{ fontSize: 12, fontWeight: 600, color: '#f1f5f9', lineHeight: 1.3 }}>{n.title}</p>
-                                                <p style={{ fontSize: 11, color: '#64748b', marginTop: 2, lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.message}</p>
-                                                <p style={{ fontSize: 10, color: '#334155', marginTop: 3 }}>{timeAgo(n.createdAt)}</p>
+                                                <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.3 }}>{n.title}</p>
+                                                <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2, lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.message}</p>
+                                                <p style={{ fontSize: 10, color: 'var(--text-faint)', marginTop: 3 }}>{timeAgo(n.createdAt)}</p>
                                             </div>
                                             <button
                                                 onClick={() => dismissNotification(n.id)}
-                                                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#334155', padding: 2, borderRadius: 4, flexShrink: 0, display: 'flex', transition: 'color 0.15s' }}
-                                                onMouseEnter={e => (e.currentTarget.style.color = '#94a3b8')}
-                                                onMouseLeave={e => (e.currentTarget.style.color = '#334155')}
+                                                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-faint)', padding: 2, borderRadius: 4, flexShrink: 0, display: 'flex', transition: 'color 0.15s' }}
+                                                onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-secondary)')}
+                                                onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-faint)')}
                                                 aria-label="Dismiss"
                                             >
                                                 <X size={12} />
@@ -304,53 +303,53 @@ export default function TopBar({ title, subtitle, onMenuToggle }: TopBarProps) {
                         const daysLeft = periodEnd ? Math.max(0, Math.ceil((periodEnd.getTime() - Date.now()) / 86400000)) : null;
 
                         return (
-                        <div style={{ position: 'absolute', top: 'calc(100% + 10px)', right: 0, width: 290, background: '#111827', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 14, boxShadow: '0 20px 60px rgba(0,0,0,0.5)', zIndex: 100, overflow: 'hidden' }}>
+                        <div style={{ position: 'absolute', top: 'calc(100% + 10px)', right: 0, width: 290, background: 'var(--dropdown-bg)', border: '1px solid var(--dropdown-border)', borderRadius: 14, boxShadow: 'var(--dropdown-shadow)', zIndex: 100, overflow: 'hidden' }}>
                             {/* User info */}
-                            <div style={{ padding: '16px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+                            <div style={{ padding: '16px', borderBottom: '1px solid var(--dropdown-divider)' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                                     <div style={{ width: 40, height: 40, borderRadius: 10, background: 'linear-gradient(135deg,#f97316,#ea580c)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 14, color: 'white', flexShrink: 0 }}>{initials}</div>
                                     <div style={{ minWidth: 0 }}>
-                                        <p style={{ fontSize: 13, fontWeight: 700, color: '#f1f5f9', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{profile?.name || currentUser?.name || 'User'}</p>
-                                        <p style={{ fontSize: 11, color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{profile?.email || currentUser?.email || ''}</p>
+                                        <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{profile?.name || currentUser?.name || 'User'}</p>
+                                        <p style={{ fontSize: 11, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{profile?.email || currentUser?.email || ''}</p>
                                     </div>
                                 </div>
                             </div>
 
                             {/* Restaurant / Cafe Info */}
                             {(profile?.businessName || profile?.address || profile?.phone || profile?.gst) && (
-                                <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-                                    <p style={{ fontSize: 10, fontWeight: 700, color: '#475569', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 8 }}>Restaurant Info</p>
+                                <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--dropdown-divider)' }}>
+                                    <p style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 8 }}>Restaurant Info</p>
 
                                     {profile?.businessName && (
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                                             <Building2 size={13} color="#fb923c" style={{ flexShrink: 0 }} />
-                                            <p style={{ fontSize: 12, fontWeight: 600, color: '#f1f5f9', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{profile.businessName}</p>
+                                            <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{profile.businessName}</p>
                                         </div>
                                     )}
                                     {profile?.address && (
                                         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 6 }}>
-                                            <MapPin size={13} color="#64748b" style={{ flexShrink: 0, marginTop: 1 }} />
-                                            <p style={{ fontSize: 11, color: '#94a3b8', lineHeight: 1.4 }}>{profile.address}</p>
+                                            <MapPin size={13} color="var(--text-secondary)" style={{ flexShrink: 0, marginTop: 1 }} />
+                                            <p style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.4 }}>{profile.address}</p>
                                         </div>
                                     )}
                                     {profile?.phone && (
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                                            <Phone size={13} color="#64748b" style={{ flexShrink: 0 }} />
-                                            <p style={{ fontSize: 11, color: '#94a3b8' }}>{profile.phone}</p>
+                                            <Phone size={13} color="var(--text-secondary)" style={{ flexShrink: 0 }} />
+                                            <p style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{profile.phone}</p>
                                         </div>
                                     )}
                                     {profile?.gst && (
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                            <FileText size={13} color="#64748b" style={{ flexShrink: 0 }} />
-                                            <p style={{ fontSize: 11, color: '#94a3b8' }}>GST: {profile.gst}</p>
+                                            <FileText size={13} color="var(--text-secondary)" style={{ flexShrink: 0 }} />
+                                            <p style={{ fontSize: 11, color: 'var(--text-secondary)' }}>GST: {profile.gst}</p>
                                         </div>
                                     )}
                                 </div>
                             )}
 
                             {/* Subscription Info */}
-                            <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-                                <p style={{ fontSize: 10, fontWeight: 700, color: '#475569', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 8 }}>Subscription</p>
+                            <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--dropdown-divider)' }}>
+                                <p style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 8 }}>Subscription</p>
 
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                                     <Crown size={14} color={pc.text} />
@@ -362,11 +361,11 @@ export default function TopBar({ title, subtitle, onMenuToggle }: TopBarProps) {
 
                                 {plan !== 'free' && periodEnd && (
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                        <CalendarClock size={13} color="#64748b" />
+                                        <CalendarClock size={13} color="var(--text-secondary)" />
                                         <div>
-                                            <p style={{ fontSize: 11, color: '#94a3b8' }}>
+                                            <p style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
                                                 {cancelAtPeriodEnd ? 'Ends' : 'Renews'} on{' '}
-                                                <span style={{ fontWeight: 600, color: '#f1f5f9' }}>
+                                                <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
                                                     {periodEnd.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                                                 </span>
                                             </p>
@@ -400,16 +399,16 @@ export default function TopBar({ title, subtitle, onMenuToggle }: TopBarProps) {
                                     key={item.href}
                                     id={item.id}
                                     onClick={() => { setShowProfile(false); router.push(item.href); }}
-                                    style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '11px 16px', background: 'none', border: 'none', color: '#94a3b8', fontSize: 13, fontWeight: 500, cursor: 'pointer', textAlign: 'left', transition: 'background 0.15s, color 0.15s' }}
-                                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.color = '#f1f5f9'; }}
-                                    onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = '#94a3b8'; }}
+                                    style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '11px 16px', background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: 13, fontWeight: 500, cursor: 'pointer', textAlign: 'left', transition: 'background 0.15s, color 0.15s' }}
+                                    onMouseEnter={e => { e.currentTarget.style.background = 'var(--hover-bg)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
+                                    onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
                                 >
                                     {item.icon}
                                     {item.label}
                                 </button>
                             ))}
 
-                            <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', margin: '4px 0' }} />
+                            <div style={{ borderTop: '1px solid var(--dropdown-divider)', margin: '4px 0' }} />
 
                             <button
                                 id="profile-menu-logout"

@@ -1,7 +1,7 @@
 'use client';
 
 import AppLayout from '@/components/layout/AppLayout';
-import { Building2, Bell, Globe, Shield, User, Download } from 'lucide-react';
+import { Building2, Bell, Globe, Shield, User, Download, Moon } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppStore } from '@/lib/appStore';
@@ -19,7 +19,8 @@ type Field =
 
 export default function SettingsPage() {
     const router = useRouter();
-    const { data, currentUser, updateBusinessProfile, updatePreferences, resetBusinessData, deleteCurrentAccount, logout } = useAppStore();
+    const { data, currentUser, profile, updateBusinessProfile, updatePreferences, resetBusinessData, deleteCurrentAccount, logout } = useAppStore();
+    const isDark = profile?.darkMode !== false;
     const { canAccess } = useSubscription();
     const canExport = canAccess('pdfExport');
 
@@ -72,9 +73,10 @@ export default function SettingsPage() {
     }, [profileDraft, currentUser]);
 
     const toggleSettings = useMemo(() => ([
+        { key: 'darkMode', label: 'Dark Mode', sub: 'Switch between light and dark theme', icon: <Moon size={15} />, enabled: isDark, canToggle: true },
         { key: 'emailNotifications', label: t('settings.emailNotif'), sub: t('settings.emailNotifSub'), icon: <Bell size={15} />, enabled: prefsDraft.emailNotifications, canToggle: true },
         { key: 'twoFactorAuth', label: t('settings.twoFactor'), sub: t('settings.twoFactorSub'), icon: <Shield size={15} />, enabled: prefsDraft.twoFactorAuth, canToggle: true },
-    ]), [prefsDraft]);
+    ]), [prefsDraft, isDark]);
 
     const saveAll = () => {
         updateBusinessProfile(profileDraft);
@@ -146,9 +148,9 @@ export default function SettingsPage() {
                 <div className="glass-card" style={{ padding: 24 }}>
                     <h2 style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 18 }}>{t('settings.preferences')}</h2>
                     {/* Currency Selector */}
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 0', borderBottom: '1px solid var(--glass-border)' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                            <div style={{ width: 30, height: 30, borderRadius: 8, background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b' }}>
+                            <div style={{ width: 30, height: 30, borderRadius: 8, background: 'var(--icon-btn-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b' }}>
                                 <Globe size={15} />
                             </div>
                             <div>
@@ -169,9 +171,9 @@ export default function SettingsPage() {
                         </select>
                     </div>
                     {/* Language Switcher */}
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 0', borderBottom: '1px solid var(--glass-border)' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                            <div style={{ width: 30, height: 30, borderRadius: 8, background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b' }}>
+                            <div style={{ width: 30, height: 30, borderRadius: 8, background: 'var(--icon-btn-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b' }}>
                                 <Globe size={15} />
                             </div>
                             <div>
@@ -204,12 +206,12 @@ export default function SettingsPage() {
                                     alignItems: 'center',
                                     justifyContent: 'space-between',
                                     padding: '14px 0',
-                                    borderBottom: i < toggleSettings.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
-                                    borderTop: i === 0 ? '1px solid rgba(255,255,255,0.05)' : 'none',
+                                    borderBottom: i < toggleSettings.length - 1 ? '1px solid var(--glass-border)' : 'none',
+                                    borderTop: i === 0 ? '1px solid var(--glass-border)' : 'none',
                                 }}
                             >
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                                    <div style={{ width: 30, height: 30, borderRadius: 8, background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b' }}>
+                                    <div style={{ width: 30, height: 30, borderRadius: 8, background: 'var(--icon-btn-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b' }}>
                                         {s.icon}
                                     </div>
                                     <div>
@@ -223,7 +225,7 @@ export default function SettingsPage() {
                                         width: 44,
                                         height: 24,
                                         borderRadius: 12,
-                                        background: s.enabled ? 'linear-gradient(135deg, #f97316, #ea580c)' : 'rgba(255,255,255,0.1)',
+                                        background: s.enabled ? 'linear-gradient(135deg, #f97316, #ea580c)' : 'rgba(100,116,139,0.3)',
                                         position: 'relative',
                                         cursor: s.canToggle ? 'pointer' : 'not-allowed',
                                         transition: 'background 0.2s',
@@ -231,6 +233,10 @@ export default function SettingsPage() {
                                     }}
                                     onClick={() => {
                                         if (!s.canToggle) return;
+                                        if (s.key === 'darkMode') {
+                                            const nextDark = !isDark;
+                                            updatePreferences({ emailNotifications: prefsDraft.emailNotifications, darkMode: nextDark, currency: prefsDraft.currency, twoFactorAuth: prefsDraft.twoFactorAuth });
+                                        }
                                         if (s.key === 'emailNotifications') setPrefsDraft(p => ({ ...p, emailNotifications: !p.emailNotifications }));
                                         if (s.key === 'twoFactorAuth') {
                                             const next = !prefsDraft.twoFactorAuth;

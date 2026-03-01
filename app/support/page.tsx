@@ -44,7 +44,7 @@ export default function SupportPage() {
     <AppLayout title="Support" subtitle="Get help from the Synplix team">
       <div style={{ maxWidth: 720, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 18 }}>
         <div className="glass-card" style={{ padding: 22 }}>
-          <p style={{ fontSize: 14, color: '#e5e7eb', marginBottom: 6 }}>
+          <p style={{ fontSize: 14, color: 'var(--text-primary)', marginBottom: 6 }}>
             Have a question about invoices, GST, or your data?
           </p>
           <p style={{ fontSize: 13, color: '#64748b' }}>

@@ -70,10 +70,10 @@ export default function ExpensesPage() {
               value={filterMonth}
               onChange={e => setFilterMonth(e.target.value)}
               style={{
-                background: 'rgba(255,255,255,0.06)',
-                border: '1px solid rgba(255,255,255,0.1)',
+                background: 'var(--search-bg)',
+                border: '1px solid var(--glass-border)',
                 borderRadius: 8,
-                color: '#f1f5f9',
+                color: 'var(--text-primary)',
                 fontSize: 13,
                 padding: '8px 12px',
                 outline: 'none',
@@ -132,7 +132,7 @@ export default function ExpensesPage() {
               <select
                 value={category}
                 onChange={e => setCategory(e.target.value)}
-                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, color: '#f1f5f9', fontSize: 14, padding: '10px 12px', width: '100%', outline: 'none' }}
+                style={{ background: 'var(--search-bg)', border: '1px solid var(--glass-border)', borderRadius: 10, color: 'var(--text-primary)', fontSize: 14, padding: '10px 12px', width: '100%', outline: 'none' }}
               >
                 {EXPENSE_CATEGORIES.map(c => (
                   <option key={c} value={c}>
@@ -143,7 +143,7 @@ export default function ExpensesPage() {
             </div>
             <div>
               <label style={{ fontSize: 12, color: '#64748b', display: 'block', marginBottom: 6 }}>Date</label>
-              <input className="dark-input" type="date" value={date} onChange={e => setDate(e.target.value)} style={{ padding: '10px 12px', fontSize: 14, colorScheme: 'dark' }} />
+              <input className="dark-input" type="date" value={date} onChange={e => setDate(e.target.value)} style={{ padding: '10px 12px', fontSize: 14 }} />
             </div>
             <div>
               <label style={{ fontSize: 12, color: '#64748b', display: 'block', marginBottom: 6 }}>Note</label>
@@ -160,7 +160,7 @@ export default function ExpensesPage() {
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 14, gap: 10 }}>
             <button
               onClick={() => setShowForm(false)}
-              style={{ padding: '10px 18px', borderRadius: 10, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}
+              style={{ padding: '10px 18px', borderRadius: 10, background: 'var(--icon-btn-bg)', border: '1px solid var(--icon-btn-border)', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}
             >
               Cancel
             </button>
@@ -174,7 +174,7 @@ export default function ExpensesPage() {
       {/* Expense List */}
       <div className="glass-card" style={{ padding: 24 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-          <h2 style={{ fontSize: 15, fontWeight: 800, color: '#f1f5f9' }}>
+          <h2 style={{ fontSize: 15, fontWeight: 800, color: 'var(--text-primary)' }}>
             Expenses {filterMonth !== 'All' && `— ${filterMonth}`}
           </h2>
           <span style={{ fontSize: 12, color: '#64748b' }}>{filtered.length} entries</span>
@@ -197,7 +197,7 @@ export default function ExpensesPage() {
                 <td>
                   <Badge variant="danger">Expense</Badge>
                 </td>
-                <td style={{ color: '#94a3b8' }}>{tx.category}</td>
+                <td style={{ color: 'var(--text-secondary)' }}>{tx.category}</td>
                 <td style={{ color: '#64748b', fontSize: 13 }}>{tx.note || '—'}</td>
                 <td style={{ color: '#64748b' }}>{new Date(tx.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: '2-digit' })}</td>
                 <td style={{ textAlign: 'right', fontWeight: 800, color: '#ef4444' }}>

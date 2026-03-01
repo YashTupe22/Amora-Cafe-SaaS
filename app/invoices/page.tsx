@@ -92,7 +92,7 @@ function InvoiceForm({ title, initial, inventory, pastInvoices, onSave, onCancel
     return (
         <div className="glass-card animate-fade-in" style={{ padding: 24, marginBottom: 22 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-                <h2 style={{ fontSize: 15, fontWeight: 700, color: '#f1f5f9' }}>{title}</h2>
+                <h2 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>{title}</h2>
                 <button onClick={onCancel} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}><X size={18} /></button>
             </div>
 
@@ -115,11 +115,11 @@ function InvoiceForm({ title, initial, inventory, pastInvoices, onSave, onCancel
                 </div>
                 <div>
                     <label style={labelStyle}>Invoice Date</label>
-                    <input className="dark-input" type="date" value={date} onChange={e => setDate(e.target.value)} style={{ ...inp, colorScheme: 'dark' }} />
+                    <input className="dark-input" type="date" value={date} onChange={e => setDate(e.target.value)} style={{ ...inp }} />
                 </div>
                 <div>
                     <label style={labelStyle}>Due Date</label>
-                    <input className="dark-input" type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} style={{ ...inp, colorScheme: 'dark' }} />
+                    <input className="dark-input" type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} style={{ ...inp }} />
                 </div>
             </div>
 
@@ -186,7 +186,7 @@ function InvoiceForm({ title, initial, inventory, pastInvoices, onSave, onCancel
                             </div>
                             <input className="dark-input inv-qty" style={{ width: 70, padding: '9px 10px', fontSize: 13, textAlign: 'center' }} type="number" min="1" value={item.qty} onChange={e => updateItem(i, 'qty', Number(e.target.value))} />
                             <input className="dark-input inv-price" style={{ width: 120, padding: '9px 12px', fontSize: 13 }} type="number" min="0" value={item.price} onChange={e => updateItem(i, 'price', Number(e.target.value))} />
-                            <span className="inv-total" style={{ width: 100, textAlign: 'right', fontSize: 13, fontWeight: 600, color: '#f1f5f9' }}>
+                            <span className="inv-total" style={{ width: 100, textAlign: 'right', fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
                                 ₹{(item.qty * item.price).toLocaleString('en-IN')}
                             </span>
                             <button onClick={() => removeItem(i)} style={{ width: 32, background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={14} /></button>
@@ -198,7 +198,7 @@ function InvoiceForm({ title, initial, inventory, pastInvoices, onSave, onCancel
                 </button>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid var(--glass-border)', paddingTop: 16 }}>
                 <div>
                     <p style={{ fontSize: 12, color: '#64748b' }}>Total Amount</p>
                     <p style={{ fontSize: 22, fontWeight: 800, color: '#fb923c' }}>₹{getTotal(items).toLocaleString('en-IN')}</p>
@@ -335,10 +335,10 @@ export default function InvoicesPage() {
                             {invoices.map(inv => (
                                 <tr key={inv.id}>
                                     <td style={{ fontWeight: 600, color: '#fb923c' }}>{inv.invoiceNo}</td>
-                                    <td style={{ color: '#f1f5f9', fontWeight: 500 }}>{inv.client}</td>
-                                    <td style={{ color: '#94a3b8' }}>{new Date(inv.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: '2-digit' })}</td>
-                                    <td style={{ color: '#94a3b8' }}>{new Date(inv.dueDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: '2-digit' })}</td>
-                                    <td style={{ fontWeight: 700, color: '#f1f5f9' }}>₹{getTotal(inv.items).toLocaleString('en-IN')}</td>
+                                    <td style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{inv.client}</td>
+                                    <td style={{ color: 'var(--text-secondary)' }}>{new Date(inv.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: '2-digit' })}</td>
+                                    <td style={{ color: 'var(--text-secondary)' }}>{new Date(inv.dueDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: '2-digit' })}</td>
+                                    <td style={{ fontWeight: 700, color: 'var(--text-primary)' }}>₹{getTotal(inv.items).toLocaleString('en-IN')}</td>
                                     <td><Badge variant={inv.status === 'Paid' ? 'success' : 'warning'}>{inv.status}</Badge></td>
                                     <td>
                                         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
@@ -388,7 +388,7 @@ export default function InvoicesPage() {
                                 <FileText size={20} color="white" />
                             </div>
                             <div>
-                                <h2 style={{ fontSize: 18, fontWeight: 800, color: '#f1f5f9' }}>{preview.invoiceNo}</h2>
+                                <h2 style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-primary)' }}>{preview.invoiceNo}</h2>
                                 <p style={{ fontSize: 12, color: '#64748b' }}>Synplix</p>
                             </div>
                             <div style={{ marginLeft: 'auto' }}><Badge variant={preview.status === 'Paid' ? 'success' : 'warning'}>{preview.status}</Badge></div>
@@ -397,33 +397,33 @@ export default function InvoicesPage() {
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 22 }}>
                             <div>
                                 <p style={{ fontSize: 11, color: '#64748b', fontWeight: 600, marginBottom: 4 }}>BILLED TO</p>
-                                <p style={{ fontSize: 14, fontWeight: 600, color: '#f1f5f9' }}>{preview.client}</p>
+                                <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{preview.client}</p>
                                 {preview.clientEmail && <p style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>{preview.clientEmail}</p>}
                                 {preview.clientPhone && <p style={{ fontSize: 12, color: '#64748b' }}>{preview.clientPhone}</p>}
                                 {preview.clientAddress && <p style={{ fontSize: 12, color: '#64748b' }}>{preview.clientAddress}</p>}
                             </div>
                             <div>
                                 <p style={{ fontSize: 11, color: '#64748b', fontWeight: 600, marginBottom: 4 }}>DATES</p>
-                                <p style={{ fontSize: 13, color: '#94a3b8' }}>Issued: {new Date(preview.date).toLocaleDateString('en-IN')}</p>
-                                <p style={{ fontSize: 13, color: '#94a3b8' }}>Due: {new Date(preview.dueDate).toLocaleDateString('en-IN')}</p>
+                                <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Issued: {new Date(preview.date).toLocaleDateString('en-IN')}</p>
+                                <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Due: {new Date(preview.dueDate).toLocaleDateString('en-IN')}</p>
                             </div>
                         </div>
 
-                        <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: 18, marginBottom: 16 }}>
+                        <div style={{ borderTop: '1px solid var(--glass-border)', paddingTop: 18, marginBottom: 16 }}>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 60px 100px 100px', gap: 8, fontSize: 11, color: '#64748b', fontWeight: 600, padding: '0 4px 8px' }}>
                                 <span>Description</span><span style={{ textAlign: 'center' }}>Qty</span><span style={{ textAlign: 'right' }}>Price</span><span style={{ textAlign: 'right' }}>Total</span>
                             </div>
                             {preview.items.map((item, i) => (
-                                <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 60px 100px 100px', gap: 8, padding: '10px 4px', borderTop: '1px solid rgba(255,255,255,0.04)', fontSize: 14 }}>
-                                    <span style={{ color: '#f1f5f9' }}>{item.description}</span>
-                                    <span style={{ textAlign: 'center', color: '#94a3b8' }}>{item.qty}</span>
-                                    <span style={{ textAlign: 'right', color: '#94a3b8' }}>₹{item.price.toLocaleString('en-IN')}</span>
-                                    <span style={{ textAlign: 'right', fontWeight: 600, color: '#f1f5f9' }}>₹{(item.qty * item.price).toLocaleString('en-IN')}</span>
+                                <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 60px 100px 100px', gap: 8, padding: '10px 4px', borderTop: '1px solid var(--glass-border)', fontSize: 14 }}>
+                                    <span style={{ color: 'var(--text-primary)' }}>{item.description}</span>
+                                    <span style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>{item.qty}</span>
+                                    <span style={{ textAlign: 'right', color: 'var(--text-secondary)' }}>₹{item.price.toLocaleString('en-IN')}</span>
+                                    <span style={{ textAlign: 'right', fontWeight: 600, color: 'var(--text-primary)' }}>₹{(item.qty * item.price).toLocaleString('en-IN')}</span>
                                 </div>
                             ))}
                         </div>
 
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 16 }}>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid var(--glass-border)', paddingTop: 16 }}>
                             <div style={{ textAlign: 'right' }}>
                                 <p style={{ fontSize: 13, color: '#64748b' }}>Total Amount</p>
                                 <p style={{ fontSize: 28, fontWeight: 800, color: '#fb923c', marginTop: 4 }}>₹{getTotal(preview.items).toLocaleString('en-IN')}</p>

@@ -13,9 +13,41 @@
   --glass-border: rgba(255, 255, 255, 0.1);
   --text-primary: #f1f5f9;
   --text-secondary: #94a3b8;
+  --text-muted: #475569;
+  --text-faint: #334155;
   --success: #22c55e;
   --warning: #f59e0b;
   --danger: #ef4444;
+
+  /* Dropdown / panel */
+  --dropdown-bg: #111827;
+  --dropdown-border: rgba(255, 255, 255, 0.1);
+  --dropdown-divider: rgba(255, 255, 255, 0.07);
+  --dropdown-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+
+  /* Icon buttons (notif bell, theme toggle, etc.) */
+  --icon-btn-bg: rgba(255, 255, 255, 0.05);
+  --icon-btn-border: rgba(255, 255, 255, 0.08);
+  --icon-btn-active-bg: rgba(249, 115, 22, 0.12);
+  --icon-btn-active-border: rgba(249, 115, 22, 0.35);
+
+  /* Hover overlays */
+  --hover-bg: rgba(255, 255, 255, 0.04);
+  --hover-bg-active: rgba(249, 115, 22, 0.08);
+
+  /* Search */
+  --search-bg: rgba(255, 255, 255, 0.05);
+  --search-border: rgba(255, 255, 255, 0.08);
+  --search-focus-border: rgba(249, 115, 22, 0.4);
+
+  /* TopBar header */
+  --topbar-bg: rgba(255, 255, 255, 0.05);
+  --topbar-border: rgba(255, 255, 255, 0.1);
+
+  /* Empty state colors */
+  --empty-icon: #1e293b;
+  --empty-title: #334155;
+  --empty-desc: #1e293b;
 }
 
 * {
@@ -110,6 +142,7 @@ body {
   transition: all 0.2s ease;
   outline: none;
   width: 100%;
+  color-scheme: dark;
 }
 
 .dark-input::placeholder {
@@ -530,8 +563,40 @@ html[data-theme="light"] {
   --glass-border: rgba(0, 0, 0, 0.09);
   --text-primary: #0f172a;
   --text-secondary: #475569;
+  --text-muted: #64748b;
+  --text-faint: #94a3b8;
   background-color: #f0f4f8;
   color: #0f172a;
+
+  /* Dropdown / panel */
+  --dropdown-bg: #ffffff;
+  --dropdown-border: rgba(0, 0, 0, 0.12);
+  --dropdown-divider: rgba(0, 0, 0, 0.08);
+  --dropdown-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
+
+  /* Icon buttons */
+  --icon-btn-bg: rgba(0, 0, 0, 0.04);
+  --icon-btn-border: rgba(0, 0, 0, 0.1);
+  --icon-btn-active-bg: rgba(249, 115, 22, 0.1);
+  --icon-btn-active-border: rgba(249, 115, 22, 0.3);
+
+  /* Hover overlays */
+  --hover-bg: rgba(0, 0, 0, 0.04);
+  --hover-bg-active: rgba(249, 115, 22, 0.06);
+
+  /* Search */
+  --search-bg: rgba(0, 0, 0, 0.04);
+  --search-border: rgba(0, 0, 0, 0.1);
+  --search-focus-border: rgba(249, 115, 22, 0.4);
+
+  /* TopBar header */
+  --topbar-bg: rgba(255, 255, 255, 0.85);
+  --topbar-border: rgba(0, 0, 0, 0.08);
+
+  /* Empty state colors */
+  --empty-icon: #cbd5e1;
+  --empty-title: #475569;
+  --empty-desc: #94a3b8;
 }
 
 html[data-theme="light"] body {
@@ -543,6 +608,7 @@ html[data-theme="light"] .dark-input {
   background: rgba(0, 0, 0, 0.04);
   border-color: rgba(0, 0, 0, 0.12);
   color: #0f172a;
+  color-scheme: light;
 }
 
 html[data-theme="light"] .dark-input::placeholder {
@@ -606,7 +672,87 @@ html[data-theme="light"] ::-webkit-scrollbar-track {
   background: #e2e8f0;
 }
 
+html[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: rgba(249, 115, 22, 0.3);
+}
+
 /* Make sidebar text adapt to theme */
 .sidebar-logo-text  { color: var(--text-primary); }
 .sidebar-logo-sub   { color: var(--text-secondary); }
 .sidebar-menu-label { color: var(--text-secondary); }
+
+/* ─── Theme toggle button ───────────────────────────────── */
+.theme-toggle-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #f59e0b;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.theme-toggle-btn:hover {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.3);
+  transform: rotate(15deg);
+  box-shadow: 0 0 14px rgba(245, 158, 11, 0.2);
+}
+
+.theme-toggle-btn:active {
+  transform: rotate(0deg) scale(0.92);
+}
+
+html[data-theme="light"] .theme-toggle-btn {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.1);
+  color: #6366f1;
+}
+
+html[data-theme="light"] .theme-toggle-btn:hover {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: rgba(99, 102, 241, 0.3);
+  box-shadow: 0 0 14px rgba(99, 102, 241, 0.15);
+}
+
+/* ─── Light theme — TopBar overrides ────────────────────── */
+/* header bg/border already driven by --topbar-bg / --topbar-border vars */
+
+html[data-theme="light"] .menu-toggle-btn {
+  background: var(--icon-btn-bg);
+  border-color: var(--icon-btn-border);
+  color: #475569;
+}
+
+html[data-theme="light"] .menu-toggle-btn:hover {
+  background: rgba(249, 115, 22, 0.08);
+  color: #ea580c;
+}
+
+/* ─── Light theme — Sidebar bottom section borders ──────── */
+html[data-theme="light"] .sidebar-bottom-border {
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+/* ─── Light theme — Main content background ─────────────── */
+html[data-theme="light"] .main-content {
+  background: radial-gradient(ellipse at 20% 10%, rgba(249,115,22,0.04) 0%, transparent 60%),
+              radial-gradient(ellipse at 80% 80%, rgba(234,88,12,0.03) 0%, transparent 60%),
+              #f0f4f8 !important;
+}
+
+/* ─── Light theme — Stat card ─────────────────────────── */
+html[data-theme="light"] .stat-card {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+html[data-theme="light"] .stat-card:hover {
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
+}

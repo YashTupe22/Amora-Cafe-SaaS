@@ -6,6 +6,10 @@
     "dev": "next dev -p 3001",
     "build": "next build",
     "start": "next start",
+    "start:standalone": "cross-env PORT=3001 node .next/standalone/server.js",
+    "desktop:dev": "nw desktop",
+    "desktop:build-web": "cross-env DESKTOP_BUILD=1 next build",
+    "desktop:package": "npm run desktop:build-web && node desktop/build-nw.mjs",
     "lint": "eslint"
   },
   "dependencies": {
@@ -35,8 +39,11 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "cross-env": "^7.0.3",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
+    "nw": "^0.96.0",
+    "nw-builder": "^3.5.7",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

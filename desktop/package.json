@@ -1,0 +1,26 @@
+{
+  "name": "synplix-desktop",
+  "version": "1.0.0",
+  "main": "about:blank",
+  "node-main": "nw-main.js",
+  "window": {
+    "title": "Synplix",
+    "width": 1440,
+    "height": 900,
+    "min_width": 1100,
+    "min_height": 700,
+    "position": "center",
+    "resizable": true,
+    "frame": true,
+    "toolbar": false,
+    "show": false
+  },
+  "permissions": {
+    "notifications": true,
+    "fileSystem": true
+  },
+  "node-remote": [
+    "http://127.0.0.1:3001/*"
+  ],
+  "chromium-args": "--disable-renderer-backgrounding --disable-background-timer-throttling"
+}

@@ -67,6 +67,8 @@ export async function loadFromLocal(uid: string): Promise<{
         darkMode: rawProfile.darkMode,
         twoFactorAuth: rawProfile.twoFactorAuth,
         onboardingComplete: rawProfile.onboardingComplete,
+        interfaceTypes: rawProfile.interfaceTypes ?? ['restaurant'],
+        activeInterface: rawProfile.activeInterface ?? 'restaurant',
       }
     : null;
 
@@ -182,6 +184,8 @@ export async function fetchAndCacheFromFirebase(uid: string): Promise<void> {
       darkMode: pd.darkMode ?? true,
       twoFactorAuth: pd.twoFactorAuth ?? false,
       onboardingComplete: pd.onboardingComplete ?? false,
+      interfaceTypes: pd.interfaceTypes ?? ['restaurant'],
+      activeInterface: pd.activeInterface ?? 'restaurant',
       _syncStatus: 'synced',
     });
   }

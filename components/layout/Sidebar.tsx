@@ -15,21 +15,38 @@ import {
     BookOpen,
     X,
     Crown,
+    UtensilsCrossed,
+    ClipboardList,
+    FileText,
+    Briefcase,
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useAppStore } from '@/lib/appStore';
 import { useTranslation } from '@/lib/i18n';
 import { useSubscription } from '@/hooks/useSubscription';
+import { InterfaceSwitcher } from '@/components/InterfaceSelector';
 
-const NAV_ITEMS = [
-    { href: '/dashboard',  key: 'nav.dashboard'  as const, icon: LayoutDashboard },
-    { href: '/attendance', key: 'nav.attendance' as const, icon: Users },
-    { href: '/bills',      key: 'nav.bills'      as const, icon: ReceiptText },
-    { href: '/catalogue',  key: 'nav.catalogue'  as const, icon: BookOpen },
+// Restaurant-specific navigation items
+const RESTAURANT_NAV_ITEMS = [
+    { href: '/dashboard',    key: 'nav.dashboard'    as const, icon: LayoutDashboard },
+    { href: '/bills',        key: 'nav.bills'        as const, icon: ReceiptText },
+    { href: '/catalogue',    key: 'nav.catalogue'    as const, icon: BookOpen },
+    { href: '/attendance',   key: 'nav.attendance'   as const, icon: Users },
+    { href: '/inventory',    key: 'nav.inventory'    as const, icon: Boxes },
     { href: '/transactions', key: 'nav.transactions' as const, icon: ArrowLeftRight },
-    { href: '/inventory',  key: 'nav.inventory'  as const, icon: Boxes },
-    { href: '/expenses',   key: 'nav.expenses'   as const, icon: Wallet },
-    { href: '/settings',   key: 'nav.settings'   as const, icon: Settings },
+    { href: '/expenses',     key: 'nav.expenses'     as const, icon: Wallet },
+    { href: '/settings',     key: 'nav.settings'     as const, icon: Settings },
+];
+
+// Business-specific navigation items
+const BUSINESS_NAV_ITEMS = [
+    { href: '/dashboard',    key: 'nav.dashboard'    as const, icon: LayoutDashboard },
+    { href: '/invoices',     key: 'nav.invoices'     as const, icon: FileText },
+    { href: '/transactions', key: 'nav.transactions' as const, icon: ArrowLeftRight },
+    { href: '/inventory',    key: 'nav.inventory'    as const, icon: Boxes },
+    { href: '/expenses',     key: 'nav.expenses'     as const, icon: Wallet },
+    { href: '/attendance',   key: 'nav.attendance'   as const, icon: Users },
+    { href: '/settings',     key: 'nav.settings'     as const, icon: Settings },
 ];
 
 interface SidebarProps {
@@ -40,9 +57,15 @@ interface SidebarProps {
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     const pathname = usePathname();
     const router = useRouter();
-    const { logout } = useAppStore();
+    const { logout, profile, setActiveInterface } = useAppStore();
     const { t } = useTranslation();
     const { plan } = useSubscription();
+
+    const interfaceTypes = profile?.interfaceTypes ?? ['restaurant'];
+    const activeInterface = profile?.activeInterface ?? 'restaurant';
+
+    // Select navigation based on active interface
+    const NAV_ITEMS = activeInterface === 'business' ? BUSINESS_NAV_ITEMS : RESTAURANT_NAV_ITEMS;
 
     const PLAN_COLORS: Record<string, string> = {
       free:       '#64748b',
@@ -66,7 +89,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             </button>
 
             {/* Logo */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 36, paddingLeft: 6 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20, paddingLeft: 6 }}>
                 <div style={{ width: 34, height: 34, borderRadius: 10, background: 'linear-gradient(135deg, #f97316, #ea580c)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 18px rgba(249,115,22,0.5)', flexShrink: 0 }}>
                     <Zap size={18} color="white" />
                 </div>
@@ -76,10 +99,25 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 </div>
             </div>
 
+            {/* Interface Switcher - only show if user has multiple interfaces */}
+            {interfaceTypes.length > 1 && (
+                <div style={{ marginBottom: 20, paddingLeft: 6, paddingRight: 6 }}>
+                    <InterfaceSwitcher
+                        active={activeInterface}
+                        available={interfaceTypes}
+                        onChange={setActiveInterface}
+                    />
+                </div>
+            )}
+
             {/* Nav */}
             <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <div style={{ fontSize: 11, color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '0 8px', marginBottom: 6 }}>
-                    {t('nav.mainMenu')}
+                <div style={{ fontSize: 11, color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '0 8px', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    {activeInterface === 'restaurant' ? (
+                        <><UtensilsCrossed size={12} /> {t('nav.mainMenu')}</>
+                    ) : (
+                        <><Briefcase size={12} /> {t('nav.mainMenu')}</>
+                    )}
                 </div>
                 {NAV_ITEMS.map(({ href, key, icon: Icon }) => {
                     const active = pathname === href || pathname.startsWith(href + '/');

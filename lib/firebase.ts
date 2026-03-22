@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getAuth, type Auth } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, type Auth } from 'firebase/auth';
 import { getFirestore, type Firestore } from 'firebase/firestore';
 
 const firebaseConfig = {

@@ -10,6 +10,8 @@ import {
   signOut as firebaseSignOut,
   onAuthStateChanged,
   updateProfile,
+  signInWithPopup,
+  GoogleAuthProvider,
 } from 'firebase/auth';
 
 // Minimal session interface — satisfied by both FirebaseUser and local auth objects
@@ -53,6 +55,9 @@ export interface Profile {
   darkMode: boolean;
   twoFactorAuth: boolean;
   onboardingComplete: boolean;
+  // Interface types - user can have one or both
+  interfaceTypes: ('restaurant' | 'business')[];
+  activeInterface: 'restaurant' | 'business';
 }
 
 export type SubscriptionStatus =
@@ -136,10 +141,12 @@ interface AppStoreContextValue {
     preferences: { emailNotifications: boolean; darkMode: boolean; currency: string; twoFactorAuth: boolean };
   };
   login: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
+  loginWithGoogle: () => Promise<{ ok: boolean; error?: string; isNewUser?: boolean }>;
   signup: (name: string, email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
   loginDemo: () => void;
   logout: () => void;
-  completeOnboarding: (info: { businessName: string; phone: string; gst: string; address: string }) => Promise<void>;
+  completeOnboarding: (info: { businessName: string; phone: string; gst: string; address: string; interfaceTypes: ('restaurant' | 'business')[] }) => Promise<void>;
+  setActiveInterface: (interfaceType: 'restaurant' | 'business') => void;
   addTransaction: (input: AddTransactionInput) => void;
   addInvoice: (input: AddInvoiceInput) => void;
   updateInvoice: (id: string, input: Partial<AddInvoiceInput & { status: Invoice['status'] }>) => void;
@@ -273,6 +280,9 @@ async function loadUserData(userId: string) {
     darkMode: profileData.darkMode ?? true,
     twoFactorAuth: profileData.twoFactorAuth ?? false,
     onboardingComplete: profileData.onboardingComplete ?? false,
+    // Interface types - default to restaurant for existing users (backwards compatibility)
+    interfaceTypes: profileData.interfaceTypes ?? ['restaurant'],
+    activeInterface: profileData.activeInterface ?? 'restaurant',
   } : null;
 
   return { employees, invoices, transactions, inventory, profile };
@@ -719,6 +729,8 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
           name, email, businessName: '', phone: '', gst: '', address: '',
           currency: 'INR', emailNotifications: true, darkMode: true,
           twoFactorAuth: false, onboardingComplete: false,
+          interfaceTypes: [], // Will be set during onboarding
+          activeInterface: 'restaurant', // Default
         });
         return { ok: true };
       } catch (e: any) {
@@ -739,7 +751,9 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
         id: uid, name: name.trim(), email: normalizedEmail,
         businessName: '', phone: '', gst: '', address: '',
         currency: 'INR', emailNotifications: true, darkMode: true,
-        twoFactorAuth: false, onboardingComplete: false, _syncStatus: 'pending',
+        twoFactorAuth: false, onboardingComplete: false,
+        interfaceTypes: [], activeInterface: 'restaurant',
+        _syncStatus: 'pending',
       });
       const appSession: AppSession = { uid, email: normalizedEmail, displayName: name.trim(), metadata: { creationTime: createdAt } };
       setSession(appSession);
@@ -751,6 +765,51 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       return { ok: false, error: 'Sign up failed. Please try again.' };
     }
   }, [refresh, loadSubscription]);
+
+  // ── Google Sign-In ─────────────────────────────────────────────────────────
+  const loginWithGoogle = useCallback(async () => {
+    if (!auth) {
+      return { ok: false, error: 'Google sign-in is not available in offline mode.' };
+    }
+    try {
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: 'select_account' });
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      
+      // Check if this is a new user by checking if profile exists
+      const profileSnap = await getDoc(userDoc(user.uid));
+      const isNewUser = !profileSnap.exists();
+      
+      if (isNewUser) {
+        // Create profile for new Google users
+        await setDoc(userDoc(user.uid), {
+          name: user.displayName || '',
+          email: user.email || '',
+          businessName: '',
+          phone: user.phoneNumber || '',
+          gst: '',
+          address: '',
+          currency: 'INR',
+          emailNotifications: true,
+          darkMode: true,
+          twoFactorAuth: false,
+          onboardingComplete: false,
+          interfaceTypes: [], // Will be set during onboarding
+          activeInterface: 'restaurant',
+        });
+      }
+      
+      return { ok: true, isNewUser };
+    } catch (e: any) {
+      const msg: string = e?.message ?? 'Google sign-in failed.';
+      // Handle popup closed by user
+      if (e?.code === 'auth/popup-closed-by-user') {
+        return { ok: false, error: 'Sign-in was cancelled.' };
+      }
+      return { ok: false, error: msg.replace('Firebase: ', '').replace(/ \(auth\/.*\)\.?/, '') };
+    }
+  }, []);
 
   const loginDemo = useCallback(() => {
     setDemoMode(true);
@@ -770,18 +829,40 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
 
   const completeOnboarding = useCallback(async (info: {
     businessName: string; phone: string; gst: string; address: string;
+    interfaceTypes: ('restaurant' | 'business')[];
   }) => {
     const uid = uidRef.current;
     if (!uid) return;
+    const activeInterface = info.interfaceTypes[0] || 'restaurant';
+    const updateData = { 
+      ...info, 
+      onboardingComplete: true,
+      activeInterface,
+    };
     // Always update local DB first
-    await localDb.profile.update(uid, { ...info, onboardingComplete: true, _syncStatus: 'pending' }).catch(console.error);
+    await localDb.profile.update(uid, { ...updateData, _syncStatus: 'pending' }).catch(console.error);
     // Sync to Firestore if available
     if (canSync()) {
-      updateDoc(userDoc(uid), { ...info, onboardingComplete: true })
+      updateDoc(userDoc(uid), updateData)
         .then(() => localDb.profile.update(uid, { _syncStatus: 'synced' }))
         .catch(console.error);
     }
-    setProfile(prev => prev ? { ...prev, ...info, onboardingComplete: true } : prev);
+    setProfile(prev => prev ? { ...prev, ...updateData } : prev);
+  }, []);
+
+  // ── setActiveInterface ─────────────────────────────────────────────────────
+  const setActiveInterface = useCallback((interfaceType: 'restaurant' | 'business') => {
+    const uid = uidRef.current;
+    if (!uid) return;
+    // Update local DB
+    localDb.profile.update(uid, { activeInterface: interfaceType, _syncStatus: 'pending' }).catch(console.error);
+    // Sync to Firestore if available
+    if (canSync()) {
+      updateDoc(userDoc(uid), { activeInterface: interfaceType })
+        .then(() => localDb.profile.update(uid, { _syncStatus: 'synced' }))
+        .catch(console.error);
+    }
+    setProfile(prev => prev ? { ...prev, activeInterface: interfaceType } : prev);
   }, []);
 
   // ── addTransaction ────────────────────────────────────────────────────────
@@ -1211,8 +1292,8 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
 
   const value = useMemo<AppStoreContextValue>(() => ({
     ready, session, profile, subscription, currentUser, data,
-    login, signup, loginDemo, logout,
-    completeOnboarding,
+    login, loginWithGoogle, signup, loginDemo, logout,
+    completeOnboarding, setActiveInterface,
     addTransaction, addInvoice, updateInvoice, toggleInvoiceStatus,
     updateEmployees, updateInventory, updateCatalogue, updateBusinessProfile, updatePreferences,
     deleteEmployee, deleteInvoice, deleteTransaction, deleteInventoryItem,
@@ -1227,7 +1308,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     clearAllNotifications,
   }), [
     ready, session, profile, currentUser, data,
-    login, signup, loginDemo, logout, completeOnboarding,
+    login, loginWithGoogle, signup, loginDemo, logout, completeOnboarding, setActiveInterface,
     addTransaction, addInvoice, updateInvoice, toggleInvoiceStatus,
     updateEmployees, updateInventory, updateCatalogue, updateBusinessProfile, updatePreferences,
     deleteEmployee, deleteInvoice, deleteTransaction, deleteInventoryItem,

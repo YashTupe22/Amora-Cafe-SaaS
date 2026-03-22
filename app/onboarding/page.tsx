@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Building2, Phone, FileText, MapPin, ArrowRight, Check, Zap } from 'lucide-react';
+import { Building2, Phone, FileText, MapPin, ArrowRight, Check, Zap, Layers } from 'lucide-react';
 import { useAppStore } from '@/lib/appStore';
 import { analytics } from '@/lib/analytics';
+import { InterfaceSelector, type InterfaceType } from '@/components/InterfaceSelector';
 
 const STEPS = [
+    { id: 0, label: 'Type', icon: Layers, title: 'What type of business are you?', subtitle: 'Select one or both — you can always add more later.' },
     { id: 1, label: 'Business', icon: Building2, title: 'What\'s your business name?', subtitle: 'This will appear on your invoices and reports.' },
     { id: 2, label: 'Contact', icon: Phone, title: 'How can clients reach you?', subtitle: 'Add your contact details for invoices.' },
     { id: 3, label: 'Tax & Address', icon: FileText, title: 'Tax & address info', subtitle: 'Used for GST invoicing — skip if not applicable.' },
@@ -18,6 +20,9 @@ export default function OnboardingPage() {
     const [step, setStep] = useState(0);
     const [saving, setSaving] = useState(false);
 
+    // Interface selection (step 0)
+    const [interfaceTypes, setInterfaceTypes] = useState<InterfaceType[]>(['restaurant']);
+    
     const [businessName, setBusinessName] = useState('');
     const [phone, setPhone] = useState('');
     const [gst, setGst] = useState('');
@@ -36,13 +41,23 @@ export default function OnboardingPage() {
 
     const handleFinish = async () => {
         setSaving(true);
-        await completeOnboarding({ businessName: businessName || 'My Business', phone, gst, address });
+        await completeOnboarding({ 
+            businessName: businessName || 'My Business', 
+            phone, 
+            gst, 
+            address,
+            interfaceTypes,
+        });
         analytics.onboardingCompleted();
         setSaving(false);
         router.push('/dashboard');
     };
 
-    const canProceed = step === 0 ? businessName.trim().length > 0 : true;
+    const canProceed = step === 0 
+        ? interfaceTypes.length > 0 
+        : step === 1 
+            ? businessName.trim().length > 0 
+            : true;
 
     return (
         <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #0a0f1e 0%, #0f172a 60%, #0d1b33 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', position: 'relative', overflow: 'hidden' }}>
@@ -50,7 +65,7 @@ export default function OnboardingPage() {
             <div style={{ position: 'absolute', top: '-20%', right: '-10%', width: 700, height: 700, borderRadius: '50%', background: 'radial-gradient(circle, rgba(249,115,22,0.09) 0%, transparent 65%)', pointerEvents: 'none' }} />
             <div style={{ position: 'absolute', bottom: '-20%', left: '-10%', width: 700, height: 700, borderRadius: '50%', background: 'radial-gradient(circle, rgba(234,88,12,0.08) 0%, transparent 65%)', pointerEvents: 'none' }} />
 
-            <div style={{ width: '100%', maxWidth: 540, position: 'relative' }}>
+            <div style={{ width: '100%', maxWidth: 560, position: 'relative' }}>
 
                 {/* Brand header */}
                 <div style={{ textAlign: 'center', marginBottom: 36 }}>
@@ -61,11 +76,11 @@ export default function OnboardingPage() {
                         <span style={{ fontSize: 16, fontWeight: 700, color: '#f1f5f9' }}>Synplix</span>
                     </div>
                     <h1 style={{ fontSize: 26, fontWeight: 800, color: '#f1f5f9', marginBottom: 6 }}>Welcome aboard!</h1>
-                    <p style={{ fontSize: 14, color: '#64748b' }}>Let&apos;s set up your workspace in 3 quick steps.</p>
+                    <p style={{ fontSize: 14, color: '#64748b' }}>Let&apos;s set up your workspace in {STEPS.length} quick steps.</p>
                 </div>
 
                 {/* Step indicators */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0, marginBottom: 32 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0, marginBottom: 32, flexWrap: 'wrap' }}>
                     {STEPS.map((s, idx) => {
                         const done = idx < step;
                         const active = idx === step;
@@ -73,19 +88,19 @@ export default function OnboardingPage() {
                             <div key={s.id} style={{ display: 'flex', alignItems: 'center' }}>
                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
                                     <div style={{
-                                        width: 40, height: 40, borderRadius: '50%',
+                                        width: 36, height: 36, borderRadius: '50%',
                                         background: done ? 'linear-gradient(135deg,#22c55e,#16a34a)' : active ? 'linear-gradient(135deg,#f97316,#ea580c)' : 'rgba(255,255,255,0.06)',
                                         border: `2px solid ${done ? '#22c55e' : active ? '#f97316' : 'rgba(255,255,255,0.12)'}`,
                                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                                         transition: 'all 0.3s ease',
                                         boxShadow: active ? '0 0 20px rgba(249,115,22,0.4)' : done ? '0 0 14px rgba(34,197,94,0.3)' : 'none',
                                     }}>
-                                        {done ? <Check size={16} color="white" /> : <s.icon size={16} color={active ? 'white' : '#475569'} />}
+                                        {done ? <Check size={14} color="white" /> : <s.icon size={14} color={active ? 'white' : '#475569'} />}
                                     </div>
-                                    <span style={{ fontSize: 11, color: active ? '#fb923c' : done ? '#22c55e' : '#475569', fontWeight: 600, whiteSpace: 'nowrap' }}>{s.label}</span>
+                                    <span style={{ fontSize: 10, color: active ? '#fb923c' : done ? '#22c55e' : '#475569', fontWeight: 600, whiteSpace: 'nowrap' }}>{s.label}</span>
                                 </div>
                                 {idx < STEPS.length - 1 && (
-                                    <div style={{ width: 60, height: 2, background: idx < step ? 'linear-gradient(90deg,#22c55e,#f97316)' : 'rgba(255,255,255,0.08)', marginBottom: 20, transition: 'background 0.4s ease' }} />
+                                    <div style={{ width: 40, height: 2, background: idx < step ? 'linear-gradient(90deg,#22c55e,#f97316)' : 'rgba(255,255,255,0.08)', marginBottom: 20, transition: 'background 0.4s ease' }} />
                                 )}
                             </div>
                         );
@@ -99,8 +114,17 @@ export default function OnboardingPage() {
                         <p style={{ fontSize: 13, color: '#64748b' }}>{STEPS[step].subtitle}</p>
                     </div>
 
-                    {/* Step 0 – Business name */}
+                    {/* Step 0 – Interface Type Selection */}
                     {step === 0 && (
+                        <InterfaceSelector
+                            selected={interfaceTypes}
+                            onChange={setInterfaceTypes}
+                            mode="multi"
+                        />
+                    )}
+
+                    {/* Step 1 – Business name */}
+                    {step === 1 && (
                         <div>
                             <label style={{ fontSize: 12, color: '#64748b', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>Business Name *</label>
                             <div style={{ position: 'relative' }}>
@@ -108,7 +132,7 @@ export default function OnboardingPage() {
                                     <input
                                         id="ob-business-name"
                                         className="dark-input"
-                                        placeholder="e.g. Synplix"
+                                        placeholder="e.g. Synplix Cafe"
                                         value={businessName}
                                         onChange={e => setBusinessName(e.target.value)}
                                         onKeyDown={e => e.key === 'Enter' && canProceed && handleNext()}
@@ -119,8 +143,8 @@ export default function OnboardingPage() {
                         </div>
                     )}
 
-                    {/* Step 1 – Contact */}
-                    {step === 1 && (
+                    {/* Step 2 – Contact */}
+                    {step === 2 && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                             <div>
                                 <label style={{ fontSize: 12, color: '#64748b', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>Phone Number</label>
@@ -139,8 +163,8 @@ export default function OnboardingPage() {
                         </div>
                     )}
 
-                    {/* Step 2 – Tax */}
-                    {step === 2 && (
+                    {/* Step 3 – Tax */}
+                    {step === 3 && (
                         <div>
                             <label style={{ fontSize: 12, color: '#64748b', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>GST Number <span style={{ color: '#475569', fontWeight: 400, textTransform: 'none' }}>(optional)</span></label>
                             <div style={{ position: 'relative', marginBottom: 24 }}>
@@ -152,6 +176,7 @@ export default function OnboardingPage() {
                             <div style={{ background: 'rgba(249,115,22,0.06)', border: '1px solid rgba(249,115,22,0.15)', borderRadius: 12, padding: '16px 18px' }}>
                                 <p style={{ fontSize: 11, color: '#f97316', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10 }}>Your workspace summary</p>
                                 {[
+                                    ['Type', interfaceTypes.map(t => t === 'restaurant' ? '🍽️ Restaurant' : '💼 Business').join(', ') || '—'],
                                     ['Business', businessName || '—'],
                                     ['Phone', phone || '—'],
                                     ['Address', address || '—'],
@@ -197,7 +222,7 @@ export default function OnboardingPage() {
                 </div>
 
                 <p style={{ textAlign: 'center', fontSize: 11, color: '#334155', marginTop: 20 }}>
-                    Your data is private and secured with Supabase RLS.
+                    Your data is private and secured with Firebase.
                 </p>
             </div>
         </div>

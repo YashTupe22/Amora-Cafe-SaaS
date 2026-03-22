@@ -1,7 +1,7 @@
 'use client';
 
 import AppLayout from '@/components/layout/AppLayout';
-import { Building2, Bell, Globe, Shield, User, Download, Moon } from 'lucide-react';
+import { Building2, Bell, Globe, Shield, User, Download, Moon, Layers, UtensilsCrossed, Briefcase, Check } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppStore } from '@/lib/appStore';
@@ -9,9 +9,13 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { exportAppDataToExcel } from '@/lib/exportExcel';
 import { useTranslation, type Lang } from '@/lib/i18n';
 import { analytics } from '@/lib/analytics';
+import { doc, updateDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { localDb } from '@/lib/localDb';
 
 type ProfileFieldKey = 'businessName' | 'email' | 'phone' | 'gst' | 'address';
 type AccountFieldKey = 'adminName' | 'loginEmail' | 'password';
+type InterfaceType = 'restaurant' | 'business';
 
 type Field =
     | { key: ProfileFieldKey; label: string; value: string; type: 'text' | 'email' | 'tel' }
@@ -19,7 +23,7 @@ type Field =
 
 export default function SettingsPage() {
     const router = useRouter();
-    const { data, currentUser, profile, updateBusinessProfile, updatePreferences, resetBusinessData, deleteCurrentAccount, logout } = useAppStore();
+    const { data, currentUser, profile, updateBusinessProfile, updatePreferences, resetBusinessData, deleteCurrentAccount, logout, setActiveInterface } = useAppStore();
     const isDark = profile?.darkMode !== false;
     const { canAccess } = useSubscription();
     const canExport = canAccess('pdfExport');
@@ -27,7 +31,17 @@ export default function SettingsPage() {
     const [profileDraft, setProfileDraft] = useState(data.businessProfile);
     const [prefsDraft, setPrefsDraft] = useState(data.preferences);
     const [savedMsg, setSavedMsg] = useState('');
+    const [interfaceTypesDraft, setInterfaceTypesDraft] = useState<InterfaceType[]>(profile?.interfaceTypes ?? ['restaurant']);
     const { lang, setLang, t } = useTranslation();
+
+    // Sync interface types from profile
+    const interfaceSynced = useRef(false);
+    useEffect(() => {
+        if (!interfaceSynced.current && profile?.interfaceTypes) {
+            setInterfaceTypesDraft(profile.interfaceTypes);
+            interfaceSynced.current = true;
+        }
+    }, [profile?.interfaceTypes]);
 
     // Sync draft once when real profile data arrives from Firestore.
     // Using a ref so user edits mid-session are never overwritten.
@@ -77,6 +91,52 @@ export default function SettingsPage() {
         { key: 'emailNotifications', label: t('settings.emailNotif'), sub: t('settings.emailNotifSub'), icon: <Bell size={15} />, enabled: prefsDraft.emailNotifications, canToggle: true },
         { key: 'twoFactorAuth', label: t('settings.twoFactor'), sub: t('settings.twoFactorSub'), icon: <Shield size={15} />, enabled: prefsDraft.twoFactorAuth, canToggle: true },
     ]), [prefsDraft, isDark]);
+
+    const toggleInterfaceType = (type: InterfaceType) => {
+        setInterfaceTypesDraft(prev => {
+            if (prev.includes(type)) {
+                // Don't allow removing if it's the only one
+                if (prev.length === 1) return prev;
+                return prev.filter(t => t !== type);
+            }
+            return [...prev, type];
+        });
+    };
+
+    const saveInterfaceTypes = async () => {
+        if (!profile?.id) return;
+        const uid = profile.id;
+        
+        // Determine new active interface
+        const newActive = interfaceTypesDraft.includes(profile.activeInterface) 
+            ? profile.activeInterface 
+            : interfaceTypesDraft[0];
+        
+        // Update local DB
+        await localDb.profile.update(uid, { 
+            interfaceTypes: interfaceTypesDraft, 
+            activeInterface: newActive,
+            _syncStatus: 'pending' 
+        }).catch(console.error);
+        
+        // Sync to Firestore
+        if (db && typeof navigator !== 'undefined' && navigator.onLine) {
+            await updateDoc(doc(db, 'users', uid), { 
+                interfaceTypes: interfaceTypesDraft,
+                activeInterface: newActive,
+            }).catch(console.error);
+        }
+        
+        // Update active interface if needed
+        if (newActive !== profile.activeInterface) {
+            setActiveInterface(newActive);
+        }
+        
+        setSavedMsg('Interface types saved!');
+        window.setTimeout(() => setSavedMsg(''), 1400);
+        // Reload to apply changes
+        window.location.reload();
+    };
 
     const saveAll = () => {
         updateBusinessProfile(profileDraft);
@@ -262,6 +322,134 @@ export default function SettingsPage() {
                             </div>
                         ))}
                     </div>
+                </div>
+
+                {/* Interface Types */}
+                <div className="glass-card" style={{ padding: 24 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+                        <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(139,92,246,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Layers size={16} color="#8b5cf6" />
+                        </div>
+                        <div>
+                            <h2 style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>Business Type</h2>
+                            <p style={{ fontSize: 12, color: '#64748b' }}>Select the interfaces you need access to</p>
+                        </div>
+                    </div>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                        {/* Restaurant Option */}
+                        <button
+                            type="button"
+                            onClick={() => toggleInterfaceType('restaurant')}
+                            style={{
+                                padding: '16px',
+                                borderRadius: 12,
+                                background: interfaceTypesDraft.includes('restaurant') ? 'rgba(249,115,22,0.08)' : 'rgba(255,255,255,0.03)',
+                                border: `2px solid ${interfaceTypesDraft.includes('restaurant') ? '#f97316' : 'rgba(255,255,255,0.08)'}`,
+                                cursor: 'pointer',
+                                textAlign: 'left',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 14,
+                                transition: 'all 0.2s ease',
+                            }}
+                        >
+                            <div style={{
+                                width: 40,
+                                height: 40,
+                                borderRadius: 10,
+                                background: interfaceTypesDraft.includes('restaurant') ? '#f97316' : 'rgba(255,255,255,0.06)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                            }}>
+                                <UtensilsCrossed size={20} color={interfaceTypesDraft.includes('restaurant') ? 'white' : '#64748b'} />
+                            </div>
+                            <div style={{ flex: 1 }}>
+                                <p style={{ fontSize: 14, fontWeight: 600, color: interfaceTypesDraft.includes('restaurant') ? '#f97316' : 'var(--text-primary)' }}>
+                                    Restaurant / Cafe
+                                </p>
+                                <p style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>
+                                    Tables, Menu, Orders, Kitchen Display, Quick Billing
+                                </p>
+                            </div>
+                            <div style={{
+                                width: 24,
+                                height: 24,
+                                borderRadius: '50%',
+                                background: interfaceTypesDraft.includes('restaurant') ? '#f97316' : 'rgba(255,255,255,0.1)',
+                                border: `2px solid ${interfaceTypesDraft.includes('restaurant') ? '#f97316' : 'rgba(255,255,255,0.2)'}`,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                            }}>
+                                {interfaceTypesDraft.includes('restaurant') && <Check size={14} color="white" strokeWidth={3} />}
+                            </div>
+                        </button>
+
+                        {/* Business Option */}
+                        <button
+                            type="button"
+                            onClick={() => toggleInterfaceType('business')}
+                            style={{
+                                padding: '16px',
+                                borderRadius: 12,
+                                background: interfaceTypesDraft.includes('business') ? 'rgba(139,92,246,0.08)' : 'rgba(255,255,255,0.03)',
+                                border: `2px solid ${interfaceTypesDraft.includes('business') ? '#8b5cf6' : 'rgba(255,255,255,0.08)'}`,
+                                cursor: 'pointer',
+                                textAlign: 'left',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 14,
+                                transition: 'all 0.2s ease',
+                            }}
+                        >
+                            <div style={{
+                                width: 40,
+                                height: 40,
+                                borderRadius: 10,
+                                background: interfaceTypesDraft.includes('business') ? '#8b5cf6' : 'rgba(255,255,255,0.06)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                            }}>
+                                <Briefcase size={20} color={interfaceTypesDraft.includes('business') ? 'white' : '#64748b'} />
+                            </div>
+                            <div style={{ flex: 1 }}>
+                                <p style={{ fontSize: 14, fontWeight: 600, color: interfaceTypesDraft.includes('business') ? '#8b5cf6' : 'var(--text-primary)' }}>
+                                    General Business
+                                </p>
+                                <p style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>
+                                    Client Invoicing, Expense Tracking, Transactions, GST Reports
+                                </p>
+                            </div>
+                            <div style={{
+                                width: 24,
+                                height: 24,
+                                borderRadius: '50%',
+                                background: interfaceTypesDraft.includes('business') ? '#8b5cf6' : 'rgba(255,255,255,0.1)',
+                                border: `2px solid ${interfaceTypesDraft.includes('business') ? '#8b5cf6' : 'rgba(255,255,255,0.2)'}`,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                            }}>
+                                {interfaceTypesDraft.includes('business') && <Check size={14} color="white" strokeWidth={3} />}
+                            </div>
+                        </button>
+                    </div>
+
+                    <p style={{ fontSize: 12, color: '#64748b', marginTop: 12, textAlign: 'center' }}>
+                        💡 Select both to access all features. You can switch between them using the sidebar toggle.
+                    </p>
+
+                    {/* Save Button - only show if changed */}
+                    {JSON.stringify(interfaceTypesDraft.sort()) !== JSON.stringify((profile?.interfaceTypes ?? ['restaurant']).sort()) && (
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
+                            <button className="glow-btn" style={{ padding: '9px 22px', fontSize: 13 }} onClick={saveInterfaceTypes}>
+                                <span>Save Changes</span>
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 {/* Data & Export */}

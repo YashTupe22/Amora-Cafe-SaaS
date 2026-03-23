@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import {
     LayoutDashboard,
@@ -11,7 +12,6 @@ import {
     Boxes,
     Settings,
     LogOut,
-    Zap,
     BookOpen,
     X,
     Crown,
@@ -90,8 +90,14 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
             {/* Logo */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20, paddingLeft: 6 }}>
-                <div style={{ width: 34, height: 34, borderRadius: 10, background: 'linear-gradient(135deg, #f97316, #ea580c)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 18px rgba(249,115,22,0.5)', flexShrink: 0 }}>
-                    <Zap size={18} color="white" />
+                <div style={{ width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <Image 
+                        src="/logo.png" 
+                        alt="Synplix Logo" 
+                        width={40} 
+                        height={40} 
+                        style={{ width: '100%', height: 'auto', objectFit: 'contain' }}
+                    />
                 </div>
                 <div>
                     <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.2 }}>Synplix</div>

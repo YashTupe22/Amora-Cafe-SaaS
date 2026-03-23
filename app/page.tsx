@@ -1,9 +1,10 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Mail, Lock, Zap, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { useAppStore } from '@/lib/appStore';
 
 // Google Icon SVG component
@@ -71,8 +72,15 @@ export default function LoginPage() {
       <div className="glass-card animate-fade-in" style={{ width: '100%', maxWidth: 420, padding: '40px 36px', position: 'relative' }}>
         {/* Logo */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, marginBottom: 36 }}>
-          <div style={{ width: 56, height: 56, borderRadius: 16, background: 'linear-gradient(135deg, #f97316, #ea580c)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 28px rgba(249,115,22,0.5)' }}>
-            <Zap size={26} color="white" />
+          <div style={{ width: 80, height: 80, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Image 
+              src="/logo.png" 
+              alt="Synplix Logo" 
+              width={80} 
+              height={80} 
+              style={{ width: '100%', height: 'auto', objectFit: 'contain' }}
+              priority
+            />
           </div>
           <div style={{ textAlign: 'center' }}>
             <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.3px' }}>Synplix</h1>

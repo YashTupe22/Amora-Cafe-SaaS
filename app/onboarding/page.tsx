@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Building2, Phone, FileText, MapPin, ArrowRight, Check, Zap, Layers } from 'lucide-react';
+import Image from 'next/image';
+import { Building2, Phone, FileText, MapPin, ArrowRight, Check, Layers } from 'lucide-react';
 import { useAppStore } from '@/lib/appStore';
 import { analytics } from '@/lib/analytics';
 import { InterfaceSelector, type InterfaceType } from '@/components/InterfaceSelector';
@@ -70,8 +71,14 @@ export default function OnboardingPage() {
                 {/* Brand header */}
                 <div style={{ textAlign: 'center', marginBottom: 36 }}>
                     <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-                        <div style={{ width: 38, height: 38, borderRadius: 10, background: 'linear-gradient(135deg, #f97316, #ea580c)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 18px rgba(249,115,22,0.45)' }}>
-                            <Zap size={18} color="white" />
+                        <div style={{ width: 50, height: 50, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Image 
+                                src="/logo.png" 
+                                alt="Synplix Logo" 
+                                width={50} 
+                                height={50} 
+                                style={{ width: '100%', height: 'auto', objectFit: 'contain' }}
+                            />
                         </div>
                         <span style={{ fontSize: 16, fontWeight: 700, color: '#f1f5f9' }}>Synplix</span>
                     </div>

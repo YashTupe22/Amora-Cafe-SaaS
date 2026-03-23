@@ -872,10 +872,11 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     if (!uid) return;
     const id = crypto.randomUUID();
     const tx: Transaction = { id, ...input };
+    const activeInterface = profile?.activeInterface ?? 'restaurant';
     // 1. Update state immediately
     setTransactions(prev => [tx, ...prev]);
     // 2. Write local DB (pending)
-    localDb.transactions.put({ ...tx, _uid: uid, _syncStatus: 'pending' }).catch(console.error);
+    localDb.transactions.put({ ...tx, _uid: uid, _syncStatus: 'pending', interface: activeInterface }).catch(console.error);
     // 3. Try Firestore; on success mark synced
     if (canSync()) {
       setDoc(doc(userCol(uid, 'transactions'), id), {
@@ -884,7 +885,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       }).then(() => localDb.transactions.update(id, { _syncStatus: 'synced' }).catch(console.error))
         .catch(() => console.warn('[Offline] Transaction queued for sync'));
     }
-  }, []);
+  }, [profile]);
 
   // ── addInvoice ────────────────────────────────────────────────────────────
 
@@ -906,6 +907,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       paymentMode: (input.paymentMode as Invoice['paymentMode']) ?? 'Cash',
     };
     const createdAt = new Date().toISOString();
+    const activeInterface = profile?.activeInterface ?? 'restaurant';
     // 1. Update state immediately
     setInvoices(prev => [invoice, ...prev]);
     addNotification({
@@ -914,7 +916,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       message: `${invoiceNo} for ${input.client || input.tableNo || 'table'} — ${invoice.items.length} item${invoice.items.length !== 1 ? 's' : ''}`,
     });
     // 2. Write local DB (pending)
-    localDb.invoices.put({ ...invoice, _uid: uid, _syncStatus: 'pending', _createdAt: createdAt }).catch(console.error);
+    localDb.invoices.put({ ...invoice, _uid: uid, _syncStatus: 'pending', _createdAt: createdAt, interface: activeInterface }).catch(console.error);
     // 3. Try Firestore
     if (canSync()) {
       setDoc(doc(userCol(uid, 'invoices'), id), {
@@ -930,7 +932,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       }).then(() => localDb.invoices.update(id, { _syncStatus: 'synced' }).catch(console.error))
         .catch(() => console.warn('[Offline] Invoice queued for sync'));
     }
-  }, []);
+  }, [profile]);
 
   // ── updateInvoice ─────────────────────────────────────────────────────────────
 
@@ -993,6 +995,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       if (!target) return prev;
       const isPaid = target.status === 'Paid';
       const nextStatus: Invoice['status'] = isPaid ? 'Pending' : 'Paid';
+      const activeInterface = profile?.activeInterface ?? 'restaurant';
       // Local DB: mark invoice status pending
       localDb.invoices.update(id, { status: nextStatus, _syncStatus: 'pending' }).catch(console.error);
       if (canSync()) {
@@ -1015,7 +1018,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
 
         };
         setTransactions(p => [tx, ...p]);
-        localDb.transactions.put({ ...tx, _uid: uid, _syncStatus: 'pending' }).catch(console.error);
+        localDb.transactions.put({ ...tx, _uid: uid, _syncStatus: 'pending', interface: activeInterface }).catch(console.error);
         if (canSync()) {
           setDoc(doc(userCol(uid, 'transactions'), txId), {
             type: 'Income', category: 'Client Payment', amount: total,
@@ -1026,7 +1029,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       }
       return prev.map(i => i.id === id ? { ...i, status: nextStatus } : i);
     });
-  }, [addNotification]);
+  }, [addNotification, profile]);
 
   // ── updateEmployees (diff-sync with embedded attendance) ─────────────────
 
@@ -1107,11 +1110,12 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     invtRef.current = next;
     setInventory(next);
     if (!uid) return;
+    const activeInterface = profile?.activeInterface ?? 'restaurant';
     const prevIds = new Set(prev.map(i => i.id));
     const now = new Date().toISOString();
     for (const item of next) {
       if (!prevIds.has(item.id)) {
-        localDb.inventory.put({ ...item, _uid: uid, _syncStatus: 'pending', _createdAt: now }).catch(console.error);
+        localDb.inventory.put({ ...item, _uid: uid, _syncStatus: 'pending', _createdAt: now, interface: activeInterface }).catch(console.error);
         if (canSync()) {
           setDoc(doc(userCol(uid, 'inventory'), item.id), {
             name: item.name, sku: item.sku, category: item.category, unit: item.unit,
@@ -1142,7 +1146,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
         }
       }
     }
-  }, []);
+  }, [profile]);
 
   // ── Profile / Preferences ─────────────────────────────────────────────────
 

@@ -4,6 +4,9 @@
  *  loadFromLocal()             → instant read from IndexedDB (works offline)
  *  fetchAndCacheFromFirebase() → pull Firestore → overwrite IndexedDB
  *  syncPendingToFirebase()     → push all _syncStatus:'pending' rows to Firestore
+ *
+ * Data separation: invoices, transactions, and inventory have an 'interface' field
+ * that determines which view (restaurant/business) they belong to.
  */
 
 import {
@@ -13,7 +16,7 @@ import {
 import { db } from './firebase';
 import { localDb } from './localDb';
 import type { Profile } from './appStore';
-import type { Employee, Invoice, InvoiceItem, InventoryItem, Transaction } from './mockData';
+import type { Employee, Invoice, InvoiceItem, InventoryItem, Transaction, InterfaceType } from './mockData';
 import type { LocalProfile } from './localDb';
 
 // ─── Firestore path helpers ───────────────────────────────────────────────────
@@ -141,6 +144,8 @@ export async function fetchAndCacheFromFirebase(uid: string): Promise<void> {
       tableNo: i.tableNo ?? local?.tableNo ?? '',
       orderType: i.orderType ?? local?.orderType ?? 'Dine-In',
       paymentMode: i.paymentMode ?? local?.paymentMode ?? 'Cash',
+      // Interface field for data separation (default to 'restaurant' for backward compatibility)
+      interface: (i.interface ?? local?.interface ?? 'restaurant') as InterfaceType,
       _uid: uid, _syncStatus: 'synced' as const,
       _createdAt: i.createdAt ?? local?._createdAt ?? now,
     };
@@ -153,6 +158,8 @@ export async function fetchAndCacheFromFirebase(uid: string): Promise<void> {
       id: d.id, type: t.type as 'Income' | 'Expense',
       category: t.category, amount: Number(t.amount),
       date: t.date, note: t.note || '',
+      // Interface field for data separation (default to 'restaurant' for backward compatibility)
+      interface: (t.interface ?? 'restaurant') as InterfaceType,
       _uid: uid, _syncStatus: 'synced' as const,
     };
   });
@@ -166,6 +173,8 @@ export async function fetchAndCacheFromFirebase(uid: string): Promise<void> {
       openingQty: Number(i.openingQty), currentQty: Number(i.currentQty),
       purchasePrice: Number(i.purchasePrice), sellingPrice: Number(i.sellingPrice),
       reorderLevel: Number(i.reorderLevel), gstRate: Number(i.gstRate),
+      // Interface field for data separation (default to 'shared' for inventory)
+      interface: (i.interface ?? 'shared') as InterfaceType | 'shared',
       _uid: uid, _syncStatus: 'synced' as const,
       _createdAt: i.createdAt ?? now,
     };

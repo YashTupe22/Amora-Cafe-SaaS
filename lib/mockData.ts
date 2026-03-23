@@ -94,6 +94,8 @@ export interface Invoice {
   clientEmail?: string;
   clientPhone?: string;
   clientAddress?: string;
+  // Interface separation — determines which view this invoice belongs to
+  interface?: InterfaceType;
 }
 
 export const INITIAL_INVOICES: Invoice[] = [
@@ -150,6 +152,9 @@ export const INITIAL_INVOICES: Invoice[] = [
 // ─── Transactions ─────────────────────────────────────────────────────────────
 export type TransactionType = 'Income' | 'Expense';
 
+// Interface type for data separation between restaurant and business
+export type InterfaceType = 'restaurant' | 'business';
+
 export interface Transaction {
   id: string;
   type: TransactionType;
@@ -157,6 +162,8 @@ export interface Transaction {
   amount: number;
   date: string;
   note: string;
+  // Interface separation — determines which view this transaction belongs to
+  interface?: InterfaceType;
 }
 
 export const INITIAL_TRANSACTIONS: Transaction[] = [
@@ -186,6 +193,8 @@ export interface InventoryItem {
   sellingPrice: number;
   reorderLevel: number;
   gstRate: number; // %
+  // Interface separation — 'shared' means item is visible in both interfaces
+  interface?: InterfaceType | 'shared';
 }
 
 export const INITIAL_INVENTORY: InventoryItem[] = [

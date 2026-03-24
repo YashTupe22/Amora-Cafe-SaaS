@@ -5,10 +5,11 @@ import Link from 'next/link';
 import AppLayout from '@/components/layout/AppLayout';
 import Badge from '@/components/ui/Badge';
 import type { Employee } from '@/lib/mockData';
-import { X, Check, UserPlus, ChevronLeft, ChevronRight, Clock, Lock } from 'lucide-react';
+import { X, Check, UserPlus, ChevronLeft, ChevronRight, Clock, Lock, BadgeCheck } from 'lucide-react';
 import { useAppStore } from '@/lib/appStore';
 import { useSubscription } from '@/hooks/useSubscription';
 import { localDate } from '@/lib/utils';
+import { generateWaiterCode, isValidWaiterCode } from '@/lib/waiterUtils';
 
 const TODAY = localDate();
 
@@ -235,7 +236,22 @@ export default function AttendancePage() {
     const { deleteEmployee } = useAppStore();
     const { canAccess } = useSubscription();
 
-    // ── Plan gate: attendance is Starter+ only ────────────────────────────────
+    const now = new Date();
+    const [viewYear, setViewYear] = useState(now.getFullYear());
+    const [viewMonth, setViewMonth] = useState(now.getMonth());
+    const monthDays = getMonthDays(viewYear, viewMonth);
+    const workDays = getWorkDays(viewYear, viewMonth);
+    const today = TODAY;
+
+    const [showAddForm, setShowAddForm] = useState(false);
+    const [form, setForm] = useState<NewEmpForm>(EMPTY_FORM);
+    const [formErrors, setFormErrors] = useState<Partial<Record<keyof NewEmpForm, string>>>({});
+    const [profileEmp, setProfileEmp] = useState<Employee | null>(null);
+    const [editEmp, setEditEmp] = useState<Employee | null>(null);
+
+    const isCurrentMonth = viewYear === now.getFullYear() && viewMonth === now.getMonth();
+
+    // ── Plan gate: attendance is Starter+ only (after all hooks) ──────────────
     if (!canAccess('attendance')) {
         return (
             <AppLayout title="Attendance" subtitle="Track employee attendance & payroll">
@@ -259,21 +275,6 @@ export default function AttendancePage() {
             </AppLayout>
         );
     }
-
-    const now = new Date();
-    const [viewYear, setViewYear] = useState(now.getFullYear());
-    const [viewMonth, setViewMonth] = useState(now.getMonth());
-    const monthDays = getMonthDays(viewYear, viewMonth);
-    const workDays = getWorkDays(viewYear, viewMonth);
-    const today = TODAY;
-
-    const [showAddForm, setShowAddForm] = useState(false);
-    const [form, setForm] = useState<NewEmpForm>(EMPTY_FORM);
-    const [formErrors, setFormErrors] = useState<Partial<Record<keyof NewEmpForm, string>>>({});
-    const [profileEmp, setProfileEmp] = useState<Employee | null>(null);
-    const [editEmp, setEditEmp] = useState<Employee | null>(null);
-
-    const isCurrentMonth = viewYear === now.getFullYear() && viewMonth === now.getMonth();
 
     const prevMonth = () => {
         if (viewMonth === 0) { setViewYear(y => y - 1); setViewMonth(11); }
@@ -508,6 +509,7 @@ export default function AttendancePage() {
                             <tr>
                                 <th>Employee</th>
                                 <th>Role</th>
+                                <th>Waiter Code</th>
                                 <th>Present</th>
                                 <th>Absent</th>
                                 <th>Overtime</th>
@@ -521,6 +523,18 @@ export default function AttendancePage() {
                             {employees.map(emp => {
                                 const { present, absent, pct } = getStats(emp);
                                 const otDays = Object.entries(emp.overtime ?? {}).filter(([date, val]) => val && monthDays.includes(date)).length;
+                                const isWaiter = emp.role?.toLowerCase().includes('waiter');
+                                
+                                const assignWaiterCode = () => {
+                                    const existingCodes = employees
+                                        .map(e => e.waiterCode)
+                                        .filter((code): code is string => Boolean(code));
+                                    const newCode = generateWaiterCode(existingCodes);
+                                    updateEmployees(prev => 
+                                        prev.map(e => e.id === emp.id ? { ...e, waiterCode: newCode, isWaiter: true } : e)
+                                    );
+                                };
+                                
                                 return (
                                     <tr key={emp.id}>
                                         <td>
@@ -532,6 +546,23 @@ export default function AttendancePage() {
                                             </div>
                                         </td>
                                         <td style={{ color: '#64748b' }}>{emp.role}</td>
+                                        <td>
+                                            {emp.waiterCode ? (
+                                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 10px', borderRadius: 8, background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)' }}>
+                                                    <BadgeCheck size={14} color="#22c55e" />
+                                                    <span style={{ fontSize: 13, fontWeight: 700, color: '#22c55e' }}>{emp.waiterCode}</span>
+                                                </div>
+                                            ) : isWaiter ? (
+                                                <button
+                                                    onClick={assignWaiterCode}
+                                                    style={{ padding: '4px 10px', borderRadius: 8, background: 'rgba(249,115,22,0.1)', border: '1px solid rgba(249,115,22,0.25)', color: '#f97316', cursor: 'pointer', fontSize: 11, fontWeight: 600 }}
+                                                >
+                                                    Generate Code
+                                                </button>
+                                            ) : (
+                                                <span style={{ color: '#475569', fontSize: 12 }}>—</span>
+                                            )}
+                                        </td>
                                         <td style={{ color: '#22c55e', fontWeight: 600 }}>{present}</td>
                                         <td style={{ color: '#ef4444', fontWeight: 600 }}>{absent}</td>
                                         <td style={{ color: '#f59e0b', fontWeight: 600 }}>{otDays > 0 ? otDays : '—'}</td>

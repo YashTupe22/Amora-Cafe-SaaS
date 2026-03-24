@@ -19,6 +19,8 @@ import {
     ClipboardList,
     FileText,
     Briefcase,
+    ChefHat,
+    Grid3X3,
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useAppStore } from '@/lib/appStore';
@@ -31,6 +33,8 @@ const RESTAURANT_NAV_ITEMS = [
     { href: '/dashboard',    key: 'nav.dashboard'    as const, icon: LayoutDashboard },
     { href: '/bills',        key: 'nav.bills'        as const, icon: ReceiptText },
     { href: '/catalogue',    key: 'nav.catalogue'    as const, icon: BookOpen },
+    { href: '/tables',       key: 'nav.tables'       as const, icon: Grid3X3 },
+    { href: '/kitchen',      key: 'nav.kitchen'      as const, icon: ChefHat },
     { href: '/attendance',   key: 'nav.attendance'   as const, icon: Users },
     { href: '/inventory',    key: 'nav.inventory'    as const, icon: Boxes },
     { href: '/transactions', key: 'nav.transactions' as const, icon: ArrowLeftRight },

@@ -756,3 +756,153 @@ html[data-theme="light"] .stat-card {
 html[data-theme="light"] .stat-card:hover {
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
 }
+
+/* ─── Light theme — Dashboard & Inventory fixes ─────────── */
+html[data-theme="light"] .stat-card h3,
+html[data-theme="light"] .stat-card p,
+html[data-theme="light"] .stat-card span,
+html[data-theme="light"] .glass-card h3,
+html[data-theme="light"] .glass-card p,
+html[data-theme="light"] .glass-card span,
+html[data-theme="light"] .glass-card label,
+html[data-theme="light"] .glass-card div {
+  color: inherit; /* Use parent color (--text-primary in light mode = #0f172a) */
+}
+
+html[data-theme="light"] h1,
+html[data-theme="light"] h2,
+html[data-theme="light"] h3 {
+  color: var(--text-primary);
+}
+
+html[data-theme="light"] .badge,
+html[data-theme="light"] .stat-badge {
+  opacity: 0.95;
+}
+
+/* Light mode kitchen page */
+html[data-theme="light"] .kitchen-page {
+  background: #f0f4f8;
+  color: #0f172a;
+}
+
+html[data-theme="light"] .kitchen-order-card {
+  background: white;
+  color: #0f172a;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+html[data-theme="light"] .kitchen-order-card h2,
+html[data-theme="light"] .kitchen-order-card h3,
+html[data-theme="light"] .kitchen-order-card p,
+html[data-theme="light"] .kitchen-order-card span {
+  color: inherit;
+}
+
+/* ─── Mobile Optimization for Kitchen & Waiter Pages ─────── */
+@media (max-width: 768px) {
+  /* Kitchen page mobile */
+  .kitchen-page {
+    padding: 16px !important;
+  }
+  
+  .kitchen-page h1 {
+    font-size: 32px !important;
+  }
+  
+  .kitchen-order-card {
+    padding: 16px !important;
+  }
+  
+  /* Waiter page mobile - ensure buttons and inputs are touch-friendly */
+  .waiter-page input,
+  .waiter-page button,
+  .waiter-page select {
+    min-height: 44px;
+    font-size: 16px !important; /* Prevents iOS zoom on focus */
+  }
+  
+  /* Make cards stack on mobile */
+  .waiter-menu-grid {
+    grid-template-columns: 1fr !important;
+  }
+  
+  /* Tables page mobile */
+  .tables-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Even smaller screens */
+  .kitchen-page h1 {
+    font-size: 24px !important;
+  }
+  
+  .kitchen-page > div > p {
+    font-size: 16px !important;
+  }
+  
+  /* Single column for tables on very small screens */
+  .tables-grid {
+    grid-template-columns: 1fr !important;
+  }
+  
+  /* Reduce padding on small screens */
+  .main-content {
+    padding: 12px !important;
+  }
+  
+  .glass-card {
+    padding: 16px !important;
+  }
+  
+  /* Stat cards horizontal scroll on mobile */
+  .stat-cards-row {
+    display: flex;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 12px;
+    padding-bottom: 8px;
+  }
+  
+  .stat-cards-row > div {
+    min-width: 140px;
+    flex-shrink: 0;
+  }
+}
+
+/* ─── Touch-friendly button sizing ───────────────────────── */
+@media (pointer: coarse) {
+  button,
+  .btn,
+  .glow-btn,
+  .btn-secondary {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  input[type="text"],
+  input[type="password"],
+  input[type="email"],
+  input[type="number"],
+  textarea,
+  select {
+    min-height: 44px;
+  }
+}
+
+/* ─── Safe area insets for notched devices ───────────────── */
+@supports (padding: max(0px)) {
+  .main-content {
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+  }
+  
+  .sidebar {
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+  }
+}

@@ -72,6 +72,9 @@ export async function loadFromLocal(uid: string): Promise<{
         onboardingComplete: rawProfile.onboardingComplete,
         interfaceTypes: rawProfile.interfaceTypes ?? ['restaurant'],
         activeInterface: rawProfile.activeInterface ?? 'restaurant',
+        upiId: rawProfile.upiId ?? '',
+        upiLocked: rawProfile.upiLocked ?? false,
+        adminPassword: rawProfile.adminPassword ?? '',
       }
     : null;
 
@@ -120,6 +123,8 @@ export async function fetchAndCacheFromFirebase(uid: string): Promise<void> {
       email: e.email ?? local?.email ?? '',
       phone: e.phone ?? local?.phone ?? '',
       aadhaar: e.aadhaar ?? local?.aadhaar ?? '',
+      waiterCode: e.waiterCode ?? local?.waiterCode ?? '',
+      isWaiter: e.isWaiter ?? local?.isWaiter ?? false,
       _uid: uid, _syncStatus: 'synced' as const,
       _createdAt: e.createdAt ?? local?._createdAt ?? now,
     };
@@ -195,6 +200,9 @@ export async function fetchAndCacheFromFirebase(uid: string): Promise<void> {
       onboardingComplete: pd.onboardingComplete ?? false,
       interfaceTypes: pd.interfaceTypes ?? ['restaurant'],
       activeInterface: pd.activeInterface ?? 'restaurant',
+      upiId: pd.upiId ?? '',
+      upiLocked: pd.upiLocked ?? false,
+      adminPassword: pd.adminPassword ?? '',
       _syncStatus: 'synced',
     });
   }
@@ -223,6 +231,8 @@ export async function syncPendingToFirebase(uid: string): Promise<number> {
       email: emp.email ?? '',
       phone: emp.phone ?? '',
       aadhaar: emp.aadhaar ?? '',
+      waiterCode: emp.waiterCode ?? '',
+      isWaiter: emp.isWaiter ?? false,
       createdAt: emp._createdAt,
     });
     await localDb.employees.update(emp.id, { _syncStatus: 'synced' });

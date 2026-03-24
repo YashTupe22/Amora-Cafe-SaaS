@@ -15,6 +15,9 @@ export interface Employee {
   phone?: string;
   aadhaar?: string;
   overtime?: Record<string, boolean>; // key: "YYYY-MM-DD", value: true = overtime
+  // v2.0 restaurant order system fields
+  waiterCode?: string; // Format: A12 (1 letter + 2 digits)
+  isWaiter?: boolean;
 }
 
 export const INITIAL_EMPLOYEES: Employee[] = [
@@ -235,3 +238,55 @@ export const DASHBOARD_STATS = {
   netProfit: 2800,
   pendingPayments: 970,
 };
+
+// ─── Restaurant Order System ──────────────────────────────────────────────────
+
+export type OrderStatus = 'placed' | 'preparing' | 'ready' | 'served' | 'cancelled';
+
+export interface OrderItem {
+  itemId: string;
+  name: string;
+  quantity: number;
+  price: number;
+  category?: MenuCategory;
+}
+
+export interface Order {
+  id: string;
+  orderNo: string;
+  waiterId: string;
+  waiterName: string;
+  waiterCode: string;
+  tableNumber: string;
+  items: OrderItem[];
+  status: OrderStatus;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+  completedAt?: Date | string;
+  notes?: string;
+}
+
+export interface Bill {
+  id: string;
+  billNo: string;
+  orderId: string;
+  tableNumber: string;
+  items: OrderItem[];
+  subtotal: number;
+  tax: number;
+  total: number;
+  paymentMode?: 'Cash' | 'Card' | 'UPI';
+  upiQrCode?: string;
+  createdAt: Date | string;
+  paidAt?: Date | string;
+}
+
+// ─── Table Management ─────────────────────────────────────────────────────────
+export interface Table {
+  id: string;
+  tableNumber: string;
+  status: 'free' | 'occupied';
+  currentOrderId?: string;
+  occupiedAt?: Date | string;
+  lastUpdated: Date | string;
+}

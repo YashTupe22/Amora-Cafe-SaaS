@@ -10,6 +10,8 @@ rules_version = '2';
 //   users/{uid}/invoices/{docId}       ← bills / invoices
 //   users/{uid}/transactions/{docId}   ← income & expense ledger
 //   users/{uid}/inventory/{docId}      ← stock items
+//   users/{uid}/orders/{docId}         ← restaurant orders (NEW)
+//   users/{uid}/bills/{docId}          ← generated bills (NEW)
 //   support_requests/{docId}           ← help-desk submissions
 // ────────────────────────────────────────────────────────────────────────────
 
@@ -127,6 +129,72 @@ service cloud.firestore {
 
         allow delete: if isOwner(uid);
       }
+
+      // ── Orders sub-collection (users/{uid}/orders/{docId}) ─────────────────
+      // Restaurant order management system
+      match /orders/{docId} {
+        allow read: if isOwner(uid);
+
+        allow create: if isOwner(uid)
+          && notOversized()
+          && request.resource.data.keys().hasAll(['orderNo', 'waiterId', 'waiterCode', 'tableNumber', 'items', 'status', 'createdAt'])
+          && request.resource.data.orderNo is string
+          && request.resource.data.waiterId is string
+          && request.resource.data.waiterCode is string
+          && request.resource.data.tableNumber is string
+          && request.resource.data.items is list
+          && request.resource.data.status in ['placed', 'preparing', 'ready', 'served', 'cancelled'];
+
+        allow update: if isOwner(uid)
+          && notOversized()
+          // Order number should never change once created
+          && request.resource.data.orderNo == resource.data.orderNo
+          && request.resource.data.status in ['placed', 'preparing', 'ready', 'served', 'cancelled'];
+
+        allow delete: if isOwner(uid);
+      }
+
+      // ── Bills sub-collection (users/{uid}/bills/{docId}) ───────────────────
+      // Generated bills from completed orders
+      match /bills/{docId} {
+        allow read: if isOwner(uid);
+
+        allow create: if isOwner(uid)
+          && notOversized()
+          && request.resource.data.keys().hasAll(['billNo', 'orderId', 'tableNumber', 'items', 'total', 'createdAt'])
+          && request.resource.data.billNo is string
+          && request.resource.data.orderId is string
+          && request.resource.data.tableNumber is string
+          && request.resource.data.items is list
+          && request.resource.data.total is number
+          && request.resource.data.total >= 0;
+
+        allow update: if isOwner(uid)
+          && notOversized()
+          // Bill number and order ID should never change
+          && request.resource.data.billNo == resource.data.billNo
+          && request.resource.data.orderId == resource.data.orderId;
+
+        allow delete: if isOwner(uid);
+      }
+
+      // ── Tables sub-collection (users/{uid}/tables/{tableId}) ──
+      // For restaurant table management with real-time occupancy
+      match /tables/{tableId} {
+        allow read: if isOwner(uid);
+        
+        allow create: if isOwner(uid)
+          && notOversized()
+          && request.resource.data.tableNumber is string
+          && request.resource.data.status in ['free', 'occupied'];
+
+        allow update: if isOwner(uid)
+          && notOversized()
+          && request.resource.data.status in ['free', 'occupied'];
+
+        allow delete: if isOwner(uid);
+      }
+
       // ── Notifications sub-collection (users/{uid}/notifications/{docId}) ──
       // Admin SDK writes these (bypasses rules). Client can read, mark as read, dismiss.
       match /notifications/{docId} {

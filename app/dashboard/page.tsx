@@ -20,6 +20,7 @@ import {
 import { useAppStore } from '@/lib/appStore';
 import { useSubscription } from '@/hooks/useSubscription';
 import { exportDashboardPdf } from '@/lib/exportDashboardPdf';
+import LiveOrdersWidget from '@/components/LiveOrdersWidget';
 
 function formatCurrency(v: number) {
     if (v < 0) return `-₹${Math.abs(v).toLocaleString('en-IN')}`;
@@ -222,6 +223,13 @@ function DashboardContent() {
                     icon={<Clock size={20} color="#ea580c" />}
                 />
             </div>
+
+            {/* Live Orders Widget - Only for restaurant interface */}
+            {profile?.activeInterface === 'restaurant' && (
+                <div style={{ marginBottom: 28 }}>
+                    <LiveOrdersWidget />
+                </div>
+            )}
 
             {/* Charts Row */}
             <div className="chart-grid">

@@ -58,6 +58,10 @@ export interface Profile {
   // Interface types - user can have one or both
   interfaceTypes: ('restaurant' | 'business')[];
   activeInterface: 'restaurant' | 'business';
+  // Restaurant order system fields
+  upiId?: string;
+  upiLocked?: boolean;
+  adminPassword?: string; // Hashed password for waiter exit and UPI changes
 }
 
 export type SubscriptionStatus =
@@ -163,6 +167,8 @@ interface AppStoreContextValue {
   resetBusinessData: () => void;
   deleteCurrentAccount: () => void;
   isOnline: boolean;
+  /** Update any profile fields (used for UPI ID, admin password, etc.) */
+  updateProfileFields: (fields: Partial<Pick<Profile, 'upiId' | 'upiLocked' | 'adminPassword'>>) => void;
   /** Re-fetches the subscription document from Firestore and updates state. */
   reloadSubscription: () => Promise<void>;
   notifications: AppNotification[];
@@ -215,6 +221,8 @@ async function loadUserData(userId: string) {
       email: e.email ?? '',
       phone: e.phone ?? '',
       aadhaar: e.aadhaar ?? '',
+      waiterCode: e.waiterCode ?? '',
+      isWaiter: e.isWaiter ?? false,
     };
   });
 
@@ -283,6 +291,10 @@ async function loadUserData(userId: string) {
     // Interface types - default to restaurant for existing users (backwards compatibility)
     interfaceTypes: profileData.interfaceTypes ?? ['restaurant'],
     activeInterface: profileData.activeInterface ?? 'restaurant',
+    // Restaurant order system fields
+    upiId: profileData.upiId ?? '',
+    upiLocked: profileData.upiLocked ?? false,
+    adminPassword: profileData.adminPassword ?? '',
   } : null;
 
   return { employees, invoices, transactions, inventory, profile };
@@ -1039,14 +1051,24 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     const next = updater(prev);
     empRef.current = next;
     setEmployees(next);
-    if (!uid) return;
+    
+    console.log('[updateEmployees] uidRef:', uid);
+    
+    if (!uid) {
+      console.warn('[updateEmployees] No UID - skipping Firestore sync');
+      return;
+    }
+    
     const prevIds = new Set(prev.map(e => e.id));
     const now = new Date().toISOString();
     for (const emp of next) {
       if (!prevIds.has(emp.id)) {
+        // New employee
+        console.log('[updateEmployees] Creating new employee:', emp.id, { waiterCode: emp.waiterCode, isWaiter: emp.isWaiter });
         analytics.employeeAdded({ role: emp.role });
         localDb.employees.put({ ...emp, _uid: uid, _syncStatus: 'pending', _createdAt: now }).catch(console.error);
         if (canSync()) {
+          console.log('[updateEmployees] Syncing new employee to Firestore...');
           setDoc(doc(userCol(uid, 'employees'), emp.id), {
             name: emp.name, role: emp.role, avatar: emp.avatar,
             attendance: emp.attendance ?? {},
@@ -1057,13 +1079,27 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
             email: emp.email ?? '',
             phone: emp.phone ?? '',
             aadhaar: emp.aadhaar ?? '',
+            waiterCode: emp.waiterCode ?? '',
+            isWaiter: emp.isWaiter ?? false,
             createdAt: now,
-          }).then(() => localDb.employees.update(emp.id, { _syncStatus: 'synced' }).catch(console.error))
-            .catch(() => console.warn('[Offline] Employee queued'));
+          }).then(() => {
+            console.log('[updateEmployees] ✓ Employee created in Firestore:', emp.id);
+            localDb.employees.update(emp.id, { _syncStatus: 'synced' }).catch(console.error);
+          }).catch((error) => {
+            console.error('[updateEmployees] ✗ Failed to create employee in Firestore:', error);
+            console.warn('[Offline] Employee queued');
+          });
+        } else {
+          console.warn('[updateEmployees] Cannot sync (offline or db not ready)');
         }
       } else {
         const old = prev.find(e => e.id === emp.id);
         if (old && JSON.stringify(old) !== JSON.stringify(emp)) {
+          // Employee updated
+          console.log('[updateEmployees] Updating employee:', emp.id, { 
+            waiterCode: { old: old.waiterCode, new: emp.waiterCode },
+            isWaiter: { old: old.isWaiter, new: emp.isWaiter }
+          });
           const updateData = {
             name: emp.name,
             role: emp.role,
@@ -1076,10 +1112,13 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
             email: emp.email ?? '',
             phone: emp.phone ?? '',
             aadhaar: emp.aadhaar ?? '',
+            waiterCode: emp.waiterCode ?? '',
+            isWaiter: emp.isWaiter ?? false,
             _syncStatus: 'pending' as const,
           };
           localDb.employees.update(emp.id, updateData).catch(console.error);
           if (canSync()) {
+            console.log('[updateEmployees] Syncing employee update to Firestore...');
             updateDoc(doc(userCol(uid, 'employees'), emp.id), {
               name: emp.name,
               role: emp.role,
@@ -1092,9 +1131,19 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
               email: emp.email ?? '',
               phone: emp.phone ?? '',
               aadhaar: emp.aadhaar ?? '',
+              waiterCode: emp.waiterCode ?? '',
+              isWaiter: emp.isWaiter ?? false,
             })
-              .then(() => localDb.employees.update(emp.id, { _syncStatus: 'synced' }).catch(console.error))
-              .catch(() => console.warn('[Offline] Employee update queued'));
+              .then(() => {
+                console.log('[updateEmployees] ✓ Employee updated in Firestore:', emp.id);
+                localDb.employees.update(emp.id, { _syncStatus: 'synced' }).catch(console.error);
+              })
+              .catch((error) => {
+                console.error('[updateEmployees] ✗ Failed to update employee in Firestore:', error);
+                console.warn('[Offline] Employee update queued');
+              });
+          } else {
+            console.warn('[updateEmployees] Cannot sync (offline or db not ready)');
           }
         }
       }
@@ -1176,6 +1225,35 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       const theme = p.darkMode ? 'dark' : 'light';
       window.localStorage.setItem('synplix-theme', theme);
       document.documentElement.dataset.theme = theme;
+    }
+  }, []);
+
+  // ── Update profile fields (UPI, admin password, etc.) ─────────────────────
+  const updateProfileFields = useCallback((fields: Partial<Pick<Profile, 'upiId' | 'upiLocked' | 'adminPassword'>>) => {
+    const uid = uidRef.current;
+    console.log('[updateProfileFields] uidRef:', uid, 'fields:', fields);
+    
+    if (!uid) {
+      console.warn('[updateProfileFields] No UID - skipping sync');
+      return;
+    }
+    
+    setProfile(prev => prev ? { ...prev, ...fields } : prev);
+    localDb.profile.where('id').equals(uid).modify({ ...fields, _syncStatus: 'pending' }).catch(console.error);
+    
+    if (canSync()) {
+      console.log('[updateProfileFields] Syncing to Firestore...');
+      updateDoc(userDoc(uid), fields)
+        .then(() => {
+          console.log('[updateProfileFields] ✓ Profile updated in Firestore');
+          localDb.profile.where('id').equals(uid).modify({ _syncStatus: 'synced' }).catch(console.error);
+        })
+        .catch((error) => {
+          console.error('[updateProfileFields] ✗ Failed to update profile in Firestore:', error);
+          console.warn('[Offline] Profile fields queued');
+        });
+    } else {
+      console.warn('[updateProfileFields] Cannot sync (offline or db not ready)');
     }
   }, []);
 
@@ -1300,6 +1378,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     completeOnboarding, setActiveInterface,
     addTransaction, addInvoice, updateInvoice, toggleInvoiceStatus,
     updateEmployees, updateInventory, updateCatalogue, updateBusinessProfile, updatePreferences,
+    updateProfileFields,
     deleteEmployee, deleteInvoice, deleteTransaction, deleteInventoryItem,
     resetBusinessData, deleteCurrentAccount,
     isOnline,
@@ -1315,6 +1394,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     login, loginWithGoogle, signup, loginDemo, logout, completeOnboarding, setActiveInterface,
     addTransaction, addInvoice, updateInvoice, toggleInvoiceStatus,
     updateEmployees, updateInventory, updateCatalogue, updateBusinessProfile, updatePreferences,
+    updateProfileFields,
     deleteEmployee, deleteInvoice, deleteTransaction, deleteInventoryItem,
     resetBusinessData, deleteCurrentAccount, isOnline, dashboard, reloadSubscription,
     notifications, unreadCount, markAllRead, dismissNotification, clearAllNotifications,

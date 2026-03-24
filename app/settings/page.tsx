@@ -1,7 +1,7 @@
 'use client';
 
 import AppLayout from '@/components/layout/AppLayout';
-import { Building2, Bell, Globe, Shield, User, Download, Moon, Layers, UtensilsCrossed, Briefcase, Check } from 'lucide-react';
+import { Building2, Bell, Globe, Shield, User, Download, Moon, Layers, UtensilsCrossed, Briefcase, Check, CreditCard, Lock, Unlock } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppStore } from '@/lib/appStore';
@@ -23,7 +23,7 @@ type Field =
 
 export default function SettingsPage() {
     const router = useRouter();
-    const { data, currentUser, profile, updateBusinessProfile, updatePreferences, resetBusinessData, deleteCurrentAccount, logout, setActiveInterface } = useAppStore();
+    const { data, currentUser, profile, updateBusinessProfile, updatePreferences, updateProfileFields, resetBusinessData, deleteCurrentAccount, logout, setActiveInterface } = useAppStore();
     const isDark = profile?.darkMode !== false;
     const { canAccess } = useSubscription();
     const canExport = canAccess('pdfExport');
@@ -34,6 +34,21 @@ export default function SettingsPage() {
     const [interfaceTypesDraft, setInterfaceTypesDraft] = useState<InterfaceType[]>(profile?.interfaceTypes ?? ['restaurant']);
     const { lang, setLang, t } = useTranslation();
 
+    // UPI ID state
+    const [upiId, setUpiId] = useState(profile?.upiId ?? '');
+    const [upiLocked, setUpiLocked] = useState(profile?.upiLocked ?? false);
+    const [showPasswordModal, setShowPasswordModal] = useState(false);
+    const [adminPassword, setAdminPassword] = useState('');
+    const [passwordError, setPasswordError] = useState('');
+    const [upiSavedMsg, setUpiSavedMsg] = useState('');
+    
+    // Admin password setup state
+    const [showAdminSetup, setShowAdminSetup] = useState(false);
+    const [newAdminPassword, setNewAdminPassword] = useState('');
+    const [confirmAdminPassword, setConfirmAdminPassword] = useState('');
+    const [adminSetupError, setAdminSetupError] = useState('');
+    const [adminSetupSuccess, setAdminSetupSuccess] = useState('');
+
     // Sync interface types from profile
     const interfaceSynced = useRef(false);
     useEffect(() => {
@@ -42,6 +57,14 @@ export default function SettingsPage() {
             interfaceSynced.current = true;
         }
     }, [profile?.interfaceTypes]);
+
+    // Sync UPI data from profile
+    useEffect(() => {
+        if (profile) {
+            setUpiId(profile.upiId ?? '');
+            setUpiLocked(profile.upiLocked ?? false);
+        }
+    }, [profile]);
 
     // Sync draft once when real profile data arrives from Firestore.
     // Using a ref so user edits mid-session are never overwritten.
@@ -101,6 +124,106 @@ export default function SettingsPage() {
             }
             return [...prev, type];
         });
+    };
+
+    // UPI ID validation
+    const validateUpiId = (upi: string): boolean => {
+        const upiRegex = /^[\w.-]+@[\w.-]+$/;
+        return upiRegex.test(upi);
+    };
+
+    // Save UPI ID
+    const saveUpiId = async () => {
+        if (!profile?.id) return;
+        
+        if (!upiId.trim()) {
+            setUpiSavedMsg('Please enter a UPI ID');
+            window.setTimeout(() => setUpiSavedMsg(''), 2000);
+            return;
+        }
+
+        if (!validateUpiId(upiId)) {
+            setUpiSavedMsg('Invalid UPI ID format (e.g., user@paytm)');
+            window.setTimeout(() => setUpiSavedMsg(''), 2500);
+            return;
+        }
+
+        try {
+            // Use appStore's updateProfileFields for proper sync
+            updateProfileFields({ 
+                upiId: upiId.trim(), 
+                upiLocked: true 
+            });
+
+            setUpiLocked(true);
+            setUpiSavedMsg('UPI ID saved successfully');
+            window.setTimeout(() => setUpiSavedMsg(''), 2000);
+        } catch (error) {
+            console.error('Error saving UPI ID:', error);
+            setUpiSavedMsg('Error saving UPI ID');
+            window.setTimeout(() => setUpiSavedMsg(''), 2000);
+        }
+    };
+
+    // Verify admin password
+    const verifyAdminPassword = () => {
+        // Check against stored admin password
+        const storedPassword = profile?.adminPassword;
+        
+        if (storedPassword && adminPassword === storedPassword) {
+            setShowPasswordModal(false);
+            setUpiLocked(false);
+            // Also update in store so it persists
+            updateProfileFields({ upiLocked: false });
+            setAdminPassword('');
+            setPasswordError('');
+        } else if (!storedPassword && adminPassword === 'admin123') {
+            // Fallback for first time users
+            setShowPasswordModal(false);
+            setUpiLocked(false);
+            updateProfileFields({ upiLocked: false });
+            setAdminPassword('');
+            setPasswordError('');
+        } else {
+            setPasswordError('Incorrect password');
+        }
+    };
+
+    const openPasswordModal = () => {
+        setShowPasswordModal(true);
+        setPasswordError('');
+        setAdminPassword('');
+    };
+
+    // Save new admin password
+    const saveAdminPassword = () => {
+        setAdminSetupError('');
+        setAdminSetupSuccess('');
+        
+        if (!newAdminPassword || !confirmAdminPassword) {
+            setAdminSetupError('Please fill both fields');
+            return;
+        }
+        
+        if (newAdminPassword.length < 4) {
+            setAdminSetupError('Password must be at least 4 characters');
+            return;
+        }
+        
+        if (newAdminPassword !== confirmAdminPassword) {
+            setAdminSetupError('Passwords do not match');
+            return;
+        }
+        
+        // Save to profile (in production, hash this!)
+        updateProfileFields({ adminPassword: newAdminPassword });
+        setAdminSetupSuccess('Admin password saved successfully!');
+        setNewAdminPassword('');
+        setConfirmAdminPassword('');
+        setTimeout(() => {
+            setShowAdminSetup(false);
+            setAdminSetupSuccess('');
+        }, 2000);
     };
 
     const saveInterfaceTypes = async () => {
@@ -166,7 +289,211 @@ export default function SettingsPage() {
     return (
         <AppLayout title="Settings" subtitle="Manage your business profile and preferences">
             <div style={{ maxWidth: 720, display: 'flex', flexDirection: 'column', gap: 20 }}>
-                {sections.map(sec => (
+                {/* Business Profile */}
+                {sections.filter(s => s.title === 'Business Profile').map(sec => (
+                    <div key={sec.title} className="glass-card" style={{ padding: 24 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+                            <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(249,115,22,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                {sec.icon}
+                            </div>
+                            <h2 style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{sec.title}</h2>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                            {sec.fields.map(field => (
+                                <div key={field.label} className="setting-row">
+                                    <label style={{ fontSize: 13, color: 'var(--text-secondary)', fontWeight: 500 }}>{field.label}</label>
+                                    <input
+                                        className="dark-input"
+                                        type={field.type}
+                                        value={field.value}
+                                        readOnly={'readOnly' in field ? field.readOnly : false}
+                                        onChange={e => {
+                                            if (sec.title !== 'Business Profile') return;
+                                            const key: ProfileFieldKey = field.key as ProfileFieldKey;
+                                            setProfileDraft(prev => ({ ...prev, [key]: e.target.value }));
+                                        }}
+                                        style={{ padding: '9px 12px', fontSize: 14 }}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 18 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                {savedMsg && <span style={{ fontSize: 12, color: '#22c55e', fontWeight: 700 }}>{savedMsg}</span>}
+                                <button className="glow-btn" style={{ padding: '9px 22px', fontSize: 13 }} onClick={saveAll}>
+                                <span>Save Changes</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                ))}
+
+                {/* Payment Settings */}
+                <div className="glass-card" style={{ padding: 24 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+                        <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(34, 197, 94, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <CreditCard size={16} color="#22c55e" />
+                        </div>
+                        <h2 style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>Payment Settings</h2>
+                    </div>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                        <div className="setting-row">
+                            <label style={{ fontSize: 13, color: 'var(--text-secondary)', fontWeight: 500 }}>UPI ID</label>
+                            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <input
+                                    className="dark-input"
+                                    type="text"
+                                    value={upiId}
+                                    readOnly={upiLocked}
+                                    onChange={e => setUpiId(e.target.value)}
+                                    placeholder="e.g., merchant@paytm"
+                                    style={{ padding: '9px 12px', fontSize: 14, flex: 1 }}
+                                />
+                                {upiLocked && (
+                                    <div style={{ 
+                                        position: 'absolute', 
+                                        right: 12, 
+                                        top: '50%', 
+                                        transform: 'translateY(-50%)',
+                                        pointerEvents: 'none'
+                                    }}>
+                                        <Lock size={16} color="#64748b" />
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {upiLocked && upiId && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', background: 'rgba(100, 116, 139, 0.1)', borderRadius: 8 }}>
+                                <Lock size={14} color="#64748b" />
+                                <p style={{ fontSize: 12, color: 'var(--text-secondary)', flex: 1 }}>
+                                    UPI ID is locked. Admin password required to change.
+                                </p>
+                            </div>
+                        )}
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 18, gap: 12 }}>
+                        {upiSavedMsg && (
+                            <span style={{ 
+                                fontSize: 12, 
+                                color: upiSavedMsg.includes('success') ? '#22c55e' : '#ef4444', 
+                                fontWeight: 700,
+                                display: 'flex',
+                                alignItems: 'center'
+                            }}>
+                                {upiSavedMsg}
+                            </span>
+                        )}
+                        {upiLocked && upiId ? (
+                            <button 
+                                className="glow-btn" 
+                                style={{ padding: '9px 22px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }}
+                                onClick={openPasswordModal}
+                            >
+                                <Unlock size={14} />
+                                <span>Change UPI ID</span>
+                            </button>
+                        ) : (
+                            <button 
+                                className="glow-btn" 
+                                style={{ padding: '9px 22px', fontSize: 13 }}
+                                onClick={saveUpiId}
+                            >
+                                <span>Save UPI ID</span>
+                            </button>
+                        )}
+                    </div>
+                </div>
+
+                {/* Admin Password Setup */}
+                <div className="glass-card" style={{ padding: 24 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+                        <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(239, 68, 68, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Lock size={16} color="#ef4444" />
+                        </div>
+                        <h2 style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>Admin Password</h2>
+                    </div>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                        <p style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+                            Set an admin password to protect waiter logout and UPI changes. 
+                            {profile?.adminPassword ? ' Current password is set.' : ' Using default: admin123'}
+                        </p>
+                        
+                        {!showAdminSetup ? (
+                            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                <button
+                                    className="glow-btn"
+                                    style={{ padding: '9px 22px', fontSize: 13 }}
+                                    onClick={() => setShowAdminSetup(true)}
+                                >
+                                    <Lock size={14} />
+                                    <span>{profile?.adminPassword ? 'Change Password' : 'Set Password'}</span>
+                                </button>
+                            </div>
+                        ) : (
+                            <>
+                                <div className="setting-row">
+                                    <label style={{ fontSize: 13, color: 'var(--text-secondary)', fontWeight: 500 }}>New Password</label>
+                                    <input
+                                        className="dark-input"
+                                        type="password"
+                                        value={newAdminPassword}
+                                        onChange={e => setNewAdminPassword(e.target.value)}
+                                        placeholder="Enter new password"
+                                        style={{ padding: '9px 12px', fontSize: 14 }}
+                                    />
+                                </div>
+                                
+                                <div className="setting-row">
+                                    <label style={{ fontSize: 13, color: 'var(--text-secondary)', fontWeight: 500 }}>Confirm Password</label>
+                                    <input
+                                        className="dark-input"
+                                        type="password"
+                                        value={confirmAdminPassword}
+                                        onChange={e => setConfirmAdminPassword(e.target.value)}
+                                        placeholder="Confirm password"
+                                        style={{ padding: '9px 12px', fontSize: 14 }}
+                                    />
+                                </div>
+                                
+                                {adminSetupError && (
+                                    <p style={{ fontSize: 12, color: '#ef4444', marginTop: -8 }}>{adminSetupError}</p>
+                                )}
+                                {adminSetupSuccess && (
+                                    <p style={{ fontSize: 12, color: '#22c55e', marginTop: -8 }}>{adminSetupSuccess}</p>
+                                )}
+                                
+                                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
+                                    <button
+                                        className="btn-secondary"
+                                        style={{ padding: '9px 22px', fontSize: 13 }}
+                                        onClick={() => {
+                                            setShowAdminSetup(false);
+                                            setNewAdminPassword('');
+                                            setConfirmAdminPassword('');
+                                            setAdminSetupError('');
+                                        }}
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        className="glow-btn"
+                                        style={{ padding: '9px 22px', fontSize: 13 }}
+                                        onClick={saveAdminPassword}
+                                    >
+                                        <span>Save Password</span>
+                                    </button>
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </div>
+
+                {/* Account */}
+                {sections.filter(s => s.title === 'Account').map(sec => (
                     <div key={sec.title} className="glass-card" style={{ padding: 24 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
                             <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(249,115,22,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -489,6 +816,118 @@ export default function SettingsPage() {
                     </div>
                 </div>
             </div>
+
+            {/* Admin Password Modal */}
+            {showPasswordModal && (
+                <div
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background: 'rgba(0, 0, 0, 0.7)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        zIndex: 1000,
+                        backdropFilter: 'blur(4px)',
+                    }}
+                    onClick={() => setShowPasswordModal(false)}
+                >
+                    <div
+                        className="glass-card"
+                        style={{
+                            padding: 32,
+                            maxWidth: 420,
+                            width: '90%',
+                            margin: '0 auto',
+                        }}
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+                            <div style={{
+                                width: 40,
+                                height: 40,
+                                borderRadius: 10,
+                                background: 'rgba(249,115,22,0.1)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                            }}>
+                                <Shield size={20} color="#f97316" />
+                            </div>
+                            <h2 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>
+                                Admin Password Required
+                            </h2>
+                        </div>
+
+                        <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 24 }}>
+                            Enter your admin password to unlock and edit the UPI ID.
+                        </p>
+
+                        <div style={{ marginBottom: 20 }}>
+                            <label style={{ fontSize: 13, color: 'var(--text-secondary)', fontWeight: 500, display: 'block', marginBottom: 8 }}>
+                                Password
+                            </label>
+                            <input
+                                className="dark-input"
+                                type="password"
+                                value={adminPassword}
+                                onChange={e => {
+                                    setAdminPassword(e.target.value);
+                                    setPasswordError('');
+                                }}
+                                onKeyDown={e => {
+                                    if (e.key === 'Enter') verifyAdminPassword();
+                                }}
+                                placeholder="Enter admin password"
+                                autoFocus
+                                style={{ padding: '10px 12px', fontSize: 14, width: '100%' }}
+                            />
+                            {passwordError && (
+                                <p style={{ fontSize: 12, color: '#ef4444', marginTop: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+                                    {passwordError}
+                                </p>
+                            )}
+                            {!profile?.adminPassword && (
+                                <p style={{ fontSize: 11, color: '#64748b', marginTop: 6, fontStyle: 'italic' }}>
+                                    Default password: admin123 (Set your own in Settings)
+                                </p>
+                            )}
+                        </div>
+
+                        <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+                            <button
+                                onClick={() => {
+                                    setShowPasswordModal(false);
+                                    setAdminPassword('');
+                                    setPasswordError('');
+                                }}
+                                style={{
+                                    padding: '10px 20px',
+                                    borderRadius: 10,
+                                    background: 'rgba(100, 116, 139, 0.1)',
+                                    border: '1px solid rgba(100, 116, 139, 0.2)',
+                                    color: 'var(--text-secondary)',
+                                    fontSize: 14,
+                                    fontWeight: 600,
+                                    cursor: 'pointer',
+                                }}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={verifyAdminPassword}
+                                className="glow-btn"
+                                style={{ padding: '10px 24px', fontSize: 14 }}
+                            >
+                                <span>Verify</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </AppLayout>
     );
 }

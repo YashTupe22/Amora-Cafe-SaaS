@@ -33,16 +33,16 @@ const PLANS: {
     key:         'starter',
     name:        'Starter',
     tagline:     'Perfect for solo cafés',
-    color:       '#3b82f6',
-    gradient:    'linear-gradient(135deg,#3b82f6,#1d4ed8)',
+    color:       '#5e6ad2',
+    gradient:    'linear-gradient(135deg,#5e6ad2,#7170ff)',
     recommended: false,
   },
   {
     key:         'pro',
     name:        'Pro',
     tagline:     'For growing teams',
-    color:       '#f59e0b',
-    gradient:    'linear-gradient(135deg,#f59e0b,#ef4444)',
+    color:       '#7170ff',
+    gradient:    'linear-gradient(135deg,#7170ff,#828fff)',
     recommended: true,
   },
   {
@@ -94,21 +94,21 @@ export default function PricingPage() {
     <div
       style={{
         minHeight:   '100vh',
-        background:  'linear-gradient(135deg,#0f172a 0%,#1e1b4b 50%,#0f172a 100%)',
+        background:  'linear-gradient(135deg,#08090a 0%,#0f1011 50%,#08090a 100%)',
         padding:     '48px 24px 80px',
-        fontFamily:  'system-ui, sans-serif',
-        color:       '#fff',
+        fontFamily:  'Inter, system-ui, sans-serif',
+        color:       '#f7f8f8',
       }}
     >
       {/* Header */}
       <div style={{ textAlign: 'center', maxWidth: 680, margin: '0 auto 40px' }}>
-        <Link href="/dashboard" style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13, textDecoration: 'none' }}>
+        <Link href="/dashboard" style={{ color: 'var(--text-muted)', fontSize: 13, textDecoration: 'none' }}>
           ← Back to Dashboard
         </Link>
         <h1 style={{ margin: '16px 0 8px', fontSize: 'clamp(28px,5vw,42px)', fontWeight: 800 }}>
           Simple, transparent pricing
         </h1>
-        <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '16px', margin: 0 }}>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '16px', margin: 0 }}>
           Grow your café at every stage. No hidden fees.
         </p>
 
@@ -117,7 +117,7 @@ export default function PricingPage() {
           style={{
             display:        'inline-flex',
             marginTop:      28,
-            background:     'rgba(255,255,255,0.08)',
+            background:     'rgba(255,255,255,0.04)',
             borderRadius:   '10px',
             padding:        '4px',
             gap:            '4px',
@@ -135,8 +135,8 @@ export default function PricingPage() {
                 fontWeight:   600,
                 fontSize:     '14px',
                 transition:   'all 0.2s',
-                background:   cycle === c ? '#fff' : 'transparent',
-                color:        cycle === c ? '#0f172a' : 'rgba(255,255,255,0.6)',
+                background:   cycle === c ? '#f7f8f8' : 'transparent',
+                color:        cycle === c ? '#141516' : 'var(--text-secondary)',
               }}
             >
               {c === 'monthly' ? 'Monthly' : 'Annual'}
@@ -144,7 +144,7 @@ export default function PricingPage() {
                 <span
                   style={{
                     marginLeft:  6,
-                    background:  '#22c55e',
+                    background:  '#10b981',
                     color:       '#fff',
                     fontSize:    '11px',
                     padding:     '2px 6px',
@@ -183,11 +183,11 @@ export default function PricingPage() {
               style={{
                 position:    'relative',
                 background:  plan.recommended
-                  ? 'rgba(245,158,11,0.12)'
-                  : 'rgba(255,255,255,0.05)',
+                  ? 'rgba(113,112,255,0.12)'
+                  : 'rgba(255,255,255,0.03)',
                 border:      plan.recommended
-                  ? '2px solid #f59e0b'
-                  : '1px solid rgba(255,255,255,0.10)',
+                  ? '2px solid #7170ff'
+                  : '1px solid rgba(255,255,255,0.08)',
                 borderRadius: '16px',
                 padding:      '28px 24px 32px',
                 display:      'flex',
@@ -232,7 +232,7 @@ export default function PricingPage() {
                 >
                   {plan.name.toUpperCase()}
                 </span>
-                <p style={{ margin: '0 0 4px', color: 'rgba(255,255,255,0.55)', fontSize: '13px' }}>
+                <p style={{ margin: '0 0 4px', color: 'var(--text-secondary)', fontSize: '13px' }}>
                   {plan.tagline}
                 </p>
               </div>
@@ -243,7 +243,7 @@ export default function PricingPage() {
                   {fmtPrice(price)}
                 </span>
                 {price > 0 && (
-                  <span style={{ color: 'rgba(255,255,255,0.45)', fontSize: '13px', marginLeft: 4 }}>
+                  <span style={{ color: 'var(--text-muted)', fontSize: '13px', marginLeft: 4 }}>
                     /{cycle === 'monthly' ? 'mo' : 'yr'}
                   </span>
                 )}
@@ -280,7 +280,7 @@ export default function PricingPage() {
                 ]
                   .filter(Boolean)
                   .map((f, i) => (
-                    <li key={i} style={{ fontSize: '13px', color: 'rgba(255,255,255,0.75)', display: 'flex', gap: '7px', alignItems: 'center' }}>
+                    <li key={i} style={{ fontSize: '13px', color: 'var(--text-secondary)', display: 'flex', gap: '7px', alignItems: 'center' }}>
                       <span style={{ color: plan.color }}>✓</span>
                       {f}
                     </li>
@@ -295,7 +295,7 @@ export default function PricingPage() {
                     marginTop:    '16px',
                     padding:      '12px',
                     borderRadius: '10px',
-                    border:       `1px solid ${plan.color}`,
+                    border:       `1px solid ${plan.color}66`,
                     background:   'transparent',
                     color:        plan.color,
                     fontWeight:   700,
@@ -315,11 +315,11 @@ export default function PricingPage() {
                     padding:      '12px',
                     borderRadius: '10px',
                     background:   plan.recommended ? plan.gradient : 'rgba(255,255,255,0.1)',
-                    color:        '#fff',
+                    color:        '#f7f8f8',
                     fontWeight:   700,
                     fontSize:     '14px',
                     textDecoration: 'none',
-                    border:       plan.recommended ? 'none' : '1px solid rgba(255,255,255,0.15)',
+                    border:       plan.recommended ? 'none' : '1px solid rgba(255,255,255,0.1)',
                   }}
                 >
                   {plan.key === 'free' ? 'Get Started' : 'Upgrade Now'}
@@ -334,11 +334,11 @@ export default function PricingPage() {
                     padding:      '12px',
                     borderRadius: '10px',
                     background:   plan.recommended ? plan.gradient : 'rgba(255,255,255,0.1)',
-                    color:        '#fff',
+                    color:        '#f7f8f8',
                     fontWeight:   700,
                     fontSize:     '14px',
                     textDecoration: 'none',
-                    border:       plan.recommended ? 'none' : '1px solid rgba(255,255,255,0.15)',
+                    border:       plan.recommended ? 'none' : '1px solid rgba(255,255,255,0.1)',
                   }}
                 >
                   Get Started
@@ -357,19 +357,19 @@ export default function PricingPage() {
         <div
           style={{
             overflowX:    'auto',
-            background:   'rgba(255,255,255,0.04)',
+            background:   'rgba(255,255,255,0.03)',
             borderRadius: '14px',
-            border:       '1px solid rgba(255,255,255,0.09)',
+            border:       '1px solid rgba(255,255,255,0.08)',
           }}
         >
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
             <thead>
-              <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
-                <th style={{ padding: '14px 20px', textAlign: 'left', color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>
+              <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                <th style={{ padding: '14px 20px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 600 }}>
                   Feature
                 </th>
                 {PLANS.map(p => (
-                  <th key={p.key} style={{ padding: '14px 20px', textAlign: 'center', color: p.recommended ? '#f59e0b' : '#fff', fontWeight: 700 }}>
+                  <th key={p.key} style={{ padding: '14px 20px', textAlign: 'center', color: p.recommended ? '#828fff' : '#f7f8f8', fontWeight: 700 }}>
                     {p.name}
                   </th>
                 ))}
@@ -380,15 +380,15 @@ export default function PricingPage() {
                 <tr
                   key={row.label}
                   style={{
-                    borderBottom: i < FEATURES.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none',
-                    background:   i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)',
+                     borderBottom: i < FEATURES.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
+                     background:   i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.015)',
                   }}
                 >
-                  <td style={{ padding: '12px 20px', color: 'rgba(255,255,255,0.7)' }}>
+                   <td style={{ padding: '12px 20px', color: 'var(--text-secondary)' }}>
                     {row.label}
                   </td>
                   {(['free', 'starter', 'pro', 'enterprise'] as const).map(key => (
-                    <td key={key} style={{ padding: '12px 20px', textAlign: 'center', color: row[key] === '—' ? 'rgba(255,255,255,0.2)' : row[key] === '✓' ? '#22c55e' : '#fff' }}>
+                     <td key={key} style={{ padding: '12px 20px', textAlign: 'center', color: row[key] === '—' ? 'rgba(247,248,248,0.25)' : row[key] === '✓' ? '#22c55e' : '#f7f8f8' }}>
                       {row[key]}
                     </td>
                   ))}
@@ -400,8 +400,8 @@ export default function PricingPage() {
       </div>
 
       {/* FAQ / footer nudge */}
-      <div style={{ textAlign: 'center', marginTop: 56, color: 'rgba(255,255,255,0.4)', fontSize: '13px' }}>
-        <p>Questions? Contact us at <a href="mailto:yashrtupe01@gmail.com" style={{ color: '#f59e0b' }}>yashrtupe01@gmail.com</a></p>
+      <div style={{ textAlign: 'center', marginTop: 56, color: 'var(--text-muted)', fontSize: '13px' }}>
+        <p>Questions? Contact us at <a href="mailto:yashrtupe01@gmail.com" style={{ color: '#7170ff' }}>yashrtupe01@gmail.com</a></p>
         <p>All plans include a 7-day free trial. Cancel anytime.</p>
       </div>
     </div>

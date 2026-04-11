@@ -44,11 +44,11 @@ export default function UpgradeBanner({
       role="alert"
       className={className}
       style={{
-        background:   'rgba(255, 255, 255, 0.06)',
+        background:   'rgba(255, 255, 255, 0.04)',
         backdropFilter: 'blur(12px)',
         WebkitBackdropFilter: 'blur(12px)',
-        border:       '1px solid rgba(255,255,255,0.12)',
-        borderLeft:   '4px solid #f59e0b',
+        border:       '1px solid rgba(255,255,255,0.08)',
+        borderLeft:   '4px solid #7170ff',
         borderRadius: '12px',
         padding:      '14px 18px',
         display:      'flex',
@@ -65,7 +65,7 @@ export default function UpgradeBanner({
       <div style={{ flex: 1, minWidth: '140px' }}>
         <p style={{ margin: 0, fontWeight: 600, color: '#fff', fontSize: '14px' }}>
           {feature} requires the{' '}
-          <span style={{ color: '#f59e0b' }}>{planLabel}</span> plan
+          <span style={{ color: '#7170ff' }}>{planLabel}</span> plan
         </p>
         <p style={{ margin: '2px 0 0', color: 'rgba(255,255,255,0.55)', fontSize: '12px' }}>
           Upgrade from ₹{price}/mo to unlock this feature.
@@ -75,8 +75,8 @@ export default function UpgradeBanner({
       {/* CTA */}
       <Link
         href="/pricing"
-        style={{
-          background:   'linear-gradient(135deg, #f59e0b, #ef4444)',
+          style={{
+          background:   'linear-gradient(135deg, #5e6ad2, #7170ff)',
           color:        '#fff',
           padding:      '7px 18px',
           borderRadius: '8px',

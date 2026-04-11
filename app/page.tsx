@@ -63,10 +63,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #0a0f1e 0%, #0f172a 50%, #0d1b33 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', padding: '20px' }}>
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #08090a 0%, #0f1011 50%, #08090a 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', padding: '20px' }}>
       {/* Glow blobs */}
-      <div style={{ position: 'absolute', top: '-10%', left: '-5%', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, rgba(249,115,22,0.12) 0%, transparent 70%)', pointerEvents: 'none' }} />
-      <div style={{ position: 'absolute', bottom: '-15%', right: '-5%', width: 600, height: 600, borderRadius: '50%', background: 'radial-gradient(circle, rgba(234,88,12,0.10) 0%, transparent 70%)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', top: '-10%', left: '-5%', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, rgba(94,106,210,0.15) 0%, transparent 70%)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', bottom: '-15%', right: '-5%', width: 600, height: 600, borderRadius: '50%', background: 'radial-gradient(circle, rgba(113,112,255,0.12) 0%, transparent 70%)', pointerEvents: 'none' }} />
       <div style={{ position: 'absolute', inset: 0, backgroundImage: `linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)`, backgroundSize: '40px 40px', pointerEvents: 'none' }} />
 
       <div className="glass-card animate-fade-in" style={{ width: '100%', maxWidth: 420, padding: '40px 36px', position: 'relative' }}>
@@ -84,7 +84,7 @@ export default function LoginPage() {
           </div>
           <div style={{ textAlign: 'center' }}>
             <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.3px' }}>Synplix</h1>
-            <p style={{ fontSize: 13, color: '#64748b', marginTop: 4 }}>Sign in to your dashboard</p>
+            <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>Sign in to your dashboard</p>
           </div>
         </div>
 
@@ -126,14 +126,14 @@ export default function LoginPage() {
 
         <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div style={{ position: 'relative' }}>
-            <Mail size={15} color="#64748b" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)' }} />
+            <Mail size={15} color="var(--text-muted)" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)' }} />
             <input id="login-email" className="dark-input" type="email" placeholder="Email address" value={email} onChange={e => setEmail(e.target.value)} style={{ padding: '12px 14px 12px 40px', fontSize: 14 }} />
           </div>
 
           <div style={{ position: 'relative' }}>
-            <Lock size={15} color="#64748b" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)' }} />
+            <Lock size={15} color="var(--text-muted)" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)' }} />
             <input id="login-password" className="dark-input" type={showPw ? 'text' : 'password'} placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} style={{ padding: '12px 42px 12px 40px', fontSize: 14 }} />
-            <button type="button" onClick={() => setShowPw(p => !p)} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', padding: 2 }}>
+            <button type="button" onClick={() => setShowPw(p => !p)} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 2 }}>
               {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
             </button>
           </div>
@@ -145,9 +145,9 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <p style={{ textAlign: 'center', fontSize: 12, color: '#475569', marginTop: 20 }}>
+        <p style={{ textAlign: 'center', fontSize: 12, color: 'var(--text-muted)', marginTop: 20 }}>
           New here?{' '}
-          <Link href="/signup" style={{ color: '#fb923c', fontWeight: 700 }}>Create an account</Link>
+          <Link href="/signup" style={{ color: '#7170ff', fontWeight: 700 }}>Create an account</Link>
         </p>
       </div>
     </div>

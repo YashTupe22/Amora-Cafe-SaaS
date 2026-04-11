@@ -165,13 +165,13 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                         <span style={{ fontSize: 12, fontWeight: 600, color: planColor }}>{planLabel} Plan</span>
                     </div>
                     {showUpgrade && (
-                        <Link
-                            href="/pricing"
-                            onClick={onClose}
-                            style={{ fontSize: 11, fontWeight: 700, color: '#f59e0b', textDecoration: 'none', background: 'rgba(245,158,11,0.15)', padding: '2px 8px', borderRadius: 5 }}
-                        >
-                            Upgrade
-                        </Link>
+                         <Link
+                             href="/pricing"
+                             onClick={onClose}
+                             style={{ fontSize: 11, fontWeight: 700, color: '#7170ff', textDecoration: 'none', background: 'rgba(113,112,255,0.15)', padding: '2px 8px', borderRadius: 5 }}
+                         >
+                             Upgrade
+                         </Link>
                     )}
                 </div>
                 <button

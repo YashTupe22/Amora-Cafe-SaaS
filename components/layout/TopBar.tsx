@@ -188,7 +188,7 @@ export default function TopBar({ title, subtitle, onMenuToggle }: TopBarProps) {
                                             onMouseEnter={e => (e.currentTarget.style.background = 'var(--hover-bg-active)')}
                                             onMouseLeave={e => (e.currentTarget.style.background = 'none')}
                                         >
-                                            <div style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(249,115,22,0.12)', border: '1px solid rgba(249,115,22,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fb923c', flexShrink: 0 }}>
+                                            <div style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(113,112,255,0.12)', border: '1px solid rgba(113,112,255,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#828fff', flexShrink: 0 }}>
                                                 {r.icon}
                                             </div>
                                             <div style={{ minWidth: 0 }}>
@@ -215,7 +215,7 @@ export default function TopBar({ title, subtitle, onMenuToggle }: TopBarProps) {
                     >
                         <Bell size={16} />
                         {unreadCount > 0 && (
-                            <span style={{ position: 'absolute', top: -4, right: -4, minWidth: 16, height: 16, borderRadius: 8, background: '#f97316', boxShadow: '0 0 6px rgba(249,115,22,0.9)', fontSize: 9, fontWeight: 700, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 3px', lineHeight: 1 }}>
+                            <span style={{ position: 'absolute', top: -4, right: -4, minWidth: 16, height: 16, borderRadius: 8, background: '#5e6ad2', boxShadow: '0 0 6px rgba(94,106,210,0.9)', fontSize: 9, fontWeight: 700, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 3px', lineHeight: 1 }}>
                                 {unreadCount > 99 ? '99+' : unreadCount}
                             </span>
                         )}
@@ -253,7 +253,7 @@ export default function TopBar({ title, subtitle, onMenuToggle }: TopBarProps) {
                                     notifications.map(n => (
                                         <div
                                             key={n.id}
-                                            style={{ display: 'flex', alignItems: 'flex-start', gap: 11, padding: '11px 14px', borderBottom: '1px solid var(--dropdown-divider)', background: n.read ? 'transparent' : 'rgba(249,115,22,0.03)', transition: 'background 0.15s' }}
+                                            style={{ display: 'flex', alignItems: 'flex-start', gap: 11, padding: '11px 14px', borderBottom: '1px solid var(--dropdown-divider)', background: n.read ? 'transparent' : 'rgba(113,112,255,0.06)', transition: 'background 0.15s' }}
                                         >
                                             <div style={{ width: 30, height: 30, borderRadius: 8, background: notifAccent(n.type), display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
                                                 {notifIcon(n.type)}
@@ -285,7 +285,7 @@ export default function TopBar({ title, subtitle, onMenuToggle }: TopBarProps) {
                     <button
                         id="profile-avatar-btn"
                         onClick={() => setShowProfile(p => !p)}
-                        style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg, #f97316, #ea580c)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 13, color: 'white', cursor: 'pointer', border: showProfile ? '2px solid rgba(249,115,22,0.6)' : '2px solid transparent', boxShadow: '0 0 12px rgba(249,115,22,0.3)', transition: 'border-color 0.2s', flexShrink: 0 }}
+                        style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg, #5e6ad2, #7170ff)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 13, color: 'white', cursor: 'pointer', border: showProfile ? '2px solid rgba(113,112,255,0.6)' : '2px solid transparent', boxShadow: '0 0 12px rgba(113,112,255,0.3)', transition: 'border-color 0.2s', flexShrink: 0 }}
                         aria-label="Profile menu"
                     >
                         {initials}
@@ -294,9 +294,9 @@ export default function TopBar({ title, subtitle, onMenuToggle }: TopBarProps) {
                     {showProfile && (() => {
                         const planColors: Record<string, { bg: string; border: string; text: string }> = {
                             free:       { bg: 'rgba(100,116,139,0.12)', border: 'rgba(100,116,139,0.3)', text: '#94a3b8' },
-                            starter:    { bg: 'rgba(56,189,248,0.12)',  border: 'rgba(56,189,248,0.3)',  text: '#38bdf8' },
-                            pro:        { bg: 'rgba(167,139,250,0.12)', border: 'rgba(167,139,250,0.3)', text: '#a78bfa' },
-                            enterprise: { bg: 'rgba(249,115,22,0.12)',  border: 'rgba(249,115,22,0.3)',  text: '#fb923c' },
+                            starter:    { bg: 'rgba(94,106,210,0.12)',  border: 'rgba(94,106,210,0.3)',  text: '#5e6ad2' },
+                            pro:        { bg: 'rgba(113,112,255,0.12)', border: 'rgba(113,112,255,0.3)', text: '#828fff' },
+                            enterprise: { bg: 'rgba(122,127,173,0.18)', border: 'rgba(122,127,173,0.3)', text: '#7a7fad' },
                         };
                         const pc = planColors[plan] || planColors.free;
                         const periodEnd = currentPeriodEnd ? new Date(currentPeriodEnd) : null;
@@ -307,7 +307,7 @@ export default function TopBar({ title, subtitle, onMenuToggle }: TopBarProps) {
                             {/* User info */}
                             <div style={{ padding: '16px', borderBottom: '1px solid var(--dropdown-divider)' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                    <div style={{ width: 40, height: 40, borderRadius: 10, background: 'linear-gradient(135deg,#f97316,#ea580c)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 14, color: 'white', flexShrink: 0 }}>{initials}</div>
+                                    <div style={{ width: 40, height: 40, borderRadius: 10, background: 'linear-gradient(135deg,#5e6ad2,#7170ff)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 14, color: 'white', flexShrink: 0 }}>{initials}</div>
                                     <div style={{ minWidth: 0 }}>
                                         <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{profile?.name || currentUser?.name || 'User'}</p>
                                         <p style={{ fontSize: 11, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{profile?.email || currentUser?.email || ''}</p>
@@ -322,7 +322,7 @@ export default function TopBar({ title, subtitle, onMenuToggle }: TopBarProps) {
 
                                     {profile?.businessName && (
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                                            <Building2 size={13} color="#fb923c" style={{ flexShrink: 0 }} />
+                                                <Building2 size={13} color="#828fff" style={{ flexShrink: 0 }} />
                                             <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{profile.businessName}</p>
                                         </div>
                                     )}
@@ -370,7 +370,7 @@ export default function TopBar({ title, subtitle, onMenuToggle }: TopBarProps) {
                                                 </span>
                                             </p>
                                             {daysLeft !== null && daysLeft <= 7 && (
-                                                <p style={{ fontSize: 10, color: '#f97316', fontWeight: 600, marginTop: 2 }}>
+                                                <p style={{ fontSize: 10, color: '#7170ff', fontWeight: 600, marginTop: 2 }}>
                                                     {daysLeft === 0 ? 'Expires today!' : `${daysLeft} day${daysLeft !== 1 ? 's' : ''} remaining`}
                                                 </p>
                                             )}
@@ -381,7 +381,7 @@ export default function TopBar({ title, subtitle, onMenuToggle }: TopBarProps) {
                                 {plan === 'free' && (
                                     <button
                                         onClick={() => { setShowProfile(false); router.push('/pricing'); }}
-                                        style={{ width: '100%', marginTop: 4, padding: '7px 0', borderRadius: 8, background: 'linear-gradient(135deg, #f97316, #ea580c)', border: 'none', color: 'white', fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'opacity 0.15s' }}
+                                        style={{ width: '100%', marginTop: 4, padding: '7px 0', borderRadius: 8, background: 'linear-gradient(135deg, #5e6ad2, #7170ff)', border: 'none', color: 'white', fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'opacity 0.15s' }}
                                         onMouseEnter={e => (e.currentTarget.style.opacity = '0.85')}
                                         onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
                                     >

@@ -26,11 +26,11 @@ export default function LimitBar({ used, limit, label }: LimitBarProps) {
   const isNear = pct >= 80;
 
   const barColor   = isAt ? '#ef4444' : isNear ? '#f59e0b' : '#22c55e';
-  const bgColor    = isAt ? 'rgba(239,68,68,0.08)' : isNear ? 'rgba(245,158,11,0.08)' : 'rgba(255,255,255,0.03)';
+  const bgColor    = isAt ? 'rgba(239,68,68,0.08)' : isNear ? 'rgba(245,158,11,0.08)' : 'rgba(255,255,255,0.02)';
   const bdColor    = isAt ? 'rgba(239,68,68,0.25)'  : isNear ? 'rgba(245,158,11,0.25)' : 'rgba(255,255,255,0.07)';
-  const btnBg      = isAt ? 'rgba(239,68,68,0.15)'  : 'rgba(245,158,11,0.12)';
-  const btnBorder  = isAt ? 'rgba(239,68,68,0.3)'   : 'rgba(245,158,11,0.3)';
-  const btnColor   = isAt ? '#ef4444' : '#f59e0b';
+  const btnBg      = isAt ? 'rgba(239,68,68,0.15)'  : 'rgba(113,112,255,0.12)';
+  const btnBorder  = isAt ? 'rgba(239,68,68,0.3)'   : 'rgba(113,112,255,0.3)';
+  const btnColor   = isAt ? '#ef4444' : '#7170ff';
 
   return (
     <div
@@ -48,7 +48,7 @@ export default function LimitBar({ used, limit, label }: LimitBarProps) {
       {/* Progress section */}
       <div style={{ flex: 1 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-          <span style={{ fontSize: 12, fontWeight: 600, color: '#94a3b8' }}>{label}</span>
+          <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>{label}</span>
           <span style={{ fontSize: 12, fontWeight: 700, color: barColor }}>
             {used.toLocaleString()} / {limit.toLocaleString()}
           </span>

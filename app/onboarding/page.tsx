@@ -61,10 +61,10 @@ export default function OnboardingPage() {
             : true;
 
     return (
-        <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #0a0f1e 0%, #0f172a 60%, #0d1b33 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #08090a 0%, #0f1011 60%, #08090a 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', position: 'relative', overflow: 'hidden' }}>
             {/* Background effects */}
-            <div style={{ position: 'absolute', top: '-20%', right: '-10%', width: 700, height: 700, borderRadius: '50%', background: 'radial-gradient(circle, rgba(249,115,22,0.09) 0%, transparent 65%)', pointerEvents: 'none' }} />
-            <div style={{ position: 'absolute', bottom: '-20%', left: '-10%', width: 700, height: 700, borderRadius: '50%', background: 'radial-gradient(circle, rgba(234,88,12,0.08) 0%, transparent 65%)', pointerEvents: 'none' }} />
+            <div style={{ position: 'absolute', top: '-20%', right: '-10%', width: 700, height: 700, borderRadius: '50%', background: 'radial-gradient(circle, rgba(94,106,210,0.12) 0%, transparent 65%)', pointerEvents: 'none' }} />
+            <div style={{ position: 'absolute', bottom: '-20%', left: '-10%', width: 700, height: 700, borderRadius: '50%', background: 'radial-gradient(circle, rgba(113,112,255,0.1) 0%, transparent 65%)', pointerEvents: 'none' }} />
 
             <div style={{ width: '100%', maxWidth: 560, position: 'relative' }}>
 
@@ -80,10 +80,10 @@ export default function OnboardingPage() {
                                 style={{ width: '100%', height: 'auto', objectFit: 'contain' }}
                             />
                         </div>
-                        <span style={{ fontSize: 16, fontWeight: 700, color: '#f1f5f9' }}>Synplix</span>
+                    <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>Synplix</span>
                     </div>
-                    <h1 style={{ fontSize: 26, fontWeight: 800, color: '#f1f5f9', marginBottom: 6 }}>Welcome aboard!</h1>
-                    <p style={{ fontSize: 14, color: '#64748b' }}>Let&apos;s set up your workspace in {STEPS.length} quick steps.</p>
+                    <h1 style={{ fontSize: 26, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 6 }}>Welcome aboard!</h1>
+                    <p style={{ fontSize: 14, color: 'var(--text-muted)' }}>Let&apos;s set up your workspace in {STEPS.length} quick steps.</p>
                 </div>
 
                 {/* Step indicators */}
@@ -96,18 +96,18 @@ export default function OnboardingPage() {
                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
                                     <div style={{
                                         width: 36, height: 36, borderRadius: '50%',
-                                        background: done ? 'linear-gradient(135deg,#22c55e,#16a34a)' : active ? 'linear-gradient(135deg,#f97316,#ea580c)' : 'rgba(255,255,255,0.06)',
-                                        border: `2px solid ${done ? '#22c55e' : active ? '#f97316' : 'rgba(255,255,255,0.12)'}`,
+                                        background: done ? 'linear-gradient(135deg,#22c55e,#16a34a)' : active ? 'linear-gradient(135deg,#5e6ad2,#7170ff)' : 'rgba(255,255,255,0.06)',
+                                        border: `2px solid ${done ? '#22c55e' : active ? '#7170ff' : 'rgba(255,255,255,0.12)'}`,
                                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                                         transition: 'all 0.3s ease',
-                                        boxShadow: active ? '0 0 20px rgba(249,115,22,0.4)' : done ? '0 0 14px rgba(34,197,94,0.3)' : 'none',
+                                        boxShadow: active ? '0 0 20px rgba(113,112,255,0.35)' : done ? '0 0 14px rgba(34,197,94,0.3)' : 'none',
                                     }}>
                                         {done ? <Check size={14} color="white" /> : <s.icon size={14} color={active ? 'white' : '#475569'} />}
                                     </div>
-                                    <span style={{ fontSize: 10, color: active ? '#fb923c' : done ? '#22c55e' : '#475569', fontWeight: 600, whiteSpace: 'nowrap' }}>{s.label}</span>
+                                    <span style={{ fontSize: 10, color: active ? '#828fff' : done ? '#22c55e' : 'var(--text-muted)', fontWeight: 600, whiteSpace: 'nowrap' }}>{s.label}</span>
                                 </div>
                                 {idx < STEPS.length - 1 && (
-                                    <div style={{ width: 40, height: 2, background: idx < step ? 'linear-gradient(90deg,#22c55e,#f97316)' : 'rgba(255,255,255,0.08)', marginBottom: 20, transition: 'background 0.4s ease' }} />
+                                    <div style={{ width: 40, height: 2, background: idx < step ? 'linear-gradient(90deg,#22c55e,#7170ff)' : 'rgba(255,255,255,0.08)', marginBottom: 20, transition: 'background 0.4s ease' }} />
                                 )}
                             </div>
                         );
@@ -118,7 +118,7 @@ export default function OnboardingPage() {
                 <div className="glass-card animate-fade-in" style={{ padding: '36px 32px' }}>
                     <div style={{ marginBottom: 28 }}>
                         <h2 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 6 }}>{STEPS[step].title}</h2>
-                        <p style={{ fontSize: 13, color: '#64748b' }}>{STEPS[step].subtitle}</p>
+                        <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>{STEPS[step].subtitle}</p>
                     </div>
 
                     {/* Step 0 – Interface Type Selection */}
@@ -133,9 +133,9 @@ export default function OnboardingPage() {
                     {/* Step 1 – Business name */}
                     {step === 1 && (
                         <div>
-                            <label style={{ fontSize: 12, color: '#64748b', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>Business Name *</label>
+                            <label style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>Business Name *</label>
                             <div style={{ position: 'relative' }}>
-                                <Building2 size={15} color="#64748b" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)' }} />
+                                <Building2 size={15} color="var(--text-muted)" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)' }} />
                                     <input
                                         id="ob-business-name"
                                         className="dark-input"
@@ -154,16 +154,16 @@ export default function OnboardingPage() {
                     {step === 2 && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                             <div>
-                                <label style={{ fontSize: 12, color: '#64748b', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>Phone Number</label>
+                                <label style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>Phone Number</label>
                                 <div style={{ position: 'relative' }}>
-                                    <Phone size={15} color="#64748b" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)' }} />
+                                    <Phone size={15} color="var(--text-muted)" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)' }} />
                                     <input id="ob-phone" className="dark-input" type="tel" placeholder="+91 98765 43210" value={phone} onChange={e => setPhone(e.target.value)} style={{ padding: '13px 14px 13px 42px', fontSize: 14 }} />
                                 </div>
                             </div>
                             <div>
-                                <label style={{ fontSize: 12, color: '#64748b', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>Address</label>
+                                <label style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>Address</label>
                                 <div style={{ position: 'relative' }}>
-                                    <MapPin size={15} color="#64748b" style={{ position: 'absolute', left: 14, top: 14 }} />
+                                    <MapPin size={15} color="var(--text-muted)" style={{ position: 'absolute', left: 14, top: 14 }} />
                                     <textarea id="ob-address" className="dark-input" placeholder="Your business address" value={address} onChange={e => setAddress(e.target.value)} rows={3} style={{ padding: '13px 14px 13px 42px', fontSize: 14, resize: 'none' }} />
                                 </div>
                             </div>
@@ -173,15 +173,15 @@ export default function OnboardingPage() {
                     {/* Step 3 – Tax */}
                     {step === 3 && (
                         <div>
-                            <label style={{ fontSize: 12, color: '#64748b', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>GST Number <span style={{ color: '#475569', fontWeight: 400, textTransform: 'none' }}>(optional)</span></label>
+                            <label style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>GST Number <span style={{ color: 'var(--text-faint)', fontWeight: 400, textTransform: 'none' }}>(optional)</span></label>
                             <div style={{ position: 'relative', marginBottom: 24 }}>
-                                <FileText size={15} color="#64748b" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)' }} />
+                                <FileText size={15} color="var(--text-muted)" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)' }} />
                                 <input id="ob-gst" className="dark-input" placeholder="e.g. 27AABCA1234F1Z5" value={gst} onChange={e => setGst(e.target.value.toUpperCase())} style={{ padding: '13px 14px 13px 42px', fontSize: 14, fontFamily: 'monospace' }} />
                             </div>
 
                             {/* Summary preview */}
-                            <div style={{ background: 'rgba(249,115,22,0.06)', border: '1px solid rgba(249,115,22,0.15)', borderRadius: 12, padding: '16px 18px' }}>
-                                <p style={{ fontSize: 11, color: '#f97316', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10 }}>Your workspace summary</p>
+                            <div style={{ background: 'rgba(113,112,255,0.07)', border: '1px solid rgba(113,112,255,0.2)', borderRadius: 12, padding: '16px 18px' }}>
+                                <p style={{ fontSize: 11, color: '#828fff', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10 }}>Your workspace summary</p>
                                 {[
                                     ['Type', interfaceTypes.map(t => t === 'restaurant' ? '🍽️ Restaurant' : '💼 Business').join(', ') || '—'],
                                     ['Business', businessName || '—'],
@@ -190,7 +190,7 @@ export default function OnboardingPage() {
                                     ['GST', gst || '—'],
                                 ].map(([label, value]) => (
                                     <div key={label} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                                        <span style={{ fontSize: 12, color: '#64748b' }}>{label}</span>
+                                        <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{label}</span>
                                         <span style={{ fontSize: 12, color: 'var(--text-primary)', fontWeight: 500, maxWidth: 200, textAlign: 'right', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{value}</span>
                                     </div>
                                 ))}
@@ -201,7 +201,7 @@ export default function OnboardingPage() {
                     {/* Actions */}
                     <div style={{ display: 'flex', gap: 12, marginTop: 28 }}>
                         {step > 0 && (
-                            <button onClick={() => setStep(s => s - 1)} style={{ padding: '12px 20px', borderRadius: 12, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
+                            <button onClick={() => setStep(s => s - 1)} style={{ padding: '12px 20px', borderRadius: 12, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-secondary)', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
                                 Back
                             </button>
                         )}
@@ -221,14 +221,14 @@ export default function OnboardingPage() {
                     {/* Skip */}
                     {step > 0 && (
                         <p style={{ textAlign: 'center', marginTop: 14 }}>
-                            <button onClick={handleFinish} style={{ fontSize: 12, color: '#475569', background: 'none', border: 'none', cursor: 'pointer' }}>
+                            <button onClick={handleFinish} style={{ fontSize: 12, color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer' }}>
                                 Skip for now — set up later in Settings
                             </button>
                         </p>
                     )}
                 </div>
 
-                <p style={{ textAlign: 'center', fontSize: 11, color: '#334155', marginTop: 20 }}>
+                <p style={{ textAlign: 'center', fontSize: 11, color: 'var(--text-faint)', marginTop: 20 }}>
                     Your data is private and secured with Firebase.
                 </p>
             </div>

@@ -18,9 +18,9 @@ export default function StatCard({ label, value, sub, trend, trendValue, iconBg,
         >
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                 <div>
-                    <p style={{ fontSize: 12, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</p>
-                    <p style={{ fontSize: 26, fontWeight: 800, color: '#f1f5f9', marginTop: 4, letterSpacing: '-0.5px' }}>{value}</p>
-                    {sub && <p style={{ fontSize: 12, color: '#475569', marginTop: 2 }}>{sub}</p>}
+                    <p style={{ fontSize: 12, color: 'var(--text-faint)', fontWeight: 590, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</p>
+                    <p style={{ fontSize: 26, fontWeight: 590, color: 'var(--text-primary)', marginTop: 4, letterSpacing: '-0.5px' }}>{value}</p>
+                    {sub && <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{sub}</p>}
                 </div>
                 <div
                     style={{
@@ -48,7 +48,7 @@ export default function StatCard({ label, value, sub, trend, trendValue, iconBg,
                     >
                         {trend === 'up' ? '▲' : trend === 'down' ? '▼' : '●'} {trendValue}
                     </span>
-                    <span style={{ fontSize: 12, color: '#475569' }}>vs last month</span>
+                    <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>vs last month</span>
                 </div>
             )}
         </div>

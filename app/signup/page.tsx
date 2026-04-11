@@ -61,9 +61,9 @@ export default function SignupPage() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #0a0f1e 0%, #0f172a 50%, #0d1b33 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', padding: '20px' }}>
-      <div style={{ position: 'absolute', top: '-10%', left: '-5%', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, rgba(249,115,22,0.12) 0%, transparent 70%)', pointerEvents: 'none' }} />
-      <div style={{ position: 'absolute', bottom: '-15%', right: '-5%', width: 600, height: 600, borderRadius: '50%', background: 'radial-gradient(circle, rgba(234,88,12,0.10) 0%, transparent 70%)', pointerEvents: 'none' }} />
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #08090a 0%, #0f1011 50%, #08090a 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', padding: '20px' }}>
+      <div style={{ position: 'absolute', top: '-10%', left: '-5%', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, rgba(94,106,210,0.15) 0%, transparent 70%)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', bottom: '-15%', right: '-5%', width: 600, height: 600, borderRadius: '50%', background: 'radial-gradient(circle, rgba(113,112,255,0.12) 0%, transparent 70%)', pointerEvents: 'none' }} />
       <div style={{ position: 'absolute', inset: 0, backgroundImage: `linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)`, backgroundSize: '40px 40px', pointerEvents: 'none' }} />
 
       <div className="glass-card animate-fade-in" style={{ width: '100%', maxWidth: 460, padding: '40px 36px', position: 'relative' }}>
@@ -80,7 +80,7 @@ export default function SignupPage() {
           </div>
           <div style={{ textAlign: 'center' }}>
             <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.3px' }}>Create your Synplix account</h1>
-            <p style={{ fontSize: 13, color: '#64748b', marginTop: 4 }}>Built for Indian small businesses</p>
+            <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>Built for Indian small businesses</p>
           </div>
         </div>
 
@@ -116,28 +116,28 @@ export default function SignupPage() {
         {/* Divider */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
           <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.1)' }} />
-          <span style={{ fontSize: 12, color: '#64748b' }}>or</span>
+            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>or</span>
           <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.1)' }} />
         </div>
 
         <form onSubmit={handleSignup} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div style={{ position: 'relative' }}>
-            <User size={15} color="#64748b" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)' }} />
+            <User size={15} color="var(--text-muted)" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)' }} />
             <input id="signup-name" className="dark-input" placeholder="Full name" value={name} onChange={e => setName(e.target.value)} style={{ padding: '12px 14px 12px 40px', fontSize: 14 }} />
           </div>
           <div style={{ position: 'relative' }}>
-            <Mail size={15} color="#64748b" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)' }} />
+            <Mail size={15} color="var(--text-muted)" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)' }} />
             <input id="signup-email" className="dark-input" type="email" placeholder="Email address" value={email} onChange={e => setEmail(e.target.value)} style={{ padding: '12px 14px 12px 40px', fontSize: 14 }} />
           </div>
           <div style={{ position: 'relative' }}>
-            <Lock size={15} color="#64748b" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)' }} />
+            <Lock size={15} color="var(--text-muted)" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)' }} />
             <input id="signup-password" className="dark-input" type={showPw ? 'text' : 'password'} placeholder="Password (min 6 chars)" value={password} onChange={e => setPassword(e.target.value)} style={{ padding: '12px 42px 12px 40px', fontSize: 14 }} />
-            <button type="button" onClick={() => setShowPw(p => !p)} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', padding: 2 }}>
+            <button type="button" onClick={() => setShowPw(p => !p)} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 2 }}>
               {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
             </button>
           </div>
           <div style={{ position: 'relative' }}>
-            <Lock size={15} color="#64748b" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)' }} />
+            <Lock size={15} color="var(--text-muted)" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)' }} />
             <input id="signup-confirm" className="dark-input" type={showPw ? 'text' : 'password'} placeholder="Confirm password" value={confirm} onChange={e => setConfirm(e.target.value)} style={{ padding: '12px 14px 12px 40px', fontSize: 14 }} />
           </div>
 
@@ -148,9 +148,9 @@ export default function SignupPage() {
           </button>
         </form>
 
-        <p style={{ textAlign: 'center', fontSize: 12, color: '#475569', marginTop: 16 }}>
+        <p style={{ textAlign: 'center', fontSize: 12, color: 'var(--text-muted)', marginTop: 16 }}>
           Already have an account?{' '}
-          <Link href="/" style={{ color: '#fb923c', fontWeight: 700 }}>Sign in</Link>
+          <Link href="/" style={{ color: '#7170ff', fontWeight: 700 }}>Sign in</Link>
         </p>
       </div>
     </div>

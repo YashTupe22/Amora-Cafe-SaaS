@@ -23,7 +23,7 @@ const INTERFACE_OPTIONS: {
     title: 'Restaurant / Cafe',
     description: 'Perfect for cafes, restaurants, food trucks, and quick-service outlets',
     icon: UtensilsCrossed,
-    color: '#f97316',
+    color: '#5e6ad2',
     features: ['Table Management', 'Menu & Orders', 'Kitchen Display', 'Dine-In/Takeaway', 'Quick Billing'],
   },
   {
@@ -109,7 +109,7 @@ export function InterfaceSelector({ selected, onChange, mode = 'multi' }: Interf
                   transition: 'all 0.2s ease',
                 }}
               >
-                <Icon size={24} color={isSelected ? 'white' : '#64748b'} />
+                  <Icon size={24} color={isSelected ? 'white' : 'var(--text-faint)'} />
               </div>
 
               {/* Content */}
@@ -122,7 +122,7 @@ export function InterfaceSelector({ selected, onChange, mode = 'multi' }: Interf
                 }}>
                   {opt.title}
                 </h3>
-                <p style={{ fontSize: 13, color: '#64748b', marginBottom: 12, lineHeight: 1.4 }}>
+                <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 12, lineHeight: 1.4 }}>
                   {opt.description}
                 </p>
                 
@@ -136,7 +136,7 @@ export function InterfaceSelector({ selected, onChange, mode = 'multi' }: Interf
                         padding: '4px 8px',
                         borderRadius: 6,
                         background: isSelected ? `${opt.color}20` : 'rgba(255,255,255,0.05)',
-                        color: isSelected ? opt.color : '#94a3b8',
+                        color: isSelected ? opt.color : 'var(--text-secondary)',
                         fontWeight: 500,
                       }}
                     >
@@ -151,7 +151,7 @@ export function InterfaceSelector({ selected, onChange, mode = 'multi' }: Interf
       })}
 
       {mode === 'multi' && (
-        <p style={{ fontSize: 12, color: '#64748b', textAlign: 'center', marginTop: 4 }}>
+        <p style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', marginTop: 4 }}>
           💡 You can select both to access all features. Switch between them anytime.
         </p>
       )}
@@ -176,7 +176,7 @@ export function InterfaceSwitcher({
       display: 'flex',
       gap: 4,
       padding: 4,
-      background: 'rgba(255,255,255,0.05)',
+      background: 'rgba(255,255,255,0.03)',
       borderRadius: 10,
     }}>
       {available.map((type) => {
@@ -201,11 +201,11 @@ export function InterfaceSwitcher({
               transition: 'all 0.2s ease',
             }}
           >
-            <Icon size={16} color={isActive ? 'white' : '#64748b'} />
+            <Icon size={16} color={isActive ? 'white' : 'var(--text-faint)'} />
             <span style={{
               fontSize: 12,
               fontWeight: 600,
-              color: isActive ? 'white' : '#64748b',
+               color: isActive ? 'white' : 'var(--text-faint)',
             }}>
               {type === 'restaurant' ? 'Cafe' : 'Business'}
             </span>

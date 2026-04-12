@@ -8,6 +8,9 @@ import PostHogProvider from "@/components/PostHogProvider";
 export const metadata: Metadata = {
   title: "Synplix — Management",
   description: "Business management platform by Synplix — bills, menu, staff & more.",
+  other: {
+    "breachme-verify": "breachme-verify=eb1ed11410679f8d3b82ef959479a27e",
+  },
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
